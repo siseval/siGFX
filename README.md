@@ -1,7 +1,5 @@
-## GFX
+## GFX <sup>*working title i swear*</sup>
 A simple retained mode graphics-API, still very much a work in progress 
-
-<sup>*the name even more so*</sup>
 
 Currently the two supported rendering backends are:
 
