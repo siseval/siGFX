@@ -1,3 +1,4 @@
+#include <iostream>
 #include <demos/common/core/demo-player.h>
 #include <demos/common/animations/star/star-demo.h>
 #include <demos/common/animations/snake/snake-demo.h>
@@ -21,6 +22,16 @@ using namespace demos::common;
 
 void DemoPlayer::init()
 {
+    try 
+    {
+        renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
+        renderer->set_debug_font(renderer->get_font("gohu-regular"));
+    } 
+    catch (std::runtime_error &e) 
+    {
+        std::cerr << "Warning: Could not load font directory: " << e.what() << std::endl;
+    }
+
     demos.emplace_back(std::make_shared<star::StarDemo>(renderer));
     demos.emplace_back(std::make_shared<text::TextDemo>(renderer));
     // demos.emplace_back(std::make_shared<video::VideoDemo>(renderer));

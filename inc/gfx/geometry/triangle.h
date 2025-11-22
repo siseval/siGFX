@@ -2,6 +2,7 @@
 #define TRIANGLE_2D_H
 
 #include <gfx/math/vec2.h>
+#include <gfx/math/box2.h>
 #include <cmath>
 
 namespace gfx::geometry
@@ -27,6 +28,28 @@ public:
     const gfx::math::Vec2d v0;
     const gfx::math::Vec2d v1;
     const gfx::math::Vec2d v2;
+
+    int corners_inside(const gfx::math::Box2d& box) const
+    {
+        gfx::math::Vec2d box_corners[4] = {
+            { box.min.x, box.min.y },
+            { box.max.x, box.min.y },
+            { box.max.x, box.max.y },
+            { box.min.x, box.max.y }
+        };
+
+        int count = 0;
+
+        for (const auto& corner : box_corners)
+        {
+            if (point_inside(corner))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
 
     bool point_inside(const gfx::math::Vec2d& point) const
     {

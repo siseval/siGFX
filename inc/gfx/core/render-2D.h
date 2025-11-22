@@ -1,7 +1,6 @@
 #ifndef RENDER_2D_H
 #define RENDER_2D_H
 
-#include <iostream>
 #include <gfx/core/scene-graph-2D.h>
 #include <gfx/core/render-surface.h>
 #include <gfx/core/types/color4.h>
@@ -30,18 +29,6 @@ public:
         debug_viewer(std::make_shared<gfx::debug::DebugViewer>()),
         viewport_scaling(viewport_scaling) 
     {
-        if (!default_font_path.empty())
-        {
-            try
-            {
-                default_font = font_manager->load_from_file(default_font_path);
-            }
-            catch (const std::exception &e)
-            {
-                std::cerr << "Render2D: Failed to load default font from '" << default_font_path << "': " << e.what() << std::endl;
-            }
-        }
-        set_debug_font(default_font);
         surface->init();
     }
 

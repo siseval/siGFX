@@ -120,7 +120,7 @@ void DebugViewer::populate(const DebugInfo &info)
             return;
         }
 
-        double text_scale = (info.resolution.y / font_size) * 0.08;
+        double text_scale = 1.0; //(info.resolution.y / font_size) * 0.05;
 
         if (show_fps)
         {

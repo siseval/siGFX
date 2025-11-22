@@ -89,6 +89,7 @@ void TextDemo::init()
     text_item->set_use_shader(true);
     text_item->set_anchor(0.5, 0.5);
     text_item->set_alignment(Text2D::TextAlignment::CENTER);
+
     renderer->add_item(text_item);
 
     // renderer->add_item(top_item);
