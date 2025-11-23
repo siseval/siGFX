@@ -19,6 +19,13 @@ inline double smoothstep(const double d)
     return d * d * (3.0 - 2.0 * d);
 }
 
+inline double smoothstep(const double edge0, const double edge1, const double x)
+{
+    double t = (x - edge0) / (edge1 - edge0);
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    return t * t * (3.0 - 2.0 * t);
+}
+
 inline double exponential_step(const double t, const double k = 5.0)
 {
     return (1.0 - std::exp(-k * t)) / (1.0 - std::exp(-k));

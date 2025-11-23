@@ -41,14 +41,11 @@ gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D
 
         ripple_amount += wave * falloff * amp_scale * fade_in;
     }
-    ripple_amount = utils::inv_lerp(-0.05, 0.05, ripple_amount);
 
-    prev_color = Color4(
-        std::min(255, base_color.b + (int)(ripple_amount * 255) % 255),
-        std::min(255, base_color.g + (int)(ripple_amount * 255) % 255),
-        std::min(255, base_color.r + (int)(ripple_amount * 255) % 255)
-    );
-    return prev_color;
+    ripple_amount = utils::inv_lerp(-0.05, 0.05, ripple_amount);
+    ripple_amount = fmod(ripple_amount, 1.0);
+
+    return base_color + Color4(std::fmod(ripple_amount, 1.0));
 }
 
 
