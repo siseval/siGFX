@@ -44,33 +44,4 @@ bool Circle2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Mat
 }
 
 
-void Circle2D::rasterize(const Matrix3x3d &transform, const std::function<void(const Pixel&)> emit_pixel) const
-{
-    if (radius <= 0)
-    {
-        return;
-    }
-
-    double line_extent { line_thickness / 2.0 };
-    Box2d AABB { get_axis_aligned_bounding_box(transform) };
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-    for (int y = AABB.min.y; y <= AABB.max.y; y++)
-    {
-        for (int x = AABB.min.x; x <= AABB.max.x; x++)
-        {
-            Vec2d pos { utils::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - Vec2d(radius) };
-            double r_outer { radius + line_extent };
-            double r_inner { radius - line_extent };
-
-            double distance { std::sqrt(pos.x * pos.x + pos.y * pos.y) };
-
-            if (distance <= r_outer && (get_filled() || distance >= r_inner))
-            {
-                emit_pixel(Pixel { { x, y }, get_color() });
-                continue;
-            }
-        }
-    }
-}
-
 }

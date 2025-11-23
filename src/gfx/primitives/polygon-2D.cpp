@@ -41,41 +41,6 @@ bool Polygon2D::point_collides(const Vec2d point, const Matrix3x3d &transform) c
     return false;
 }
 
-void Polygon2D::rasterize_component(const Component &component, const Matrix3x3d &transform, const std::function<void(const Pixel&)> emit_pixel) const
-{
-    std::vector<Contour> transformed_holes;
-    for (const auto &hole : component.holes)
-    {
-        transformed_holes.push_back(Contour { 
-            utils::transform_points(hole.vertices, transform),
-            hole.clockwise 
-        });
-    }
-
-    Component transformed_component { 
-        utils::transform_points(component.contour.vertices, transform),
-        component.contour.clockwise,
-        transformed_holes
-    };
-
-    std::vector<Triangle> triangles { 
-        geometry::triangulate_polygon(transformed_component)
-    };
-
-    for (auto triangle : triangles)
-    {
-        geometry::rasterize_filled_triangle(triangle, color, emit_pixel);
-    }
-}
-
-void Polygon2D::rasterize(const Matrix3x3d &transform, const std::function<void(const Pixel&)> emit_pixel) const
-{
-    for (const auto &component : components)
-    {
-        rasterize_component(component, transform, emit_pixel);
-    }
-}
-
 bool Polygon2D::cache_clockwise(const int component)
 {
     Contour &contour = components[component].contour;

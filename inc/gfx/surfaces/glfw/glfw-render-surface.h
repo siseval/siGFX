@@ -2,8 +2,6 @@
 #define GLFW_RENDER_SURFACE_H
 
 #include <string>
-#include <vector>
-#include <memory>
 #include <gfx/core/render-surface.h>
 #include <gfx/surfaces/glfw/glad.h>
 #include <GLFW/glfw3.h>
@@ -17,9 +15,7 @@ class GLFWRenderSurface : public gfx::core::RenderSurface
 public:
 
     GLFWRenderSurface(const gfx::math::Vec2i resolution) 
-        : RenderSurface(resolution), 
-        frame_buffer(std::make_unique<std::vector<int32_t>>(resolution.x * resolution.y, 0))
-        {};
+        : RenderSurface(resolution) {};
 
     int init() override;
 
@@ -28,7 +24,6 @@ public:
 
     void clear_palette() override {};
     void clear_frame_buffer() override;
-    void write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth = 0) override;
 
     void resize(const gfx::math::Vec2i new_resolution) override;
 
@@ -65,7 +60,6 @@ private:
     void setup_shader();
 
     GLFWwindow* window;
-    std::unique_ptr<std::vector<int32_t>> frame_buffer;
 
     gfx::math::Vec2i gl_window_size { 800, 600 };
     double refresh_rate_hz = 60.0;

@@ -113,18 +113,6 @@ void GLFWRenderSurface::clear_frame_buffer()
     std::fill(frame_buffer->begin(), frame_buffer->end(), 0);
 }
 
-void GLFWRenderSurface::write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth)
-{
-    if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
-    {
-        return;
-    }
-
-    const int index = pos.y * resolution.x + pos.x;
-
-    frame_buffer->at(index) = std::byteswap(color.to_i32());
-}
-
 void GLFWRenderSurface::resize(const gfx::math::Vec2i new_resolution)
 {
     resolution = new_resolution;

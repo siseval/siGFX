@@ -25,7 +25,8 @@ public:
     void clear() const override;
 
     void clear_frame_buffer() override;
-    void write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth = 0) override;
+
+    void write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth = 0);
 
     void resize(const gfx::math::Vec2i new_resolution) override;
 

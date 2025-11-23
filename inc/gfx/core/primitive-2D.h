@@ -14,14 +14,32 @@
 namespace gfx::core
 {
 
+struct EmitterBase 
+{
+    virtual void emit(const types::Pixel&) = 0;
+};
+
+template<class F>
+struct Emitter : EmitterBase 
+{
+    F func;
+    explicit Emitter(F f) : func(f) {}
+    void emit(const types::Pixel& p) override { func(p); }
+};
+
 class Primitive2D
 {
 
 public:
 
     Primitive2D() : id(gfx::utils::UUID::generate()) {}
-        
-    virtual void rasterize(const gfx::math::Matrix3x3d &transform, const std::function<void(const types::Pixel&)> emit_pixel) const = 0;
+
+    template<class Emit>
+    void rasterize(const gfx::math::Matrix3x3d& M, Emit&& emit) const 
+    {
+        Emitter<std::decay_t<Emit>> wrapper(std::forward<Emit>(emit));
+        rasterize_erased(M, wrapper);
+    }
 
     gfx::core::types::OBB2D get_oriented_bounding_box(const gfx::math::Matrix3x3d &transform) const;
     virtual gfx::math::Box2d get_geometry_size() const = 0;
@@ -176,8 +194,23 @@ protected:
     mutable bool transform_dirty = true;
     int64_t transform_version = -1;
 
-    // bool should_fill_pixel(std::shared_ptr<GfxContext2D> context, const gfx::math::Vec2d pixel) const;
+private:
 
+    virtual void rasterize_erased(const gfx::math::Matrix3x3d&, EmitterBase&) const = 0;
+};
+
+
+template<class Derived>
+class PrimitiveTemplate : public Primitive2D
+{
+
+private:
+
+    void rasterize_erased(const gfx::math::Matrix3x3d& transform, EmitterBase& emit_pixel) const override 
+    {
+        static_cast<const Derived*>(this)
+            ->rasterize(transform, [&](const types::Pixel& pixel) { emit_pixel.emit(pixel); });
+    }
 };
 
 };

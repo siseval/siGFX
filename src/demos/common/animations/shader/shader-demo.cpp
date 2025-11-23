@@ -22,28 +22,33 @@ gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D
     constexpr double fade_decay = 7.0;
     constexpr double base_brightness = 2.0;
 
-    double global_time_sec = utils::time_ms() / 1000.0;
-    Vec2d uv = input.uv;
-    Vec2d center = { 0.5, 0.5 };
+    double global_time_sec { utils::time_ms() / 1000.0 };
+    Vec2d uv { input.uv };
+    Vec2d center { 0.5, 0.5 };
 
     double ripple_amount = base_brightness;
     for (const auto &ripple : ripples)
     {
         double distance = Vec2d::distance(uv, ripple->center);
 
-        double ripple_time_sec = global_time_sec - ripple->start_time / 1000.0;
-        double t = ripple_time_sec / ripple_lifetime_sec;
+        double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
+        double t { ripple_time_sec / ripple_lifetime_sec };
 
-        double fade_in = utils::smoothstep(std::clamp(t / 0.1, 0.0, 1.0));
+        double fade_in { utils::smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
 
-        double wave = std::sin(wave_freq * distance - wave_speed * ripple_time_sec);
-        double falloff = std::exp(-dist_falloff * distance - fade_decay * t);
+        double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
+        double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
 
         ripple_amount += wave * falloff * amp_scale * fade_in;
     }
     ripple_amount = utils::inv_lerp(-0.05, 0.05, ripple_amount);
 
-    return base_color + Color4(ripple_amount) * 1.5;
+    prev_color = Color4(
+        std::min(255, base_color.b + (int)(ripple_amount * 255) % 255),
+        std::min(255, base_color.g + (int)(ripple_amount * 255) % 255),
+        std::min(255, base_color.r + (int)(ripple_amount * 255) % 255)
+    );
+    return prev_color;
 }
 
 
@@ -59,47 +64,36 @@ void ShaderDemo::init()
         { resolution.x, 0 },
         { resolution.x, resolution.y },
         { 0,  resolution.y }
-    }, Color4 { 255, 255, 255 });
-    quad->set_anchor({ 0.5, 0.5 });
+    }, Color4(255, 255, 255));
+
+    quad->set_anchor(0.5, 0.5);
     quad->set_shader(shader);
     quad->set_use_shader(true);
 
-    OBB2D obb { quad->get_oriented_bounding_box(quad->get_transform()) };
-    auto obb_polyline { renderer->create_polyline({ 0, 0 }, {
-        obb.origin,
-        obb.origin + obb.side_x,
-        obb.origin + obb.side_x + obb.side_y,
-        obb.origin + obb.side_y
-    }, Color4 { 255, 0, 0 }) };
-
     renderer->clear_items();
     renderer->add_item(quad);
-    renderer->add_item(obb_polyline);
 }
 
 void ShaderDemo::update_ripples(const double dt)
 {
     spawn_timer += dt;
-    auto shader_ptr { std::dynamic_pointer_cast<WaterSurfaceShader>(shader) };
     std::vector<std::shared_ptr<Ripple>> to_remove;
-    for (auto& ripple_center : shader_ptr->ripples)
+    for (auto& ripple_center : shader->ripples)
     {
-        if (utils::time_ms() - ripple_center->start_time > shader_ptr->ripple_lifetime_sec * 1000.0)
+        if (utils::time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
         {
             to_remove.push_back(ripple_center);
         }
     }
     for (const auto& ripple : to_remove)
     {
-        auto it = std::find(shader_ptr->ripples.begin(), shader_ptr->ripples.end(), ripple);
-        if (it != shader_ptr->ripples.end())
+        auto it = std::find(shader->ripples.begin(), shader->ripples.end(), ripple);
+        if (it != shader->ripples.end())
         {
-            shader_ptr->ripples.erase(it);
+            shader->ripples.erase(it);
         }
     }
 }
-
-
 
 void ShaderDemo::render_frame(const double dt)
 {
@@ -114,12 +108,11 @@ void ShaderDemo::render_frame(const double dt)
         random_spawn_timer = 0.0;
     }
 
-    auto shader_ptr { dynamic_pointer_cast<WaterSurfaceShader>(shader) };
-    shader_ptr->mouse_uv = quad->get_uv(mouse_position);
+    shader->mouse_uv = quad->get_uv(mouse_position);
 
     double t { t0 / 1000000.0 };
 
-    shader_ptr->base_color = Color4(
+    shader->base_color = Color4(
         std::sin(t * 0.5) * 0.1 + 0.2,
         std::sin(t * 0.3 + 2.0) * 0.1 + 0.2,
         std::sin(t * 0.7 + 4.0) * 0.1 + 0.2
@@ -138,11 +131,10 @@ Vec2d ShaderDemo::get_random_position()
 
 void ShaderDemo::spawn_ripple(const Vec2d position)
 {
-    auto shader_ptr = std::dynamic_pointer_cast<WaterSurfaceShader>(shader);
     auto ripple = std::make_shared<Ripple>();
     ripple->center = quad->get_uv(position);
     ripple->start_time = utils::time_ms();
-    shader_ptr->ripples.push_back(ripple);
+    shader->ripples.push_back(ripple);
 }
 
 void ShaderDemo::handle_input(const int input)

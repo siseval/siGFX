@@ -73,7 +73,7 @@ void CursesRenderSurface::clear_frame_buffer()
     }
 }
 
-void CursesRenderSurface::write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth)
+inline void CursesRenderSurface::write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth)
 {
     bool left_in_pixel { pos.x % 2 == 0 };
     bool top_in_pixel { pos.y % 2 == 0 };

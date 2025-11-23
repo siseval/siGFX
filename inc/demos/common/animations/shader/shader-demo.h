@@ -28,6 +28,8 @@ public:
     double ripple_lifetime_sec = 5.0;
     gfx::core::types::Color4 base_color = gfx::core::types::Color4(0.0, 0.3, 0.5);
 
+    mutable gfx::core::types::Color4 prev_color;
+
     gfx::core::types::Color4 frag(const gfx::core::ShaderInput2D &input) const override;
 };
 
@@ -52,7 +54,8 @@ public:
         WaterSurfaceShader* water_shader = static_cast<WaterSurfaceShader*>(shader.get());
         return {
             "uv: (" + std::to_string(mouse_uv.x) + ", " + std::to_string(mouse_uv.y) + ")"
-            "num_ripples: " + std::to_string(water_shader->ripples.size())
+            "\nnum_ripples: " + std::to_string(water_shader->ripples.size()) +
+            "\nprev_color: " + std::to_string(water_shader->prev_color.r_double()) + ", " + std::to_string(water_shader->prev_color.g_double()) + ", " + std::to_string(water_shader->prev_color.b_double())
         };
     }
 
@@ -64,7 +67,7 @@ private:
     void update_ripples(const double dt);
     gfx::math::Vec2d get_random_position();
 
-    std::shared_ptr<gfx::core::Shader2D> shader;
+    std::shared_ptr<WaterSurfaceShader> shader;
 
     std::shared_ptr<gfx::primitives::Polygon2D> quad;
 

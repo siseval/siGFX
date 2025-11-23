@@ -1,4 +1,3 @@
-#include <thread>
 #include <gfx/primitives/ellipse-2D.h>
 #include <gfx/utils/transform.h>
 
@@ -47,66 +46,7 @@ bool Ellipse2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Ma
     (local_point.y * local_point.y) / (radius.y * radius.y) <= 1.0;
 }
 
-void Ellipse2D::rasterize(const Matrix3x3d &transform, const std::function<void(const Pixel&)> emit_pixel) const
-{
-    if (radius.x <= 0 || radius.y <= 0)
-    {
-        return;
-    }
 
-    double line_extent { line_thickness / 2.0 };
-    Box2d AABB { get_axis_aligned_bounding_box(transform) };
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-
-    auto worker = [&](int start_y, int end_y) {
-        for (int y = start_y; y <= end_y; y++)
-        {
-            for (int x = AABB.min.x; x <= AABB.max.x; x++)
-            {
-                Vec2d pos { utils::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - radius };
-                Vec2d r_outer { radius + Vec2d(line_extent) };
-                Vec2d r_inner { radius - Vec2d(line_extent) };
-
-                double sdf_outer { (pos.x * pos.x) / (r_outer.x * r_outer.x) + (pos.y * pos.y) / (r_outer.y * r_outer.y) };
-                double sdf_inner { (pos.x * pos.x) / (r_inner.x * r_inner.x) + (pos.y * pos.y) / (r_inner.y * r_inner.y) };
-
-                if (sdf_outer <= 1.0 && (get_filled() || sdf_inner >= 1.0))
-                {
-                    emit_pixel(Pixel { { x, y }, get_color() });
-                    continue;
-                }
-            }
-        }
-    };
-
-    Vec2d size { AABB.size() };
-    if (size.x * size.y < MIN_MULTITHREAD_PIXELS)
-    {
-        worker(static_cast<int>(AABB.min.y), static_cast<int>(AABB.max.y));
-        return;
-    }
-
-    unsigned int num_threads { std::thread::hardware_concurrency() };
-    std::vector<std::thread> threads;
-
-    for (unsigned int i = 0; i < num_threads; ++i)
-    {
-        int start_y { static_cast<int>(AABB.min.y) + static_cast<int>(i * size.y / num_threads) };
-        int end_y { static_cast<int>(AABB.min.y) + static_cast<int>((i + 1) * size.y / num_threads) - 1 };
-
-        if (i == num_threads - 1)
-        {
-            end_y = static_cast<int>(AABB.max.y);
-        }
-
-        threads.emplace_back(worker, start_y, end_y);
-    }
-
-    for (auto &thread : threads)
-    {
-        thread.join();
-    }
-}
 
 // void Ellipse2D::rasterize_polygon_ring(std::shared_ptr<RenderSurface> surface, const Matrix3x3d &transform) const
 // {

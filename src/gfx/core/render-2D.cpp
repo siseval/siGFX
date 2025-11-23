@@ -33,6 +33,11 @@ void Render2D::draw_frame() const
         get_draw_queue() 
     };
 
+    auto emit_pixel {
+        ([&](const Pixel &pixel) {
+            surface->write_pixel(pixel.position, pixel.color);
+        })};
+
     for (const auto& [primitive, transform] : draw_queue)
     {
         if (!primitive->is_visible())
@@ -40,20 +45,18 @@ void Render2D::draw_frame() const
             continue;
         }
 
-        std::function<void(const Pixel&)> emit_pixel = primitive->get_use_shader() ?
+        if (!primitive->get_use_shader())
+        {
+            primitive->rasterize(transform, emit_pixel);
+            continue;
+        }
 
-            std::function([this, primitive, t](const Pixel &pixel) {
-                Vec2d uv { primitive->get_uv(pixel.position) };
-                ShaderInput2D input { uv, t / 1000000.0 };
-                Color4 shaded_color { primitive->get_shader()->frag(input) };
-
-                surface->write_pixel(pixel.position, shaded_color);
-            }) :
-            std::function([this](const Pixel &pixel) {
-                surface->write_pixel(pixel.position, pixel.color);
-            });
-
-        primitive->rasterize(transform, emit_pixel);
+        primitive->rasterize(transform, ([&](const Pixel &pixel) {
+            Vec2d uv { primitive->get_uv(pixel.position) };
+            ShaderInput2D input { uv, t / 1000000.0 };
+            Color4 shaded_color { primitive->get_shader()->frag(input) };
+            surface->write_pixel(pixel.position, shaded_color);
+        }));
     }
 
     surface->clear();

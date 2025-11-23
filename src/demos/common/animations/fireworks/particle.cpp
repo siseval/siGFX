@@ -29,8 +29,6 @@ void Particle::process(const double dt)
         shape->set_color(Color4::lerp(shape->get_color(), transparent_color, t2 * t2 * 0.02));
     }
     
-
-
     update_position(dt);
     apply_gravity(dt);
 

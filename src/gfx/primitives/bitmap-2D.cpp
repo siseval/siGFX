@@ -35,31 +35,5 @@ bool Bitmap2D::point_collides(const Vec2d point, const Matrix3x3d &transform) co
     return false;
 }
 
-void Bitmap2D::rasterize(const Matrix3x3d &transform, const std::function<void(const Pixel&)> emit_pixel) const
-{
-    Box2d AABB { get_axis_aligned_bounding_box(transform) };
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-
-    for (int y = static_cast<int>(AABB.min.y); y < static_cast<int>(AABB.max.y); ++y)
-    {
-        for (int x = static_cast<int>(AABB.min.x); x < static_cast<int>(AABB.max.x); ++x)
-        {
-            Vec2d pos { static_cast<double>(x), static_cast<double>(y) };
-            Vec2d local_pos = utils::transform_point(pos, inverse_transform);
-
-            int img_x = static_cast<int>(local_pos.x);
-            int img_y = static_cast<int>(local_pos.y);
-
-            if (img_x >= 0 && img_x < resolution.x && img_y >= 0 && img_y < resolution.y)
-            {
-                Color4 pixel { get_pixel({ img_x, img_y }) };
-                if (pixel.a > 0)
-                {
-                    emit_pixel(Pixel { { x, y }, pixel });
-                }
-            }
-        }
-    }
-}
 
 }
