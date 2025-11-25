@@ -54,7 +54,8 @@ void Render2D::draw_frame() const
         primitive->rasterize(transform, ([&](const Pixel &pixel) {
             Vec2d uv { primitive->get_uv(pixel.position) };
             ShaderInput2D input { uv, t / 1000000.0 };
-            Color4 shaded_color { primitive->get_shader()->frag(input) };
+            auto shader { *primitive->get_shader() };
+            Color4 shaded_color { shader(input) };
             surface->write_pixel(pixel.position, shaded_color);
         }));
     }

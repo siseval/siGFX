@@ -12,9 +12,12 @@ using namespace gfx::math;
 using namespace demos::common::core;
 using namespace gfx::primitives;
 
-class TextShader : public gfx::core::Shader2D
+class TextShader : public gfx::core::Shader2D<TextShader>
 {
-    Color4 frag(const ShaderInput2D &input) const override
+
+public:
+
+    inline Color4 frag(const ShaderInput2D &input) const
     {
         double t { input.t };
         Vec2d uv { input.uv };
@@ -85,7 +88,7 @@ void TextDemo::init()
         Color4::white()
     );
 
-    text_item->set_shader(std::make_shared<TextShader>());
+    text_item->set_shader(TextShader());
     text_item->set_use_shader(true);
     text_item->set_anchor(0.5, 0.5);
     text_item->set_alignment(Text2D::TextAlignment::CENTER);

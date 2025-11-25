@@ -18,7 +18,7 @@ struct Ripple
     double start_time;
 };
 
-class WaterSurfaceShader : public gfx::core::Shader2D
+class WaterSurfaceShader : public gfx::core::Shader2D<WaterSurfaceShader>
 {
 
 public:
@@ -30,7 +30,7 @@ public:
 
     mutable gfx::core::types::Color4 prev_color;
 
-    gfx::core::types::Color4 frag(const gfx::core::ShaderInput2D &input) const override;
+    gfx::core::types::Color4 frag(const gfx::core::ShaderInput2D &input) const;
 };
 
 
@@ -51,11 +51,11 @@ public:
     std::vector<std::string> debug_text() override
     {
         gfx::math::Vec2d mouse_uv { quad->get_uv(mouse_position) };
-        WaterSurfaceShader* water_shader = static_cast<WaterSurfaceShader*>(shader.get());
+        WaterSurfaceShader water_shader = shader;
         return {
             "uv: (" + std::to_string(mouse_uv.x) + ", " + std::to_string(mouse_uv.y) + ")"
-            "\nnum_ripples: " + std::to_string(water_shader->ripples.size()) +
-            "\nprev_color: " + std::to_string(water_shader->prev_color.r_double()) + ", " + std::to_string(water_shader->prev_color.g_double()) + ", " + std::to_string(water_shader->prev_color.b_double())
+            "\nnum_ripples: " + std::to_string(water_shader.ripples.size())
+            // "\nprev_color: " + std::to_string(water_shader.prev_color.r_double()) + ", " + std::to_string(water_shader->prev_color.g_double()) + ", " + std::to_string(water_shader->prev_color.b_double())
         };
     }
 
@@ -67,14 +67,14 @@ private:
     void update_ripples(const double dt);
     gfx::math::Vec2d get_random_position();
 
-    std::shared_ptr<WaterSurfaceShader> shader;
+    WaterSurfaceShader shader;
 
     std::shared_ptr<gfx::primitives::Polygon2D> quad;
 
     gfx::math::Vec2d mouse_position;
     double spawn_timer;
     double spawn_interval_sec = 0.2;
-    bool random_spawn = false;
+    bool random_spawn = true;
     double random_spawn_interval_sec = 0.2;
     double random_spawn_timer = 0.0;
 

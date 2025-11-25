@@ -54,7 +54,7 @@ void ShaderDemo::init()
     Vec2d resolution { get_resolution() };
     Vec2d center { resolution / 2 };
 
-    shader = std::make_shared<WaterSurfaceShader>();
+    shader = WaterSurfaceShader();
 
     quad = renderer->create_polygon(center, {
         { 0, 0 },
@@ -75,19 +75,19 @@ void ShaderDemo::update_ripples(const double dt)
 {
     spawn_timer += dt;
     std::vector<std::shared_ptr<Ripple>> to_remove;
-    for (auto& ripple_center : shader->ripples)
+    for (auto& ripple_center : shader.ripples)
     {
-        if (utils::time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
+        if (utils::time_ms() - ripple_center->start_time > shader.ripple_lifetime_sec * 1000.0)
         {
             to_remove.push_back(ripple_center);
         }
     }
     for (const auto& ripple : to_remove)
     {
-        auto it = std::find(shader->ripples.begin(), shader->ripples.end(), ripple);
-        if (it != shader->ripples.end())
+        auto it = std::find(shader.ripples.begin(), shader.ripples.end(), ripple);
+        if (it != shader.ripples.end())
         {
-            shader->ripples.erase(it);
+            shader.ripples.erase(it);
         }
     }
 }
@@ -105,11 +105,11 @@ void ShaderDemo::render_frame(const double dt)
         random_spawn_timer = 0.0;
     }
 
-    shader->mouse_uv = quad->get_uv(mouse_position);
+    shader.mouse_uv = quad->get_uv(mouse_position);
 
     double t { t0 / 1000000.0 };
 
-    shader->base_color = Color4(
+    shader.base_color = Color4(
         std::sin(t * 0.5) * 0.1 + 0.2,
         std::sin(t * 0.3 + 2.0) * 0.1 + 0.2,
         std::sin(t * 0.7 + 4.0) * 0.1 + 0.2
@@ -131,7 +131,7 @@ void ShaderDemo::spawn_ripple(const Vec2d position)
     auto ripple = std::make_shared<Ripple>();
     ripple->center = quad->get_uv(position);
     ripple->start_time = utils::time_ms();
-    shader->ripples.push_back(ripple);
+    shader.ripples.push_back(ripple);
 }
 
 void ShaderDemo::handle_input(const int input)

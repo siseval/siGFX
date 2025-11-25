@@ -50,8 +50,13 @@ public:
     inline bool is_obb_dirty() const { return obb_dirty; }
     inline void set_obb_dirty() { obb_dirty = true; }
 
-    inline void set_shader(const std::shared_ptr<gfx::core::Shader2D> &shd) { shader = shd; }
-    inline std::shared_ptr<gfx::core::Shader2D> get_shader() const { return shader; }
+    template<class Shader>
+    inline void set_shader(const Shader &shader) 
+    { 
+        shader_handle = std::make_shared<ShaderHandle>(ShaderHandle::make(shader)); 
+    }
+
+    inline std::shared_ptr<ShaderHandle> get_shader() const { return shader_handle; }
 
     inline void set_use_shader(const bool use) { use_shader = use; }
     inline bool get_use_shader() const { return use_shader; }
@@ -172,7 +177,7 @@ public:
 protected:
 
     gfx::utils::UUID id;
-    std::shared_ptr<gfx::core::Shader2D> shader;
+    std::shared_ptr<gfx::core::ShaderHandle> shader_handle;
     bool use_shader = false;
 
     types::Color4 color;
