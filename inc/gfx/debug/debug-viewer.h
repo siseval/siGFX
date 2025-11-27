@@ -76,7 +76,7 @@ private:
     bool show_num_items = true;
 
     std::shared_ptr<gfx::text::FontTTF> font;
-    double font_size = 12.0;
+    double font_size = 8.0;
     gfx::core::types::Color4 text_color { 255, 255, 255 };
 
     gfx::core::types::Color4 bounds_color { 255, 255, 255 };

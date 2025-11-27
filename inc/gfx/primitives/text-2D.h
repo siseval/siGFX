@@ -24,6 +24,7 @@ public:
         RIGHT
     };
 
+
     gfx::math::Box2d get_geometry_size() const override;
     bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const override { return false; }
 
@@ -56,13 +57,70 @@ public:
 
     TextAlignment get_alignment() const { return alignment; }
 
-    inline void set_line_height_multiplier(const double multiplier) 
+    void set_smoothing_radius(const double radius) { smoothing_radius = radius; }
+    double get_smoothing_radius() const { return smoothing_radius; }
+
+    void set_line_height_multiplier(const double multiplier) 
     { 
         line_height_multiplier = multiplier; 
         set_size_dirty();
     }
 
     inline double get_line_height_multiplier() const { return line_height_multiplier; }
+
+    template<typename EmitPixel>
+    void rasterize_glyph_sdf(const std::vector<gfx::text::ContourEdge> &glyph, EmitPixel &&emit_pixel) const
+    {
+        if (glyph.empty())
+        {
+            return;
+        }
+
+        std::vector<EdgeData> edges = preprocess_edges(glyph);
+
+        auto bounds = gfx::math::Box2i::unexpanded();
+        for (const auto &e : glyph) 
+        {
+            bounds.expand(e.v0);
+            bounds.expand(e.v1);
+        }
+
+        for (int y = bounds.min.y - 1; y <= bounds.max.y + 1; ++y) 
+        {
+            for (int x = bounds.min.x - 1; x <= bounds.max.x + 1; ++x) 
+            {
+                gfx::math::Vec2d p { x + 0.5, y + 0.5 };
+
+                int winding = 0;
+                for (const auto &e : edges) 
+                {
+                    bool intersects_y { e.p0.y > p.y != e.p1.y > p.y };
+                    if (intersects_y)
+                    {
+                        double t = (p.y - e.p0.y) / (e.p1.y - e.p0.y);
+                        double x_cross = e.p0.x + t * (e.p1.x - e.p0.x);
+                        if (p.x < x_cross)
+                        {
+                            winding += (e.p1.y > e.p0.y) ? 1 : -1;
+                        }
+                    }
+                }
+                bool inside = (winding != 0);
+
+                double signed_distance { signed_distance_to_glyph(edges, p, inside) };
+
+                double coverage = coverage_from_sdf(signed_distance);
+
+                if (coverage > 0.0) 
+                {
+                    emit_pixel({ 
+                        { x, y }, 
+                        color.set_alpha(coverage_to_alpha(coverage))
+                    });
+                }
+            }
+        }
+    }
     
     template<typename EmitPixel>
     void rasterize_glyph(std::vector<gfx::text::ContourEdge> glyph, EmitPixel &&emit_pixel) const
@@ -72,77 +130,58 @@ public:
             return;
         }
 
-        gfx::math::Box2i bounds { glyph[0].v0.round(), glyph[0].v0.round() };
+        std::vector<EdgeData> edges = preprocess_edges(glyph);
 
-        for (auto &edge : glyph) 
+        auto bounds { gfx::math::Box2i::unexpanded() };
+
+        for (const auto &edge : glyph)
         {
             bounds.expand(edge.v0);
             bounds.expand(edge.v1);
         }
 
-        const int height = bounds.max.y - bounds.min.y + 1;
+        std::vector<std::vector<ETEntry>> edge_table {
+            build_edge_table(glyph, bounds)
+        };
 
-        std::vector<std::vector<size_t>> edge_table(height);
-
-        for (size_t i = 0; i < glyph.size(); ++i) 
-        {
-            const auto &edge = glyph[i];
-
-            if (edge.v0.y == edge.v1.y) 
-            {
-                continue;
-            }
-
-            int y0 = static_cast<int>(std::floor(std::min(edge.v0.y, edge.v1.y)));
-            int y1 = static_cast<int>(std::ceil(std::max(edge.v0.y, edge.v1.y)));
-
-            for (int y = y0; y < y1; ++y)
-            {
-                if (y >= bounds.min.y && y <= bounds.max.y)
-                {
-                    edge_table[y - bounds.min.y].push_back(i);
-                }
-            }
-        }
+        std::vector<ETEntry> AET;
 
         for (int y = bounds.min.y; y <= bounds.max.y; ++y)
         {
-            const auto &row_edges = edge_table[y - bounds.min.y];
-
-            if (row_edges.empty()) 
+            if (y - bounds.min.y < edge_table.size())
             {
-                continue;
-            }
-
-            std::vector<double> intersections;
-            intersections.reserve(row_edges.size());
-
-            for (size_t index : row_edges)
-            {
-                const auto &edge = glyph[index];
-
-                double y0 = edge.v0.y;
-                double y1 = edge.v1.y;
-
-                if ((y < y0 && y < y1) || (y >= y0 && y >= y1)) 
+                for (const auto &edge : edge_table[y - bounds.min.y])
                 {
-                    continue;
+                    AET.push_back(edge);
                 }
-
-                double t = (y - y0) / (y1 - y0);
-                intersections.push_back(edge.v0.x + t * (edge.v1.x - edge.v0.x));
             }
 
-            std::sort(intersections.begin(), intersections.end());
+            AET.erase(
+                std::remove_if(AET.begin(), AET.end(), [y](const ETEntry &e){ 
+                    return y >= e.y_max; 
+                }),
+                AET.end()
+            );
 
-            for (size_t i = 0; i + 1 < intersections.size(); i += 2)
+            std::sort(AET.begin(), AET.end(), [](const ETEntry &a, const ETEntry &b){ 
+                return a.x < b.x; 
+            });
+
+            for (int i = 0; i + 1 < AET.size(); i += 2)
             {
-                int x0 = static_cast<int>(std::ceil(intersections[i]));
-                int x1 = static_cast<int>(std::floor(intersections[i + 1]));
+                int x0 = static_cast<int>(std::ceil(AET[i].x));
+                int x1 = static_cast<int>(std::floor(AET[i + 1].x));
+
                 for (int x = x0; x <= x1; ++x)
                 {
-                    emit_pixel( { { x, y }, color });
+                    gfx::math::Vec2d p { x + 0.5, y + 0.5 };
+                    emit_pixel({ { x, y }, color });
                 }
+            }
+
+            for (auto &edge : AET)
+            {
+                edge.x += edge.dx;
             }
         }
     }
@@ -275,13 +314,45 @@ public:
                 edge.v1 = utils::transform_point(edge.v1, transform);
             }
 
-            rasterize_glyph(edges, emit_pixel);
+            if (smoothing_radius > 0.0)
+            {
+                rasterize_glyph_sdf(edges, emit_pixel);
+            }
+            else
+            {
+                rasterize_glyph(edges, emit_pixel);
+            }
+
             pen.x += font->get_glyph_advance(codepoint) * scale;
             i += bytes;
         }
     }
 
 private:
+
+    struct EdgeData
+    {
+        gfx::math::Vec2d p0;
+        gfx::math::Vec2d p1;
+        gfx::math::Vec2d dir;
+        gfx::math::Vec2d normal;
+        double inv_length_sq;
+    };
+
+    struct ETEntry 
+    {
+        double x;
+        double dx;
+        int y_max;
+    };
+
+    std::vector<EdgeData> preprocess_edges(const std::vector<gfx::text::ContourEdge> &edges) const;
+    std::vector<std::vector<ETEntry>> build_edge_table(const std::vector<gfx::text::ContourEdge> &edges, const gfx::math::Box2i &bounds) const;
+    bool point_inside_glyph(const std::vector<ETEntry> &edges, const gfx::math::Vec2d point) const;
+    double dist_to_segment(const EdgeData &edge_data, const gfx::math::Vec2d point) const;
+    double signed_distance_to_glyph(const std::vector<EdgeData> &edges, const gfx::math::Vec2d &point, const bool inside) const;
+    double coverage_from_sdf(const double signed_distance) const;
+    double coverage_to_alpha(const double coverage) const;
 
     void set_edges_dirty() { edges_dirty = true; }
     void set_size_dirty() { size_dirty = true; }
@@ -295,6 +366,8 @@ private:
 
     double font_size;
     double line_height_multiplier = 1.2;
+
+    double smoothing_radius = 0.0;
 
     mutable bool edges_dirty = true;
     mutable bool size_dirty = true;

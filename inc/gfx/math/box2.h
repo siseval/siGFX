@@ -74,6 +74,22 @@ public:
         };
     }
 
+    static constexpr Box2<T> infinite()
+    {
+        return Box2<T> {
+            Vec2<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() },
+            Vec2<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() }
+        };
+    }
+
+    static constexpr Box2<T> unexpanded()
+    {
+        return Box2<T> {
+            Vec2<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() },
+            Vec2<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() }
+        };
+    }
+
 };
 
 using Box2d = Box2<double>;

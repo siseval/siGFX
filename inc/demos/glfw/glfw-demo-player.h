@@ -1,7 +1,7 @@
 #ifndef GLFW_DEMO_PLAYER_H
 #define GLFW_DEMO_PLAYER_H
 
-#include <iostream>
+// #include <iostream>
 #include <gfx/core/render-2D.h>
 #include <gfx/surfaces/glfw/glfw-render-surface.h>
 #include <demos/common/core/demo-player.h>
@@ -17,7 +17,7 @@ public:
     GLFWDemoPlayer() : demos::common::core::DemoPlayer()
     {
         auto surface = std::make_shared<gfx::surfaces::GLFWRenderSurface>(gfx::math::Vec2i { 320, 200 });
-        renderer = std::make_shared<gfx::core::Render2D>(surface, gfx::math::Vec2d{ 1, 1 }, "/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts/EVA-Matisse_Classic.ttf");
+        renderer = std::make_shared<gfx::core::Render2D>(surface, gfx::math::Vec2d{ 1, 1 });
         glfwSetWindowUserPointer(surface->get_window(), this);
 
         glfwSetInputMode(surface->get_window(), GLFW_STICKY_KEYS, GLFW_TRUE);
@@ -44,31 +44,31 @@ public:
 
     void draw_info() override
     {
-        auto surface = std::dynamic_pointer_cast<gfx::surfaces::GLFWRenderSurface>
-            (renderer->get_render_surface());
-        gfx::math::Vec2i resolution = renderer->get_render_surface()->get_resolution();
-        std::string fps = std::to_string(static_cast<int>(demos[current_demo]->get_fps()));
-        while (fps.size() < 4)
-        {
-            fps = " " + fps;
-        }
-        int x, y;
-        glfwGetWindowSize(surface->get_window(), &x, &y);
-        surface->set_window_title(
-            "Demo [" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + "]" +
-            " :: " + std::to_string(resolution.x) + "x" + std::to_string(resolution.y) +
-            " :: " + fps + " FPS" +
-            " :: " + std::to_string(renderer->num_items()) + " items" +
-            "   [" + std::to_string(x) + "x" + std::to_string(y) + "]"
-
-        );
-
-        std::cout << "\033[2J\033[1;1H";
-        std::vector<std::string> debug_lines = demos[current_demo]->debug_text();
-        for (size_t i = 0; i < debug_lines.size(); ++i)
-        {
-            std::cout << debug_lines[i] << std::endl;
-        }
+        // auto surface = std::dynamic_pointer_cast<gfx::surfaces::GLFWRenderSurface>
+        //     (renderer->get_render_surface());
+        // gfx::math::Vec2i resolution = renderer->get_render_surface()->get_resolution();
+        // std::string fps = std::to_string(static_cast<int>(demos[current_demo]->get_fps()));
+        // while (fps.size() < 4)
+        // {
+        //     fps = " " + fps;
+        // }
+        // int x, y;
+        // glfwGetWindowSize(surface->get_window(), &x, &y);
+        // surface->set_window_title(
+        //     "Demo [" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + "]" +
+        //     " :: " + std::to_string(resolution.x) + "x" + std::to_string(resolution.y) +
+        //     " :: " + fps + " FPS" +
+        //     " :: " + std::to_string(renderer->num_items()) + " items" +
+        //     "   [" + std::to_string(x) + "x" + std::to_string(y) + "]"
+        //
+        // );
+        //
+        // std::cout << "\033[2J\033[1;1H";
+        // std::vector<std::string> debug_lines = demos[current_demo]->debug_text();
+        // for (size_t i = 0; i < debug_lines.size(); ++i)
+        // {
+        //     std::cout << debug_lines[i] << std::endl;
+        // }
     }
 
 private:

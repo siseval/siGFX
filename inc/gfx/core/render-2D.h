@@ -22,7 +22,7 @@ class Render2D
 
 public:
 
-    Render2D(std::shared_ptr<RenderSurface> surface, gfx::math::Vec2d viewport_scaling = gfx::math::Vec2d { 1, 1 }, std::string default_font_path = "") : 
+    Render2D(std::shared_ptr<RenderSurface> surface, gfx::math::Vec2d viewport_scaling = gfx::math::Vec2d { 1, 1 }) : 
         surface(surface), 
         scene_graph(std::make_shared<SceneGraph2D>()), 
         font_manager(std::make_shared<gfx::text::FontManagerTTF>()),

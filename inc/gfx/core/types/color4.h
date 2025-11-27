@@ -46,6 +46,16 @@ public:
         );
     }
 
+    Color4 set_alpha(uint8_t alpha) const
+    {
+        return Color4(r, g, b, alpha);
+    }
+
+    Color4 set_alpha(double alpha) const
+    {
+        return Color4(r, g, b, static_cast<uint8_t>(std::clamp(alpha * 255.0, 0.0, 255.0)));
+    }
+
     uint8_t r;
     uint8_t g;
     uint8_t b;

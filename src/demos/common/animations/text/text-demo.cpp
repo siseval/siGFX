@@ -116,15 +116,15 @@ void TextDemo::render_frame(const double dt)
 
     double scale = 3.0 + 1.2 * std::sin(time_ms * 0.002);
 
-    Color4 color {
-        0.5 + 0.5 * std::sin(t),
-        0.5 + 0.5 * std::sin(t + 2.0),
-        0.5 + 0.5 * std::sin(t + 4.0),
-        1.0
-    };
+    // Color4 color {
+    //     0.5 + 0.5 * std::sin(t),
+    //     0.5 + 0.5 * std::sin(t + 2.0),
+    //     0.5 + 0.5 * std::sin(t + 4.0),
+    //     1.0
+    // };
 
     text_item->set_scale(scale);
-    text_item->set_color(color);
+    // text_item->set_color(color);
     text_item->set_rotation_degrees(std::sin(t * 3.0) * 5.0);
 
     renderer->draw_frame();

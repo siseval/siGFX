@@ -140,6 +140,17 @@ public:
         return { static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) }; 
     }
 
+    static Vec2<int> floor(const Vec2<T> &v) 
+    { 
+        return { static_cast<int>(std::floor(v.x)), static_cast<int>(std::floor(v.y)) }; 
+    }
+
+    static Vec2<int> ceil(const Vec2<T> &v) 
+    { 
+        return { static_cast<int>(std::ceil(v.x)), static_cast<int>(std::ceil(v.y)) }; 
+    }
+    
+
     template <typename U>
     Vec2<T> operator+(const Vec2<U> &other) const 
     { 
