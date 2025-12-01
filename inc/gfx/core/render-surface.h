@@ -29,7 +29,7 @@ public:
 
         const int index = pos.y * resolution.x + pos.x;
 
-        frame_buffer->at(index) = std::byteswap(color.to_i32());
+        frame_buffer->data()[index] = std::byteswap(color.to_i32());
     }
 
     virtual void present() = 0;

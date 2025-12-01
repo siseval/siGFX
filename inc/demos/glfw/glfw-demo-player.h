@@ -16,8 +16,12 @@ public:
 
     GLFWDemoPlayer() : demos::common::core::DemoPlayer()
     {
-        auto surface = std::make_shared<gfx::surfaces::GLFWRenderSurface>(gfx::math::Vec2i { 320, 200 });
-        renderer = std::make_shared<gfx::core::Render2D>(surface, gfx::math::Vec2d{ 1, 1 });
+        const gfx::math::Vec2d resolution { 320, 200 };
+        const gfx::math::Vec2d viewport_scaling { 1, 1 };
+
+        auto surface = std::make_shared<gfx::surfaces::GLFWRenderSurface>(resolution);
+        renderer = std::make_shared<gfx::core::Render2D>(surface, viewport_scaling);
+
         glfwSetWindowUserPointer(surface->get_window(), this);
 
         glfwSetInputMode(surface->get_window(), GLFW_STICKY_KEYS, GLFW_TRUE);
