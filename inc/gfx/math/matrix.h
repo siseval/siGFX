@@ -1,9 +1,8 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#pragma once
 
 #include <functional>
 
-namespace gfx::math
+namespace gfx
 {
 
 template <typename T, int rows, int cols>
@@ -158,5 +157,3 @@ private:
 using Matrix3x3d = Matrix<double, 3, 3>;
 using Matrix3x1d = Matrix<double, 3, 1>;
 }
-
-#endif // MATRIX_H

@@ -1,15 +1,13 @@
-#include <demos/common/animations/video/video-demo.h>
-#include <demos/common/core/demo-utils.h>
 #include <gfx/primitives/bitmap-2D.h>
 #include <gfx/core/types/bitmap.h>
 
-namespace demos::common::animations::video
+#include "demos/common/animations/video/video-demo.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::math;
-using namespace gfx::primitives;
-using namespace gfx::core::types;
-using namespace demos::common::core;
+using namespace gfx;
 
 void VideoDemo::init()
 {
@@ -26,7 +24,7 @@ void VideoDemo::init()
 
 void VideoDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
 
     double fps = 60.0;

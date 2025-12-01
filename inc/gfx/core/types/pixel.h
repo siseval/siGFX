@@ -1,18 +1,15 @@
-#ifndef PIXEL_H
-#define PIXEL_H
+#pragma once
 
-#include <gfx/core/types/color4.h>
-#include <gfx/math/vec2.h>
+#include "gfx/core/types/color4.h"
+#include "gfx/math/vec2.h"
 
-namespace gfx::core::types
+namespace gfx
 {
 
 struct Pixel
 {
-    gfx::math::Vec2i position;
+    Vec2i position;
     Color4 color;
 };
 
 }
-
-#endif // PIXEL_H

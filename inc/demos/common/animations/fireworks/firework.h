@@ -1,13 +1,13 @@
-#ifndef FIREWORK_H
-#define FIREWORK_H
+#pragma once
 
 #include <gfx/core/render-2D.h>
-#include <gfx/math/vec2.h>
 #include <gfx/core/types/color4.h>
-#include <demos/common/animations/fireworks/particle.h>
-#include <demos/common/core/demo-utils.h>
+#include <gfx/math/vec2.h>
 
-namespace demos::common::animations::fireworks
+#include "demos/common/animations/fireworks/particle.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
 class Firework
@@ -18,9 +18,9 @@ public:
     void process(const double dt);
     void explode();
 
-    struct firework_options
+    struct FireworkOptions
     {
-        gfx::math::Vec2d size;
+        gfx::Vec2d size;
 
         int max_particles;
         double particle_size;
@@ -39,7 +39,7 @@ public:
         Done
     };
 
-    Firework(std::shared_ptr<gfx::core::Render2D> renderer, const gfx::math::Vec2d position, const gfx::math::Vec2d velocity, const firework_options &options, const std::vector<gfx::core::types::Color4> colors) : 
+    Firework(std::shared_ptr<gfx::Render2D> renderer, const gfx::Vec2d position, const gfx::Vec2d velocity, const FireworkOptions &options, const std::vector<gfx::Color4> colors) : 
         renderer(renderer), 
         position(position), 
         velocity(velocity), 
@@ -55,7 +55,7 @@ public:
         colors(colors),
         state(State::Ascending) 
     {
-        static std::vector<gfx::math::Vec2d> body_points { 
+        static std::vector<gfx::Vec2d> body_points { 
             { 0, 0 },
             { size.x, 0 },
             { size.x, size.y },
@@ -69,7 +69,7 @@ public:
         shape->set_rounded_corners(true);
         renderer->add_item(shape);
 
-        static std::vector<gfx::math::Vec2d> cap_points {
+        static std::vector<gfx::Vec2d> cap_points {
             { 0, -size.y * 1.1 },
             { size.x * 0.3, 0 },
             { 0, size.y * 1.1 }
@@ -79,10 +79,10 @@ public:
         cap->set_rounded_corners(true);
         renderer->add_item(cap, shape);
 
-        creation_time_ms = demos::common::core::utils::time_ms();
+        creation_time_ms = demos::time_ms();
     }
 
-    gfx::math::Vec2d start_velocity;
+    gfx::Vec2d start_velocity;
 
     int max_particles;
     double particle_size;
@@ -92,20 +92,20 @@ public:
 
     double smoke_size;
     double smoke_speed;
-    gfx::core::types::Color4 smoke_color { 210, 210, 210 };
+    gfx::Color4 smoke_color { 210, 210, 210 };
     double smoke_trail_interval_ms = 250.0;
     double last_smoke_time_ms;
     double smoke_angle_variation_degrees = 5.0;
     double smoke_x_factor = 5.0;
     std::vector<Particle> smoke_particles;
 
-    std::shared_ptr<gfx::core::Render2D> renderer;
-    std::shared_ptr<gfx::primitives::Polyline2D> shape;
-    gfx::math::Vec2d position;
-    gfx::math::Vec2d velocity;
+    std::shared_ptr<gfx::Render2D> renderer;
+    std::shared_ptr<gfx::Polyline2D> shape;
+    gfx::Vec2d position;
+    gfx::Vec2d velocity;
 
-    std::vector<gfx::core::types::Color4> colors;
-    gfx::math::Vec2d size;
+    std::vector<gfx::Color4> colors;
+    gfx::Vec2d size;
 
     std::vector<Particle> particles;
     State state;
@@ -125,5 +125,3 @@ private:
 };
 
 }
-
-#endif // FIREWORK_H

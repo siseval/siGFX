@@ -1,6 +1,6 @@
-#include <gfx/core/render-surface.h>
+#include "gfx/core/render-surface.h"
 
-namespace gfx::core
+namespace gfx
 {
 
 

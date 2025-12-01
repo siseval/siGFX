@@ -1,5 +1,5 @@
 set(GFX_UTILS_SOURCES
-    transform.cpp
+    log.cpp
 )
 
 add_library(gfx_utils STATIC ${GFX_UTILS_SOURCES})

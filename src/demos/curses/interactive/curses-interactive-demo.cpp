@@ -1,18 +1,14 @@
 #include <gfx/core/render-2D.h>
 #include <gfx/surfaces/curses/curses-render-surface.h>
-#include <demos/curses/curses-utils.h>
-#include <demos/common/interactive/interactive-demo.h>
-#include <demos/common/core/demo-utils.h>
 
-namespace demos::curses::interactive
+#include "demos/curses/curses-utils.h"
+#include "demos/common/interactive/interactive-demo.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace gfx::surfaces;
-using namespace demos::common::interactive;
+using namespace gfx;
 
 void run()
 {
@@ -20,7 +16,7 @@ void run()
     set_bold(true);
 
     auto surface { std::make_shared<CursesRenderSurface>(get_screen_size() * 2) };
-    InteractiveDemo demo(std::make_shared<gfx::core::Render2D>(surface, Vec2d { 2, 1 }));
+    InteractiveDemo demo(std::make_shared<gfx::Render2D>(surface, Vec2d { 2, 1 }));
 
     bool running = true;
 
@@ -54,6 +50,6 @@ void run()
 
 int main()
 {
-    demos::curses::interactive::run();
+    demos::run();
 }
 

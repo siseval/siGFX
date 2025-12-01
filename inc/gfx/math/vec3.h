@@ -1,11 +1,10 @@
-#ifndef VEC3_H
-#define VEC3_H
+#pragma once
 
 #include <numbers>
 #include <cmath>
 #include <functional>
 
-namespace gfx::math 
+namespace gfx
 {
 
 template <typename T>
@@ -208,12 +207,10 @@ using Vec3f = Vec3<float>;
 }
 
 template <typename T>
-struct std::hash<gfx::math::Vec3<T>>
+struct std::hash<gfx::Vec3<T>>
 {
-    size_t operator()(const gfx::math::Vec3<T>& vec) const
+    size_t operator()(const gfx::Vec3<T>& vec) const
     {
         return std::hash<T>()(vec.x) ^ (std::hash<T>()(vec.y) << 1) ^ (std::hash<T>()(vec.z) << 2);
     }
 };
-
-#endif // VEC3_H

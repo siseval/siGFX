@@ -1,5 +1,4 @@
-#ifndef DEMO_UTILS_H
-#define DEMO_UTILS_H
+#pragma once
 
 #include <locale.h>
 #include <string>
@@ -14,7 +13,7 @@
 #define BUTTON5_RELEASED NCURSES_MOUSE_MASK(5, NCURSES_BUTTON_RELEASED)
 #endif
 
-namespace demos::curses
+namespace demos
 {
 
 enum class default_color
@@ -30,7 +29,7 @@ enum class default_color
 };
 
 
-inline gfx::math::Vec2i get_screen_size()
+inline gfx::Vec2i get_screen_size()
 {
     int width, height;
     getmaxyx(stdscr, height, width);
@@ -59,7 +58,7 @@ inline void set_color(const enum default_color color)
     attron(COLOR_PAIR(color));
 }
 
-inline void add_str(const gfx::math::Vec2i pos, const std::string pixel)
+inline void add_str(const gfx::Vec2i pos, const std::string pixel)
 {
     mvaddstr(pos.y, pos.x, pixel.data());
 }
@@ -101,5 +100,3 @@ inline void end()
 }
 
 }
-
-#endif // DEMO_UTILS_H

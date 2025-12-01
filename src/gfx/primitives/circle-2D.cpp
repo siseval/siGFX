@@ -1,13 +1,8 @@
-#include <gfx/primitives/circle-2D.h>
-#include <gfx/utils/transform.h>
+#include "gfx/primitives/circle-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::math;
-using namespace gfx::core::types;
-
 
 Box2d Circle2D::get_geometry_size() const
 {
@@ -27,7 +22,7 @@ Box2d Circle2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { utils::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);
@@ -35,10 +30,10 @@ Box2d Circle2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
     return bounds;
 }
 
-bool Circle2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const
+bool Circle2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
 {
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-    Vec2d local_point { utils::transform_point(point, inverse_transform) - Vec2d(radius) };
+    Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+    Vec2d local_point { Transform::transform_point(point, inverse_transform) - Vec2d(radius) };
 
     return local_point.x * local_point.x + local_point.y * local_point.y <= radius * radius;
 }

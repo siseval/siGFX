@@ -1,13 +1,12 @@
 #include <algorithm>
 #include <utility>
 #include <stack>
-#include <gfx/core/scene-graph-2D.h>
-#include <gfx/math/matrix.h>
 
-namespace gfx::core
+#include "gfx/core/scene-graph-2D.h"
+#include "gfx/math/matrix.h"
+
+namespace gfx
 {
-
-using namespace gfx::math;
 
 bool SceneGraph2D::transforms_dirty() const
 {
@@ -100,7 +99,7 @@ std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> SceneGraph2D::g
     return draw_queue;
 }
 
-std::vector<std::pair<std::shared_ptr<Primitive2D>, gfx::math::Matrix3x3d>> SceneGraph2D::get_global_transforms()
+std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> SceneGraph2D::get_global_transforms()
 {
     if (transforms_dirty())
     {

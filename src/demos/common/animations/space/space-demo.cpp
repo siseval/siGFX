@@ -1,17 +1,14 @@
 #include <algorithm>
-#include <demos/common/animations/space/space-demo.h>
-#include <demos/common/animations/space/units.h>
-#include <demos/common/animations/space/simulations.h>
-#include <demos/common/core/demo-utils.h>
 
-namespace demos::common::animations::space
+#include "demos/common/animations/space/space-demo.h"
+#include "demos/common/animations/space/units.h"
+#include "demos/common/animations/space/simulate.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::core;
+using namespace gfx;
 
 void SpaceDemo::init()
 {
@@ -49,12 +46,12 @@ void SpaceDemo::init()
     renderer->add_item(left_bracket);
     renderer->add_item(right_bracket);
 
-    simulations::solar_system(*this);
+    Simulate::solar_system(*this);
 }
 
 void SpaceDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
 
     t_sec += dt;
@@ -71,7 +68,7 @@ void SpaceDemo::render_frame(const double dt)
     render_spawn_workflow();
 
     renderer->draw_frame();
-    last_frame_us = utils::time_us() - t0;
+    last_frame_us = time_us() - t0;
 }
 
 void SpaceDemo::handle_camera(const double dt, const double time_lerp)
@@ -431,7 +428,7 @@ void SpaceDemo::handle_input(const int input)
     }
 }
 
-void SpaceDemo::progress_spawn_workflow(const gfx::math::Vec2d pos)
+void SpaceDemo::progress_spawn_workflow(const gfx::Vec2d pos)
 {
     if (spawn_workflow_state == SpawnWorkflowState::Inactive)
     {
@@ -466,7 +463,7 @@ void SpaceDemo::cancel_spawn_workflow()
     spawn_workflow_state = SpawnWorkflowState::Inactive;
 }
 
-void SpaceDemo::report_mouse(const demos::common::core::MouseEvent event)
+void SpaceDemo::report_mouse(const demos::MouseEvent event)
 {
     mouse_pos = event.position * renderer->get_resolution();
     hover_mouse = true;
@@ -499,12 +496,12 @@ void SpaceDemo::report_mouse(const demos::common::core::MouseEvent event)
     }
 }
 
-gfx::math::Vec2d SpaceDemo::get_screen_pos(const gfx::math::Vec2d world_pos)
+gfx::Vec2d SpaceDemo::get_screen_pos(const gfx::Vec2d world_pos)
 {
     return units::metres_to_pixels(world_pos - view_bounds.min, view_bounds.size(), get_resolution());
 }
 
-gfx::math::Vec2d SpaceDemo::get_world_pos(const gfx::math::Vec2d screen_pos)
+gfx::Vec2d SpaceDemo::get_world_pos(const gfx::Vec2d screen_pos)
 {
     Vec2d resolution { get_resolution() };
     return view_bounds.min + Vec2d {
@@ -513,7 +510,7 @@ gfx::math::Vec2d SpaceDemo::get_world_pos(const gfx::math::Vec2d screen_pos)
     };
 }
 
-void SpaceDemo::set_view_pos(const gfx::math::Vec2d pos)
+void SpaceDemo::set_view_pos(const gfx::Vec2d pos)
 {
     Vec2d size { view_bounds.size() };
     view_bounds.min = pos - size * view_anchor;

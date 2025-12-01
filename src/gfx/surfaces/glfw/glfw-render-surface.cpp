@@ -1,13 +1,10 @@
 #include <iostream>
 #include <algorithm>
-#include <gfx/surfaces/glfw/glfw-render-surface.h>
 
-namespace gfx::surfaces
+#include "gfx/surfaces/glfw/glfw-render-surface.h"
+
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::math;
 
 int GLFWRenderSurface::init()
 {
@@ -113,7 +110,7 @@ void GLFWRenderSurface::clear_frame_buffer()
     std::fill(frame_buffer->begin(), frame_buffer->end(), 0);
 }
 
-void GLFWRenderSurface::resize(const gfx::math::Vec2i new_resolution)
+void GLFWRenderSurface::resize(const Vec2i new_resolution)
 {
     resolution = new_resolution;
     frame_buffer->resize(resolution.x * resolution.y, 0);

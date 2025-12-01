@@ -1,8 +1,8 @@
-#include <demos/glfw/glfw-demo-player.h>
+#include "demos/glfw/glfw-demo-player.h"
 
 int main()
 {
-    demos::glfw::GLFWDemoPlayer player;
+    demos::GLFWDemoPlayer player;
     player.init();
     player.run();
 }

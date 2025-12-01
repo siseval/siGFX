@@ -1,11 +1,10 @@
-#ifndef Color4_H
-#define Color4_H
+#pragma once
 
 #include <cstdint>
 #include <functional>
 #include <algorithm>
 
-namespace gfx::core::types
+namespace gfx
 {
 
 class Color4
@@ -124,13 +123,10 @@ public:
 }
 
 template <>
-struct std::hash<gfx::core::types::Color4>
+struct std::hash<gfx::Color4>
 {
-    size_t operator()(const gfx::core::types::Color4& color) const
+    size_t operator()(const gfx::Color4& color) const
     {
         return std::hash<uint8_t>()(color.r ^ (std::hash<uint8_t>()(color.g) << 1)) ^ (std::hash<uint8_t>()(color.b) << 2);
     }
 };
-
-
-#endif // Color4_H

@@ -1,12 +1,12 @@
 #include <algorithm>
-#include <demos/common/animations/space/camera.h>
-#include <demos/common/core/demo-utils.h>
 
-namespace demos::common::animations::space
+#include "demos/common/animations/space/camera.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::math;
-using namespace demos::common::core;
+using namespace gfx;
 
 void Camera::process(const double dt)
 {
@@ -75,16 +75,16 @@ void Camera::do_transition(const double dt)
     track_time += dt;
     const double t { std::clamp(track_time / track_duration, 0.0, 1.0) };
 
-    cur_pos = Vec2d::lerp(start_pos, end_pos, utils::ease_in_out_cubic(t));
+    cur_pos = Vec2d::lerp(start_pos, end_pos, ease_in_out_cubic(t));
 
     if (t < 0.5)
     {
-        const double zoom_t { utils::ease_in_out_cubic(t * 2.0) };
+        const double zoom_t { ease_in_out_cubic(t * 2.0) };
         size_cur = std::lerp(size0.x, zoom_out_size.x, zoom_t);
     }
     else
     {
-        const double zoom_t { utils::ease_in_out_cubic((t - 0.5) * 2.0) };
+        const double zoom_t { ease_in_out_cubic((t - 0.5) * 2.0) };
         size_cur = std::lerp(zoom_out_size.x, size1.x, zoom_t);
     }
     if (t >= 1.0)

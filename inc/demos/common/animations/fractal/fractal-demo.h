@@ -1,31 +1,29 @@
-#ifndef FRACTAL_DEMO_H
-#define FRACTAL_DEMO_H
+#pragma once
 
 #include <gfx/core/render-2D.h>
 #include <gfx/primitives/bitmap-2D.h>
-#include <demos/common/core/gfx-demo.h>
 #include <gfx/math/vec2.h>
 #include <gfx/math/box2.h>
-#include <demos/common/animations/fractal/fractal.h>
-#include <demos/common/animations/fractal/mandelbrot.h>
-#include <demos/common/animations/fractal/julia.h>
 
-namespace demos::common::animations::fractal
+#include "demos/common/core/gfx-demo.h"
+#include "demos/common/animations/fractal/julia.h"
+
+namespace demos
 {
 
-class FractalDemo : public demos::common::core::GfxDemo
+class FractalDemo : public demos::GfxDemo
 {
 
 public:
 
-    FractalDemo(const std::shared_ptr<gfx::core::Render2D> renderer)
+    FractalDemo(const std::shared_ptr<gfx::Render2D> renderer)
         : GfxDemo(renderer) {}
 
     void init() override;
     void render_frame(const double dt) override;
     void end() override;
     void handle_input(const int input) override;
-    void report_mouse(const demos::common::core::MouseEvent event) override;
+    void report_mouse(const demos::MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
@@ -41,13 +39,13 @@ private:
 
     bool is_inside_cardioid_or_bulb(double re, double im);
     void zoom(const double factor);
-    void pan(const gfx::math::Vec2d acceleration);
+    void pan(const gfx::Vec2d acceleration);
     void set_a_frequency(const double freq);
     void update_view(const double dt);
     void handle_mouse_pan(const double dt);
-    inline gfx::math::Vec2d screen_to_world(const gfx::math::Vec2d pos)
+    inline gfx::Vec2d screen_to_world(const gfx::Vec2d pos)
     {
-        gfx::math::Vec2d resolution { renderer->get_resolution() };
+        gfx::Vec2d resolution { renderer->get_resolution() };
         return {
             view.min.x + (static_cast<double>(cursor_pos.x) / resolution.x) * (view.max.x - view.min.x),
             view.min.y + (static_cast<double>(cursor_pos.y) / resolution.y) * (view.max.y - view.min.y)
@@ -55,22 +53,22 @@ private:
     }
 
     Julia fractal;
-    std::shared_ptr<gfx::primitives::Bitmap2D> bitmap;
-    gfx::math::Box2d view { { -2.0, -1.0 }, { 1.0, 1.0 } };
+    std::shared_ptr<gfx::Bitmap2D> bitmap;
+    gfx::Box2d view { { -2.0, -1.0 }, { 1.0, 1.0 } };
     double a { 0 };
     double a_frequency { 0.01 };
     bool paused { false };
 
     int num_colors { 1000 };
-    std::vector<gfx::core::types::Color4> colors;
-    gfx::core::types::Color4 color0 { 0, 50, 255 };
-    gfx::core::types::Color4 color1 { 255, 255, 150 };
-    gfx::core::types::Color4 color2 { 255, 255, 255 };
+    std::vector<gfx::Color4> colors;
+    gfx::Color4 color0 { 0, 50, 255 };
+    gfx::Color4 color1 { 255, 255, 150 };
+    gfx::Color4 color2 { 255, 255, 255 };
 
-    gfx::math::Vec2d cursor_pos { 0, 0 };
+    gfx::Vec2d cursor_pos { 0, 0 };
     double mouse_pan_sensitivity { 0.001 };
 
-    gfx::math::Vec2d pan_velocity { 0, 0 };
+    gfx::Vec2d pan_velocity { 0, 0 };
     double mouse_pan_threshold { 0.4 };
     double zoom_velocity { 0.0 };
 
@@ -83,5 +81,3 @@ private:
 };
 
 }
-
-#endif // FRACTAL_DEMO_H

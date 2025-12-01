@@ -1,13 +1,11 @@
 #include <map>
 #include <fstream>
-#include <gfx/text/font-manager-ttf.h>
-#include <gfx/text/font-ttf.h>
-#include <gfx/math/vec2.h>
 
-namespace gfx::text
+#include "gfx/text/font-manager-ttf.h"
+#include "gfx/text/font-ttf.h"
+
+namespace gfx
 {
-
-using namespace gfx::math;
 
 static int16_t read_s16(const std::uint8_t* data)
 {
@@ -247,7 +245,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
         return nullptr;
     }
 
-    std::vector<std::shared_ptr<GlyphTTF>> glyphs;
+    std::vector<std::shared_ptr<FontTTF::GlyphTTF>> glyphs;
     for (int i = 0; i < num_glyphs; ++i)
     {
         uint32_t offset_start { glyph_offsets[i] };
@@ -256,7 +254,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
         if (glyph_length == 0)
         {
-            glyphs.push_back(std::make_shared<GlyphTTF>());
+            glyphs.push_back(std::make_shared<FontTTF::GlyphTTF>());
             continue;
         }
 
@@ -270,7 +268,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
         glyphs.push_back(parse_glyph(glyf_table, glyph_offsets, i, index_to_loc_format == 1));
     }
 
-    std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> codepoint_to_glyph;
+    std::unordered_map<uint32_t, std::shared_ptr<FontTTF::GlyphTTF>> codepoint_to_glyph;
     for (const auto& [codepoint, glyph_index] : codepoint_to_index)
     {
         if (glyph_index < glyphs.size())
@@ -348,7 +346,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
         return nullptr;
     }
 
-    std::vector<GlyphMetrics> glyph_metrics(num_glyphs);
+    std::vector<FontTTF::GlyphMetrics> glyph_metrics(num_glyphs);
 
     for (uint16_t i = 0; i < number_of_h_metrics; ++i)
     {
@@ -457,9 +455,9 @@ std::vector<uint32_t> FontManagerTTF::parse_loca_table(const std::uint8_t* loca_
     return offsets;
 }
 
-std::shared_ptr<GlyphTTF> FontManagerTTF::parse_glyph(const std::uint8_t* glyf_table, const std::vector<uint32_t> &glyph_offsets, const uint16_t glyph_index, bool loca_long_format)
+std::shared_ptr<FontTTF::GlyphTTF> FontManagerTTF::parse_glyph(const std::uint8_t* glyf_table, const std::vector<uint32_t> &glyph_offsets, const uint16_t glyph_index, bool loca_long_format)
 {
-    std::shared_ptr<GlyphTTF> glyph { std::make_shared<GlyphTTF>() };
+    std::shared_ptr<FontTTF::GlyphTTF> glyph { std::make_shared<FontTTF::GlyphTTF>() };
 
     uint32_t offset_start { glyph_offsets[glyph_index] };
     uint32_t offset_end { glyph_offsets[glyph_index + 1] };

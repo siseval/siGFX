@@ -1,24 +1,22 @@
-#ifndef CIRCLE_2D_H
-#define CIRCLE_2D_H
+#pragma once
 
-#include <gfx/core/render-surface.h>
-#include <gfx/core/primitive-2D.h>
-#include <gfx/math/box2.h>
-#include <gfx/math/matrix.h>
-#include <gfx/utils/transform.h>
+#include "gfx/core/primitive-2D.h"
+#include "gfx/math/box2.h"
+#include "gfx/math/matrix.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
 
-class Circle2D : public gfx::core::PrimitiveTemplate<Circle2D>
+class Circle2D : public PrimitiveTemplate<Circle2D>
 {
 
 public:
 
-    gfx::math::Box2d get_geometry_size() const override;
-    gfx::math::Box2d get_axis_aligned_bounding_box(const gfx::math::Matrix3x3d &transform) const override;
+    Box2d get_geometry_size() const override;
+    Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const override;
 
-    bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const override;
+    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override;
 
     inline double get_radius() const { return radius; }
     inline void set_radius(const double r) { radius = r; set_obb_dirty(); }
@@ -30,7 +28,7 @@ public:
     inline void set_filled(const bool f) { filled = f; }
 
     template<typename EmitPixel>
-    void rasterize(const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         if (radius <= 0)
         {
@@ -38,18 +36,18 @@ public:
         }
 
         double line_extent { line_thickness / 2.0 };
-        gfx::math::Box2d AABB { get_axis_aligned_bounding_box(transform) };
-        gfx::math::Matrix3x3d inverse_transform { utils::invert_affine(transform) };
+        Box2d AABB { get_axis_aligned_bounding_box(transform) };
+        Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
         for (int y = AABB.min.y; y <= AABB.max.y; y++)
         {
             for (int x = AABB.min.x; x <= AABB.max.x; x++)
             {
-                gfx::math::Vec2d pos { 
-                    utils::transform_point(
-                        gfx::math::Vec2d { 
+                Vec2d pos { 
+                    Transform::transform_point(
+                        Vec2d { 
                             static_cast<double>(x) , 
                             static_cast<double>(y) 
-                        }, inverse_transform) - gfx::math::Vec2d(radius) 
+                        }, inverse_transform) - Vec2d(radius) 
                 };
 
                 double r_outer { radius + line_extent };
@@ -59,7 +57,7 @@ public:
 
                 if (distance <= r_outer && (get_filled() || distance >= r_inner))
                 {
-                    emit_pixel(gfx::core::types::Pixel { { x, y }, get_color() });
+                    emit_pixel(Pixel { { x, y }, get_color() });
                     continue;
                 }
             }
@@ -75,5 +73,3 @@ private:
 };
 
 };
-
-#endif // CIRCLE_2D_H

@@ -1,12 +1,11 @@
-#ifndef VEC2_H
-#define VEC2_H
+#pragma once
 
 #include <numbers>
 #include <cstdint>
 #include <cmath>
 #include <functional>
 
-namespace gfx::math 
+namespace gfx
 {
 
 template <typename T>
@@ -259,13 +258,10 @@ using Vec2f = Vec2<float>;
 }
 
 template <typename T>
-struct std::hash<gfx::math::Vec2<T>>
+struct std::hash<gfx::Vec2<T>>
 {
-    size_t operator()(const gfx::math::Vec2<T>& vec) const
+    size_t operator()(const gfx::Vec2<T>& vec) const
     {
         return std::hash<T>()(vec.x) ^ (std::hash<T>()(vec.y) << 1);
     }
 };
-
-
-#endif // VEC2_H

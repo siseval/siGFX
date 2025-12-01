@@ -1,10 +1,9 @@
-#ifndef MANDELBROT_H
-#define MANDELBROT_H
+#pragma once
 
 #include <complex>
 #include <demos/common/animations/fractal/fractal.h>
 
-namespace demos::common::animations::fractal
+namespace demos
 {
 
 class Mandelbrot : public Fractal
@@ -26,6 +25,3 @@ public:
 };
 
 }
-
-#endif // MANDELBROT_H
-

@@ -1,20 +1,15 @@
-#include <demos/common/animations/shader/shader-demo.h>
-#include <demos/common/core/demo-utils.h>
 #include <gfx/shaders/test-shader.h>
 
-namespace demos::common::animations::shader
+#include "demos/common/animations/shader/shader-demo.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::core;
+using namespace gfx;
 
-gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D &input) const
+gfx::Color4 WaterSurfaceShader::frag(const gfx::ShaderInput2D &input) const
 {
-    using namespace gfx::core::types;
-
     constexpr double wave_freq = 20.0;
     constexpr double wave_speed = 3.0;
     constexpr double dist_falloff = 4.0;
@@ -22,7 +17,7 @@ gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D
     constexpr double fade_decay = 7.0;
     constexpr double base_brightness = 2.0;
 
-    double global_time_sec { utils::time_ms() / 1000.0 };
+    double global_time_sec { time_ms() / 1000.0 };
     Vec2d uv { input.uv };
     Vec2d center { 0.5, 0.5 };
 
@@ -34,7 +29,7 @@ gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D
         double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
         double t { ripple_time_sec / ripple_lifetime_sec };
 
-        double fade_in { utils::smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
+        double fade_in { smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
 
         double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
         double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
@@ -42,7 +37,7 @@ gfx::core::types::Color4 WaterSurfaceShader::frag(const gfx::core::ShaderInput2D
         ripple_amount += wave * falloff * amp_scale * fade_in;
     }
 
-    ripple_amount = utils::inv_lerp(-0.05, 0.05, ripple_amount);
+    ripple_amount = inv_lerp(-0.05, 0.05, ripple_amount);
     ripple_amount = fmod(ripple_amount, 1.0);
 
     return base_color + Color4(std::fmod(ripple_amount, 1.0));
@@ -77,7 +72,7 @@ void ShaderDemo::update_ripples(const double dt)
     std::vector<std::shared_ptr<Ripple>> to_remove;
     for (auto& ripple_center : shader->ripples)
     {
-        if (utils::time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
+        if (time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
         {
             to_remove.push_back(ripple_center);
         }
@@ -94,7 +89,7 @@ void ShaderDemo::update_ripples(const double dt)
 
 void ShaderDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
 
     update_ripples(dt);
 
@@ -121,8 +116,8 @@ void ShaderDemo::render_frame(const double dt)
 Vec2d ShaderDemo::get_random_position()
 {
     Vec2d resolution { get_resolution() };
-    double x = utils::random_double(0.0, static_cast<double>(resolution.x));
-    double y = utils::random_double(0.0, static_cast<double>(resolution.y));
+    double x = random_double(0.0, static_cast<double>(resolution.x));
+    double y = random_double(0.0, static_cast<double>(resolution.y));
     return Vec2d { x, y };
 }
 
@@ -130,7 +125,7 @@ void ShaderDemo::spawn_ripple(const Vec2d position)
 {
     auto ripple = std::make_shared<Ripple>();
     ripple->center = quad->get_uv(position);
-    ripple->start_time = utils::time_ms();
+    ripple->start_time = time_ms();
     shader->ripples.push_back(ripple);
 }
 

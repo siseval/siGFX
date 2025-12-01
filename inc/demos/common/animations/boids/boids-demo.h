@@ -1,33 +1,33 @@
-#ifndef BOIDS_DEMO_H
-#define BOIDS_DEMO_H
+#pragma once
 
 #include <gfx/core/render-2D.h>
-#include <demos/common/core/gfx-demo.h>
 
-namespace demos::common::animations::boids
+#include "demos/common/core/gfx-demo.h"
+
+namespace demos
 {
 
 struct Boid
 {
-    gfx::math::Vec2d position;
-    gfx::math::Vec2d velocity;
+    gfx::Vec2d position;
+    gfx::Vec2d velocity;
 
-    std::shared_ptr<gfx::primitives::Polyline2D> shape;
+    std::shared_ptr<gfx::Polyline2D> shape;
 };
 
-class BoidsDemo : public demos::common::core::GfxDemo
+class BoidsDemo : public demos::GfxDemo
 {
 
 public:
 
-    BoidsDemo(const std::shared_ptr<gfx::core::Render2D> renderer)
+    BoidsDemo(const std::shared_ptr<gfx::Render2D> renderer)
         : GfxDemo(renderer) {}
 
     void init() override;
     void render_frame(const double dt) override;
     void end() override;
     void handle_input(const int input) override;
-    void report_mouse(const demos::common::core::MouseEvent event) override;
+    void report_mouse(const demos::MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
@@ -39,11 +39,11 @@ public:
 
 private: 
 
-    gfx::math::Vec2d alignment(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::math::Vec2d cohesion(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::math::Vec2d separation(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::math::Vec2d centering(const std::shared_ptr<Boid> boid);
-    gfx::math::Vec2d mouse_avoidance(const std::shared_ptr<Boid> boid);
+    gfx::Vec2d alignment(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
+    gfx::Vec2d cohesion(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
+    gfx::Vec2d separation(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
+    gfx::Vec2d centering(const std::shared_ptr<Boid> boid);
+    gfx::Vec2d mouse_avoidance(const std::shared_ptr<Boid> boid);
     void apply_behaviors(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors, const double dt);
 
     void wrap_position(const std::shared_ptr<Boid> boid);
@@ -54,11 +54,11 @@ private:
     void process_boids(const double dt);
     void render_boids();
 
-    void spawn_boid(const gfx::math::Vec2d position, const gfx::math::Vec2d velocity);
+    void spawn_boid(const gfx::Vec2d position, const gfx::Vec2d velocity);
     void spawn_boid();
     void remove_boid(const std::shared_ptr<Boid> boid);
 
-    gfx::math::Vec2d mouse_position;
+    gfx::Vec2d mouse_position;
     bool mouse_active = false;
     double mouse_influence_radius = 100.0;
 
@@ -80,12 +80,10 @@ private:
 
     double bounds_margin_fraction = 0.2;
 
-    gfx::core::types::Color4 slow_color { 0.5, 0.8, 1.0 };
-    gfx::core::types::Color4 fast_color { 1.0, 0.6, 0.6 };
-    std::vector<gfx::core::types::Color4> boid_palette;
+    gfx::Color4 slow_color { 0.5, 0.8, 1.0 };
+    gfx::Color4 fast_color { 1.0, 0.6, 0.6 };
+    std::vector<gfx::Color4> boid_palette;
     int num_boid_colors = 120;
 };
 
 }
-
-#endif // BOIDS_DEMO_H

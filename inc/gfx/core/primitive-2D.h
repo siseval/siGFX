@@ -1,22 +1,21 @@
-#ifndef PRIMITIVE_2D_H
-#define PRIMITIVE_2D_H
+#pragma once
 
 #include <algorithm>
-#include <gfx/core/types/pixel.h>
-#include <gfx/core/types/color4.h>
-#include <gfx/core/types/obb-2D.h>
-#include <gfx/core/shader-2D.h>
-#include <gfx/core/render-surface.h>
-#include <gfx/utils/uuid.h>
-#include <gfx/math/box2.h>
-#include <gfx/math/matrix.h>
 
-namespace gfx::core
+#include "gfx/core/types/pixel.h"
+#include "gfx/core/types/color4.h"
+#include "gfx/core/types/obb-2D.h"
+#include "gfx/core/shader-2D.h"
+#include "gfx/core/types/uuid.h"
+#include "gfx/math/box2.h"
+#include "gfx/math/matrix.h"
+
+namespace gfx
 {
 
 struct EmitterBase 
 {
-    virtual void emit(const types::Pixel&) = 0;
+    virtual void emit(const Pixel&) = 0;
 };
 
 template<class F>
@@ -24,7 +23,7 @@ struct Emitter : EmitterBase
 {
     F func;
     explicit Emitter(F f) : func(f) {}
-    void emit(const types::Pixel& p) override { func(p); }
+    void emit(const Pixel& p) override { func(p); }
 };
 
 class Primitive2D
@@ -32,46 +31,46 @@ class Primitive2D
 
 public:
 
-    Primitive2D() : id(gfx::utils::UUID::generate()) {}
+    Primitive2D() : id(UUID::generate()) {}
 
     template<class Emit>
-    void rasterize(const gfx::math::Matrix3x3d& M, Emit&& emit) const 
+    void rasterize(const Matrix3x3d& M, Emit&& emit) const 
     {
         Emitter<std::decay_t<Emit>> wrapper(std::forward<Emit>(emit));
         rasterize_erased(M, wrapper);
     }
 
-    gfx::core::types::OBB2D get_oriented_bounding_box(const gfx::math::Matrix3x3d &transform) const;
-    virtual gfx::math::Box2d get_geometry_size() const = 0;
-    virtual gfx::math::Box2d get_axis_aligned_bounding_box(const gfx::math::Matrix3x3d &transform) const;
+    OBB2D get_oriented_bounding_box(const Matrix3x3d &transform) const;
+    virtual Box2d get_geometry_size() const = 0;
+    virtual Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const;
 
-    gfx::math::Vec2d get_uv(const gfx::math::Vec2d point) const;
+    Vec2d get_uv(const Vec2d point) const;
 
     inline bool is_obb_dirty() const { return obb_dirty; }
     inline void set_obb_dirty() { obb_dirty = true; }
 
-    inline void set_shader(const std::shared_ptr<gfx::core::Shader2D> &shd) { shader = shd; }
-    inline std::shared_ptr<gfx::core::Shader2D> get_shader() const { return shader; }
+    inline void set_shader(const std::shared_ptr<Shader2D> &shd) { shader = shd; }
+    inline std::shared_ptr<Shader2D> get_shader() const { return shader; }
 
     inline void set_use_shader(const bool use) { use_shader = use; }
     inline bool get_use_shader() const { return use_shader; }
 
-    virtual bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const = 0;
-    inline bool point_collides(const double x, const double y, const gfx::math::Matrix3x3d &transform) const
+    virtual bool point_collides(const Vec2d point, const Matrix3x3d &transform) const = 0;
+    inline bool point_collides(const double x, const double y, const Matrix3x3d &transform) const
     {
-        return point_collides(gfx::math::Vec2d { x, y }, transform);
+        return point_collides(Vec2d { x, y }, transform);
     }
 
-    gfx::math::Matrix3x3d get_transform() const;
+    Matrix3x3d get_transform() const;
 
-    inline gfx::utils::UUID get_id() const { return id; }
+    inline UUID get_id() const { return id; }
 
-    inline types::Color4 get_color() const { return color; }
-    inline void set_color(const types::Color4 col) { color = col; }
-    inline void set_color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255) { color = types::Color4 { r, g, b, a }; }
+    inline Color4 get_color() const { return color; }
+    inline void set_color(const Color4 col) { color = col; }
+    inline void set_color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255) { color = Color4 { r, g, b, a }; }
     inline void set_color(const double r, const double g, const double b, const double a = 1.0) 
     { 
-        color = types::Color4 { 
+        color = Color4 { 
             static_cast<uint8_t>(std::clamp(r * 255.0, 0.0, 255.0)), 
             static_cast<uint8_t>(std::clamp(g * 255.0, 0.0, 255.0)), 
             static_cast<uint8_t>(std::clamp(b * 255.0, 0.0, 255.0)), 
@@ -79,11 +78,11 @@ public:
         }; 
     }
 
-    inline gfx::math::Box2d get_bounds() const { return bounds; }
-    inline gfx::math::Vec2d get_bounds_size() const { return bounds.size(); }
+    inline Box2d get_bounds() const { return bounds; }
+    inline Vec2d get_bounds_size() const { return bounds.size(); }
 
-    inline gfx::math::Vec2d get_anchor() const { return anchor; }
-    inline void set_anchor(const gfx::math::Vec2d pos) 
+    inline Vec2d get_anchor() const { return anchor; }
+    inline void set_anchor(const Vec2d pos) 
     { 
         anchor = pos; 
         increment_transform_version(); 
@@ -92,7 +91,7 @@ public:
     }
     inline void set_anchor(const double x, const double y) 
     { 
-        anchor = gfx::math::Vec2d { x, y }; 
+        anchor = Vec2d { x, y }; 
         increment_transform_version(); 
         set_obb_dirty();
         set_transform_dirty();
@@ -101,8 +100,8 @@ public:
     inline int get_depth() const { return depth; }
     inline void set_depth(const int d) { depth = d; }
 
-    inline gfx::math::Vec2d get_position() const { return position; }
-    inline void set_position(const gfx::math::Vec2d pos) 
+    inline Vec2d get_position() const { return position; }
+    inline void set_position(const Vec2d pos) 
     { 
         position = pos; 
         increment_transform_version(); 
@@ -111,14 +110,14 @@ public:
     }
     inline void set_position(const double x, const double y) 
     { 
-        position = gfx::math::Vec2d { x, y }; 
+        position = Vec2d { x, y }; 
         increment_transform_version(); 
         set_obb_dirty(); 
         set_transform_dirty();
     }
     
-    inline gfx::math::Vec2f get_scale() const { return scale; }
-    inline void set_scale(const gfx::math::Vec2d s) 
+    inline Vec2f get_scale() const { return scale; }
+    inline void set_scale(const Vec2d s) 
     { 
         scale = s; 
         increment_transform_version(); 
@@ -127,14 +126,14 @@ public:
     }
     inline void set_scale(const double sx, const double sy) 
     { 
-        scale = gfx::math::Vec2d { sx, sy }; 
+        scale = Vec2d { sx, sy }; 
         increment_transform_version(); 
         set_obb_dirty(); 
         set_transform_dirty();
     }
     inline void set_scale(const double s) 
     { 
-        scale = gfx::math::Vec2d { s, s }; 
+        scale = Vec2d { s, s }; 
         increment_transform_version(); 
         set_obb_dirty(); 
         set_transform_dirty();
@@ -171,32 +170,32 @@ public:
 
 protected:
 
-    gfx::utils::UUID id;
-    std::shared_ptr<gfx::core::Shader2D> shader;
+    UUID id;
+    std::shared_ptr<Shader2D> shader;
     bool use_shader = false;
 
-    types::Color4 color;
+    Color4 color;
 
-    gfx::math::Box2d bounds;
-    gfx::math::Vec2d position;
-    gfx::math::Vec2d anchor { 0.0, 0.0 };
-    gfx::math::Vec2d scale { 1.0, 1.0 };
+    Box2d bounds;
+    Vec2d position;
+    Vec2d anchor { 0.0, 0.0 };
+    Vec2d scale { 1.0, 1.0 };
 
     bool fill = false;
     bool visible = true;
     double rotation = 0.0;
     int depth = 0;
 
-    mutable types::OBB2D cached_obb;
+    mutable OBB2D cached_obb;
     mutable bool obb_dirty = true;
 
-    mutable gfx::math::Matrix3x3d cached_transform;
+    mutable Matrix3x3d cached_transform;
     mutable bool transform_dirty = true;
     int64_t transform_version = -1;
 
 private:
 
-    virtual void rasterize_erased(const gfx::math::Matrix3x3d&, EmitterBase&) const = 0;
+    virtual void rasterize_erased(const Matrix3x3d&, EmitterBase&) const = 0;
 };
 
 
@@ -206,28 +205,25 @@ class PrimitiveTemplate : public Primitive2D
 
 private:
 
-    void rasterize_erased(const gfx::math::Matrix3x3d& transform, EmitterBase& emit_pixel) const override 
+    void rasterize_erased(const Matrix3x3d& transform, EmitterBase& emit_pixel) const override 
     {
         static_cast<const Derived*>(this)
-            ->rasterize(transform, [&](const types::Pixel& pixel) { emit_pixel.emit(pixel); });
+            ->rasterize(transform, [&](const Pixel& pixel) { emit_pixel.emit(pixel); });
     }
 };
 
 };
 
 template <>
-struct std::hash<gfx::core::Primitive2D>
+struct std::hash<gfx::Primitive2D>
 {
-    size_t operator()(const gfx::core::Primitive2D& item) const
+    size_t operator()(const gfx::Primitive2D& item) const
     {
-        int64_t hash = std::hash<gfx::math::Vec2d>()(item.get_position());
-        hash ^= (std::hash<gfx::math::Vec2d>()(item.get_scale()) << 1);
+        int64_t hash = std::hash<gfx::Vec2d>()(item.get_position());
+        hash ^= (std::hash<gfx::Vec2d>()(item.get_scale()) << 1);
         hash ^= (std::hash<double>()(item.get_rotation()) << 1);
         hash ^= (std::hash<int>()(item.get_depth()) << 1);
 
         return hash;
     }
 };
-
-
-#endif // PRIMITIVE_2D_H

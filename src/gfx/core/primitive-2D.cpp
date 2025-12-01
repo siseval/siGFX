@@ -1,11 +1,8 @@
-#include <gfx/core/primitive-2D.h>
-#include <gfx/utils/transform.h>
+#include "gfx/core/primitive-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::core
+namespace gfx
 {
-
-using namespace gfx::core::types;
-using namespace gfx::math;
 
 Box2d Primitive2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
 {
@@ -19,7 +16,7 @@ Box2d Primitive2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) co
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { utils::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);
@@ -42,9 +39,9 @@ OBB2D Primitive2D::get_oriented_bounding_box(const Matrix3x3d &transform) const
         { 0, extent.max.y - extent.min.y }
     };
    
-    bounds.origin = utils::transform_point(bounds.origin, transform);
-    bounds.side_x = utils::transform_vector(bounds.side_x, transform);
-    bounds.side_y = utils::transform_vector(bounds.side_y, transform);
+    bounds.origin = Transform::transform_point(bounds.origin, transform);
+    bounds.side_x = Transform::transform_vector(bounds.side_x, transform);
+    bounds.side_y = Transform::transform_vector(bounds.side_y, transform);
 
     cached_obb = bounds;
     obb_dirty = false;
@@ -68,10 +65,10 @@ Matrix3x3d Primitive2D::get_transform() const
     Vec2d size { get_geometry_size().size() };
     Vec2d anchor_offset { get_anchor() * size };
 
-    Matrix3x3d anchor_translation_matrix { utils::translate(-anchor_offset) };
-    Matrix3x3d scale_matrix { utils::scale(scale) };
-    Matrix3x3d rotation_matrix { utils::rotate(rotation) };
-    Matrix3x3d position_translation_matrix { utils::translate(get_position()) };
+    Matrix3x3d anchor_translation_matrix { Transform::translate(-anchor_offset) };
+    Matrix3x3d scale_matrix { Transform::scale(scale) };
+    Matrix3x3d rotation_matrix { Transform::rotate(rotation) };
+    Matrix3x3d position_translation_matrix { Transform::translate(get_position()) };
 
     cached_transform = position_translation_matrix * rotation_matrix * scale_matrix * anchor_translation_matrix;
     transform_dirty = false;

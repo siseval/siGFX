@@ -1,9 +1,8 @@
-#ifndef BOX2D_H
-#define BOX2D_H
+#pragma once
 
-#include <gfx/math/vec2.h>
+#include "gfx/math/vec2.h"
 
-namespace gfx::math
+namespace gfx
 {
 
 template <typename T>
@@ -64,7 +63,7 @@ public:
         expand(box.max);
     }
 
-    inline std::vector<gfx::math::Vec2<T>> get_corners() const
+    inline std::vector<Vec2<T>> get_corners() const
     {
         return {
             Vec2<T> { min.x, min.y },
@@ -96,7 +95,3 @@ using Box2d = Box2<double>;
 using Box2i = Box2<int32_t>;
 
 }
-
-#endif // BOX2D_H
-
-

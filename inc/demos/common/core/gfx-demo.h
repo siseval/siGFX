@@ -1,10 +1,9 @@
-#ifndef GFX_DEMO_H
-#define GFX_DEMO_H
+#pragma once
 
 #include <string>
 #include <gfx/core/render-2D.h>
 
-namespace demos::common::core
+namespace demos
 {
 
 enum class MouseEventType
@@ -21,7 +20,7 @@ enum class MouseEventType
 struct MouseEvent
 {
     MouseEventType type;
-    gfx::math::Vec2d position;
+    gfx::Vec2d position;
 };
 
 class GfxDemo
@@ -29,7 +28,7 @@ class GfxDemo
 
 public:
 
-    GfxDemo(const std::shared_ptr<gfx::core::Render2D> renderer)
+    GfxDemo(const std::shared_ptr<gfx::Render2D> renderer)
         : renderer(renderer) {}
 
     virtual void init() = 0;
@@ -40,8 +39,8 @@ public:
 
     virtual std::vector<std::string> debug_text() { return {}; }
 
-    inline std::shared_ptr<gfx::core::Render2D> get_renderer() const { return renderer; }
-    inline gfx::math::Vec2i get_resolution() const { return renderer->get_resolution(); }
+    inline std::shared_ptr<gfx::Render2D> get_renderer() const { return renderer; }
+    inline gfx::Vec2i get_resolution() const { return renderer->get_resolution(); }
 
     inline double get_fps() const 
     { 
@@ -59,15 +58,13 @@ public:
     }
 
     inline void set_last_frame_us(const double us) { last_frame_us = us; }
-    inline virtual gfx::core::types::Color4 get_clear_color() const { return gfx::core::types::Color4(0.2, 0.2, 0.2); }
+    inline virtual gfx::Color4 get_clear_color() const { return gfx::Color4(0.2, 0.2, 0.2); }
 
 protected:
 
 
-    std::shared_ptr<gfx::core::Render2D> renderer;
+    std::shared_ptr<gfx::Render2D> renderer;
     double last_frame_us = 0.0;
 };
 
 }
-
-#endif // GFX_DEMO_H

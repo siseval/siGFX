@@ -1,10 +1,8 @@
 set(DEMOS_COMMON_ANIMATIONS_SPACE_SOURCES
     space-demo.cpp
-    simulations.cpp
+    simulate.cpp
     camera.cpp
     body.cpp
-    planet.cpp
-    star.cpp
 )
 
 add_library(demos_common_animations_space STATIC

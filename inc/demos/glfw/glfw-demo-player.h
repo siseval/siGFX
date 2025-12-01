@@ -1,26 +1,26 @@
-#ifndef GLFW_DEMO_PLAYER_H
-#define GLFW_DEMO_PLAYER_H
+#pragma once
 
 // #include <iostream>
 #include <gfx/core/render-2D.h>
 #include <gfx/surfaces/glfw/glfw-render-surface.h>
-#include <demos/common/core/demo-player.h>
 
-namespace demos::glfw
+#include "demos/common/core/demo-player.h"
+
+namespace demos
 {
 
-class GLFWDemoPlayer : public demos::common::core::DemoPlayer
+class GLFWDemoPlayer : public demos::DemoPlayer
 {
 
 public:
 
-    GLFWDemoPlayer() : demos::common::core::DemoPlayer()
+    GLFWDemoPlayer() : demos::DemoPlayer()
     {
-        const gfx::math::Vec2d resolution { 320, 200 };
-        const gfx::math::Vec2d viewport_scaling { 1, 1 };
+        const gfx::Vec2d resolution { 320, 200 };
+        const gfx::Vec2d viewport_scaling { 1, 1 };
 
-        auto surface = std::make_shared<gfx::surfaces::GLFWRenderSurface>(resolution);
-        renderer = std::make_shared<gfx::core::Render2D>(surface, viewport_scaling);
+        auto surface = std::make_shared<gfx::GLFWRenderSurface>(resolution);
+        renderer = std::make_shared<gfx::Render2D>(surface, viewport_scaling);
 
         glfwSetWindowUserPointer(surface->get_window(), this);
 
@@ -32,7 +32,7 @@ public:
         glfwSetCharCallback(surface->get_window(), char_callback);
     }
 
-    gfx::math::Vec2i get_screen_size() override
+    gfx::Vec2i get_screen_size() override
     {
         return renderer->get_render_surface()->get_resolution();
         // int w, h;
@@ -48,9 +48,9 @@ public:
 
     void draw_info() override
     {
-        // auto surface = std::dynamic_pointer_cast<gfx::surfaces::GLFWRenderSurface>
+        // auto surface = std::dynamic_pointer_cast<gfx::GLFWRenderSurface>
         //     (renderer->get_render_surface());
-        // gfx::math::Vec2i resolution = renderer->get_render_surface()->get_resolution();
+        // gfx::Vec2i resolution = renderer->get_render_surface()->get_resolution();
         // std::string fps = std::to_string(static_cast<int>(demos[current_demo]->get_fps()));
         // while (fps.size() < 4)
         // {
@@ -85,18 +85,18 @@ private:
             return;
         }
 
-        demos::common::core::MouseEvent event;
+        demos::MouseEvent event;
         if (button == GLFW_MOUSE_BUTTON_LEFT)
         {
             event.type = (action == GLFW_PRESS)
-                ? demos::common::core::MouseEventType::LEFT_DOWN
-                : demos::common::core::MouseEventType::LEFT_UP;
+                ? demos::MouseEventType::LEFT_DOWN
+                : demos::MouseEventType::LEFT_UP;
         }
         else if (button == GLFW_MOUSE_BUTTON_RIGHT)
         {
             event.type = (action == GLFW_PRESS)
-                ? demos::common::core::MouseEventType::RIGHT_DOWN
-                : demos::common::core::MouseEventType::RIGHT_UP;
+                ? demos::MouseEventType::RIGHT_DOWN
+                : demos::MouseEventType::RIGHT_UP;
         }
 
         double x, y;
@@ -105,9 +105,9 @@ private:
         int width, height;
         glfwGetWindowSize(win, &width, &height);
 
-        gfx::math::Vec2d pos { 
-            gfx::math::Vec2d { x, y } / 
-            gfx::math::Vec2d { static_cast<double>(width), static_cast<double>(height) } 
+        gfx::Vec2d pos { 
+            gfx::Vec2d { x, y } / 
+            gfx::Vec2d { static_cast<double>(width), static_cast<double>(height) } 
         };
         event.position = pos;
 
@@ -119,14 +119,14 @@ private:
         auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self) return;
 
-        demos::common::core::MouseEvent event;
+        demos::MouseEvent event;
         event.type = (y_offset > 0)
-            ? demos::common::core::MouseEventType::SCROLL_UP
-            : demos::common::core::MouseEventType::SCROLL_DOWN;
+            ? demos::MouseEventType::SCROLL_UP
+            : demos::MouseEventType::SCROLL_DOWN;
 
         double x, y;
         glfwGetCursorPos(win, &x, &y);
-        event.position = gfx::math::Vec2i{ (int)x, (int)y } / self->renderer->get_viewport_scaling();
+        event.position = gfx::Vec2i{ (int)x, (int)y } / self->renderer->get_viewport_scaling();
 
         self->demos[self->current_demo]->report_mouse(event);
     }
@@ -136,16 +136,16 @@ private:
         auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self) return;
 
-        demos::common::core::MouseEvent event;
-        event.type = demos::common::core::MouseEventType::MOVE;
+        demos::MouseEvent event;
+        event.type = demos::MouseEventType::MOVE;
 
         int width, height;
         glfwGetWindowSize(win, &width, &height);
-        gfx::math::Vec2i window_size { width, height };
+        gfx::Vec2i window_size { width, height };
 
-        // gfx::math::Vec2d position { gfx::math::Vec2d { xpos, ypos } / self->renderer->get_viewport_scaling() };
-        gfx::math::Vec2d position { gfx::math::Vec2d { xpos, ypos } / window_size };
-        // gfx::math::Vec2d pos {
+        // gfx::Vec2d position { gfx::Vec2d { xpos, ypos } / self->renderer->get_viewport_scaling() };
+        gfx::Vec2d position { gfx::Vec2d { xpos, ypos } / window_size };
+        // gfx::Vec2d pos {
         //     2.0 * (position.x / static_cast<double>(width)) - 1.0,
         //     1.0 - 2.0 * (position.y / static_cast<double>(height))
         // };
@@ -167,10 +167,10 @@ private:
 
     GLFWwindow* get_window()
     {
-        return std::static_pointer_cast<gfx::surfaces::GLFWRenderSurface>(renderer->get_render_surface())->get_window();
+        return std::static_pointer_cast<gfx::GLFWRenderSurface>(renderer->get_render_surface())->get_window();
     }
 
-    gfx::math::Vec2d get_scaling(GLFWwindow* win)
+    gfx::Vec2d get_scaling(GLFWwindow* win)
     {
         auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         int width, height;
@@ -178,7 +178,7 @@ private:
 
         int fb_width, fb_height;
         glfwGetFramebufferSize(self->get_window(), &fb_width, &fb_height);
-        return gfx::math::Vec2d {
+        return gfx::Vec2d {
             static_cast<double>(fb_width) / static_cast<double>(width),
             static_cast<double>(fb_height) / static_cast<double>(height)
         };
@@ -186,5 +186,3 @@ private:
 };
 
 }
-
-#endif // GLFW_DEMO_PLAYER_H

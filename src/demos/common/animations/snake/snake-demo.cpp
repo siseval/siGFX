@@ -1,15 +1,10 @@
-#include <demos/common/animations/snake/snake-demo.h>
-#include <demos/common/core/demo-utils.h>
+#include "demos/common/animations/snake/snake-demo.h"
+#include "demos/common/core/demo-utils.h"
 
-namespace demos::common::animations::snake
+namespace demos
 {
 
-using namespace demos::common::core;
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-
+using namespace gfx;
 
 void SnakeDemo::init()
 {
@@ -90,8 +85,8 @@ void SnakeDemo::move_target(const double dt)
     if (!control)
     {
         target_direction += Vec2d { 
-            utils::random_double(-target_turn_speed, target_turn_speed), 
-            utils::random_double(-target_turn_speed, target_turn_speed) 
+            random_double(-target_turn_speed, target_turn_speed), 
+            random_double(-target_turn_speed, target_turn_speed) 
         } * dt;
     }
     target_direction = target_direction.normalize();
@@ -201,7 +196,7 @@ void SnakeDemo::do_dead(const double dt)
 
 void SnakeDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
 
     tongue->set_scale(std::sin(std::sin(time_ms / 1000) * 8));
@@ -263,8 +258,8 @@ void SnakeDemo::remove_food()
 void SnakeDemo::add_food()
 {
     Vec2i pos { 
-        utils::random_int(target_bounds_margin.x, get_resolution().x - target_bounds_margin.x),
-        utils::random_int(target_bounds_margin.y, get_resolution().y - target_bounds_margin.y)
+        random_int(target_bounds_margin.x, get_resolution().x - target_bounds_margin.x),
+        random_int(target_bounds_margin.y, get_resolution().y - target_bounds_margin.y)
     };
     food.push_back(renderer->create_circle(pos, food_radius, Color4(1.0, 0.7, 0.0, 1.0), 1.0));
     food.back()->set_filled(true);

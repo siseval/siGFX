@@ -1,15 +1,13 @@
-#include <demos/common/animations/space/simulations.h>
-#include <demos/common/animations/space/space-demo.h>
-#include <demos/common/animations/space/units.h>
+#include "demos/common/animations/space/simulate.h"
+#include "demos/common/animations/space/space-demo.h"
+#include "demos/common/animations/space/units.h"
 
-namespace demos::common::animations::space::simulations
+namespace demos
 {
 
-using namespace gfx::core::types;
-using namespace gfx::math;
-using namespace demos::common::animations::space::units;
+using namespace gfx;
 
-void three_body_problem(SpaceDemo &demo)
+void Simulate::three_body_problem(SpaceDemo &demo)
 {
     demo.set_camera_pos({ 0, 0 });
     demo.set_camera_size(4.0e11);
@@ -45,7 +43,7 @@ void three_body_problem(SpaceDemo &demo)
     );
 }
 
-void binary_system(SpaceDemo &demo)
+void Simulate::binary_system(SpaceDemo &demo)
 {
     demo.set_camera_pos({ 0, 0 });
     demo.set_camera_size(10.0);
@@ -126,7 +124,7 @@ void binary_system(SpaceDemo &demo)
         { 0.7, 0.7, 0.7, 1.0 });
 }
 
-void solar_system(SpaceDemo &demo)
+void Simulate::solar_system(SpaceDemo &demo)
 {
     demo.set_camera_pos({ 0, 0 });
     demo.set_camera_size(3.0);
@@ -217,7 +215,7 @@ void solar_system(SpaceDemo &demo)
     }
 }
 
-void chaos(SpaceDemo &demo)
+void Simulate::chaos(SpaceDemo &demo)
 {
     demo.set_camera_pos({ 0, 0 });
     demo.set_camera_size(1.0e10);

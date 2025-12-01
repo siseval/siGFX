@@ -2,6 +2,7 @@ set(GFX_GEOMETRY_SOURCES
     flatten.cpp
     rasterize.cpp
     triangulate.cpp
+    transform.cpp
 )
 
 add_library(gfx_geometry STATIC ${GFX_GEOMETRY_SOURCES})

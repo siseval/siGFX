@@ -1,13 +1,8 @@
-#include <gfx/core/render-2D.h>
-#include <gfx/utils/transform.h>
+#include "gfx/core/render-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::core
+namespace gfx
 {
-
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-
 
 void Render2D::draw_frame() const
 {
@@ -81,9 +76,9 @@ std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_d
     return queue;
 }
 
-gfx::math::Matrix3x3d Render2D::get_global_transform() const
+Matrix3x3d Render2D::get_global_transform() const
 {
-    Matrix3x3d scale { utils::scale(viewport_scaling) };
+    Matrix3x3d scale { Transform::scale(viewport_scaling) };
     return scale;
 }
 
@@ -138,7 +133,7 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const 
     return polygon;
 }
 
-std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const gfx::core::types::Bitmap &bm) const
+std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Bitmap &bm) const
 {
     auto bitmap { std::make_shared<Bitmap2D>() };
 
@@ -158,7 +153,7 @@ std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Ve
     return bitmap;
 }
 
-std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<gfx::text::FontTTF> font, const double font_size, const Color4 color) const
+std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const
 {
     auto text_primitive { std::make_shared<Text2D>() };
 

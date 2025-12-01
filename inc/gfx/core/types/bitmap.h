@@ -1,14 +1,14 @@
-#ifndef BITMAP_H
-#define BITMAP_H
+#pragma once
 
 #include <fstream>
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
-#include <gfx/core/types/color4.h>
-#include <gfx/math/vec2.h>
 
-namespace gfx::core::types
+#include "gfx/core/types/color4.h"
+#include "gfx/math/vec2.h"
+
+namespace gfx
 {
 
 class Bitmap
@@ -16,23 +16,23 @@ class Bitmap
 
 public:
 
-    Bitmap(const gfx::math::Vec2i resolution)
-        : resolution(resolution), pixels(std::vector<Color4>(resolution.x * resolution.y, gfx::core::types::Color4 { 0, 0, 0, 255 })) 
+    Bitmap(const Vec2i resolution)
+        : resolution(resolution), pixels(std::vector<Color4>(resolution.x * resolution.y, Color4 { 0, 0, 0, 255 })) 
     {
         if (resolution.x <= 0 || resolution.y <= 0)
         {
             this->resolution = { 1, 1 };
-            pixels.resize(1, gfx::core::types::Color4 { 0, 0, 0, 255 });
+            pixels.resize(1, Color4 { 0, 0, 0, 255 });
         }
     }
 
-    void resize(const gfx::math::Vec2i new_resolution)
+    void resize(const Vec2i new_resolution)
     {
         resolution = new_resolution;
-        pixels.resize(resolution.x * resolution.y, gfx::core::types::Color4 { 0, 0, 0, 255 });
+        pixels.resize(resolution.x * resolution.y, Color4 { 0, 0, 0, 255 });
     }
 
-    void set_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color)
+    void set_pixel(const Vec2i pos, const Color4 color)
     {
         if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
         {
@@ -41,16 +41,16 @@ public:
         pixels[pos.x + pos.y * resolution.x] = color;
     }
 
-    Color4 get_pixel(const gfx::math::Vec2i pos) const
+    Color4 get_pixel(const Vec2i pos) const
     {
         if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
         {
-            return gfx::core::types::Color4 { 0, 0, 0, 255 };
+            return Color4 { 0, 0, 0, 255 };
         }
         return pixels[pos.x + pos.y * resolution.x];
     }
 
-    void fill(const gfx::core::types::Color4 color = gfx::core::types::Color4 { 0, 0, 0, 255 })
+    void fill(const Color4 color = Color4 { 0, 0, 0, 255 })
     {
         std::fill(pixels.begin(), pixels.end(), color);
     }
@@ -144,7 +144,7 @@ public:
         int row_padded = ((bit_count * width + 31) / 32) * 4;
         int bytes_per_pixel = bit_count / 8;
 
-        Bitmap bmp{ gfx::math::Vec2i{ width, std::abs(height) } };
+        Bitmap bmp{ Vec2i{ width, std::abs(height) } };
         bool flip_vertically{ height > 0 };
 
         std::vector<uint8_t> row_data(row_padded);
@@ -163,18 +163,16 @@ public:
                 uint8_t a = (bit_count == 32) ? row_data[idx + 3] : 255;
 
                 Color4 color{ r, g, b, a };
-                bmp.set_pixel(gfx::math::Vec2i{ x, bmp_y }, color);
+                bmp.set_pixel(Vec2i{ x, bmp_y }, color);
             }
         }
 
         return bmp;
     }
 
-    gfx::math::Vec2i resolution;
+    Vec2i resolution;
     std::vector<Color4> pixels;
 
 };
 
 }
-
-#endif // BITMAP_H

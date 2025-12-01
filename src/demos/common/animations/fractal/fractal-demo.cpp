@@ -1,16 +1,14 @@
 #include <thread>
 #include <complex>
-#include <demos/common/animations/fractal/fractal-demo.h>
-#include <demos/common/animations/fractal/mandelbrot.h>
-#include <demos/common/animations/fractal/julia.h>
-#include <demos/common/core/demo-utils.h>
 
-namespace demos::common::animations::fractal
+#include "demos/common/animations/fractal/fractal-demo.h"
+#include "demos/common/animations/fractal/julia.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::core::types;
-using namespace gfx::math;
-using namespace demos::common::core;
+using namespace gfx;
 
 void FractalDemo::init()
 {
@@ -32,7 +30,7 @@ void FractalDemo::init()
     for (int i = 0; i < num_colors; ++i)
     {
         double t = static_cast<double>(i) / static_cast<double>(num_colors);
-        colors.emplace_back(Color4::lerp(color0, color1, utils::exponential_step(t, 30.0)));
+        colors.emplace_back(Color4::lerp(color0, color1, exponential_step(t, 30.0)));
     }
 
     renderer->add_item(bitmap);
@@ -86,7 +84,7 @@ void FractalDemo::handle_mouse_pan(const double dt)
 
 void FractalDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
 
     update_view(dt);
@@ -103,7 +101,7 @@ void FractalDemo::render_frame(const double dt)
 
     if (!paused)
     {
-        double t { utils::time_sec() };
+        double t { time_sec() };
         a += a_frequency * dt;
         if (a > 2 * std::numbers::pi)
         {

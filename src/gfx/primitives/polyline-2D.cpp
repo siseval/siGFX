@@ -1,17 +1,8 @@
-#include <gfx/primitives/polyline-2D.h>
-#include <gfx/utils/transform.h>
-#include <gfx/geometry/triangulate.h>
-#include <gfx/geometry/rasterize.h>
+#include "gfx/primitives/polyline-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::math;
-using namespace gfx::geometry;
-using namespace gfx::geometry::types;
-
 
 Box2d Polyline2D::get_geometry_size() const
 {
@@ -38,7 +29,7 @@ Box2d Polyline2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) con
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { utils::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);

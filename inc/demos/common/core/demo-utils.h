@@ -1,10 +1,9 @@
-#ifndef DEMO_UTILS_H
-#define DEMO_UTILS_H
+#pragma once
 
 #include <random>
 #include <chrono>
 
-namespace demos::common::core::utils
+namespace demos
 {
 
 inline double ease_in_out_cubic(const double t)
@@ -93,5 +92,3 @@ inline double inv_lerp(const double a, const double b, const double v)
 }
 
 }
-
-#endif // DEMO_UTILS_H

@@ -1,39 +1,39 @@
-#ifndef CURSES_DEMO_PLAYER_H
-#define CURSES_DEMO_PLAYER_H
+#pragma once
 
 #include <gfx/core/render-2D.h>
 #include <gfx/surfaces/curses/curses-render-surface.h>
-#include <demos/common/core/demo-player.h>
-#include <demos/curses/curses-utils.h>
 
-namespace demos::curses
+#include "demos/common/core/demo-player.h"
+#include "demos/curses/curses-utils.h"
+
+namespace demos
 {
 
-class CursesDemoPlayer : public demos::common::core::DemoPlayer
+class CursesDemoPlayer : public demos::DemoPlayer
 {
 
 public:
 
-    CursesDemoPlayer() : demos::common::core::DemoPlayer()
+    CursesDemoPlayer() : demos::DemoPlayer()
     {
-        auto surface { std::make_shared<gfx::surfaces::CursesRenderSurface>(demos::curses::get_screen_size() * 2) };
-        renderer = std::make_shared<gfx::core::Render2D>(surface, gfx::math::Vec2d { 2, 1 });
+        auto surface { std::make_shared<gfx::CursesRenderSurface>(demos::get_screen_size() * 2) };
+        renderer = std::make_shared<gfx::Render2D>(surface, gfx::Vec2d { 2, 1 });
     }
 
-    gfx::math::Vec2i get_screen_size() override
+    gfx::Vec2i get_screen_size() override
     {
-        return demos::curses::get_screen_size() * 2;
+        return demos::get_screen_size() * 2;
     }
 
     int get_input() override
     {
-        int input { demos::curses::get_input() };
+        int input { demos::get_input() };
         if (input == KEY_MOUSE)
         {
             MEVENT e;
             if (getmouse(&e) == OK)
             {
-                demos::common::core::MouseEvent event { curses_to_mouse_event(e) };
+                demos::MouseEvent event { curses_to_mouse_event(e) };
                 demos[current_demo]->report_mouse(event);
             }
             refresh();
@@ -44,8 +44,8 @@ public:
 
     void draw_info() override
     {
-        demos::curses::set_bold(true);
-        demos::curses::set_color(demos::curses::default_color::WHITE);
+        demos::set_bold(true);
+        demos::set_color(demos::default_color::WHITE);
         std::vector<std::string> info = get_info();
         for (int i = 0; i < info.size(); ++i)
         {
@@ -55,35 +55,35 @@ public:
 
 private:
 
-    demos::common::core::MouseEvent curses_to_mouse_event(const MEVENT e)
+    demos::MouseEvent curses_to_mouse_event(const MEVENT e)
     {
-        demos::common::core::MouseEvent event;
+        demos::MouseEvent event;
         switch (e.bstate)
         {
             case BUTTON1_PRESSED:
-                event.type = demos::common::core::MouseEventType::LEFT_DOWN;
+                event.type = demos::MouseEventType::LEFT_DOWN;
                 break;
 
             case BUTTON3_PRESSED:
-                event.type = demos::common::core::MouseEventType::RIGHT_DOWN;
+                event.type = demos::MouseEventType::RIGHT_DOWN;
                 break;
 
             case BUTTON4_PRESSED:
-                event.type = demos::common::core::MouseEventType::SCROLL_UP;
+                event.type = demos::MouseEventType::SCROLL_UP;
                 break;
 
             case BUTTON5_PRESSED:
-                event.type = demos::common::core::MouseEventType::SCROLL_DOWN;
+                event.type = demos::MouseEventType::SCROLL_DOWN;
                 break;
 
             case REPORT_MOUSE_POSITION:
-                event.type = demos::common::core::MouseEventType::MOVE;
+                event.type = demos::MouseEventType::MOVE;
                 break;
 
             default:
                 break;
         }
-        gfx::math::Vec2d position = gfx::math::Vec2i { e.x, e.y } * 2 / renderer->get_viewport_scaling();
+        gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_viewport_scaling();
         event.position = position / renderer->get_resolution();
         return event;
     }
@@ -91,5 +91,3 @@ private:
 };
 
 }
-
-#endif // CURSES_DEMO_PLAYER_H

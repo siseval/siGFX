@@ -1,14 +1,10 @@
-#include <gfx/geometry/triangulate.h>
-#include <gfx/math/box2.h>
+#include "gfx/geometry/triangulate.h"
+#include "gfx/math/box2.h"
 
-namespace gfx::geometry
+namespace gfx
 {
 
-using namespace gfx::math;
-using namespace gfx::geometry::types;
-
-
-bool is_convex(const Triangle &triangle, const bool clockwise)
+bool Triangulate::is_convex(const Triangle &triangle, const bool clockwise)
 {
     Vec2d ab { triangle.v1 - triangle.v0 };
     Vec2d ac { triangle.v2 - triangle.v0 };
@@ -16,7 +12,7 @@ bool is_convex(const Triangle &triangle, const bool clockwise)
     return clockwise ? cross > 0 : cross < 0;
 }
 
-bool is_ear(const int index, const std::vector<int> &indices, const std::vector<Vec2d> &vertices, const Triangle &triangle, const int i0, const int i1, const int i2, const bool clockwise)
+bool Triangulate::is_ear(const int index, const std::vector<int> &indices, const std::vector<Vec2d> &vertices, const Triangle &triangle, const int i0, const int i1, const int i2, const bool clockwise)
 {
     if (!is_convex(triangle, clockwise))
     {
@@ -55,7 +51,7 @@ bool is_ear(const int index, const std::vector<int> &indices, const std::vector<
     return true;
 }
 
-Contour merge_holes(const Contour &contour, const std::vector<Contour> &holes)
+Polygon::Contour Triangulate::merge_holes(const Polygon::Contour &contour, const std::vector<Polygon::Contour> &holes)
 {
     std::vector<Vec2d> merged = contour.vertices;
 
@@ -126,12 +122,12 @@ Contour merge_holes(const Contour &contour, const std::vector<Contour> &holes)
         merged = std::move(new_merged);
     }
 
-    return Contour { merged, contour.clockwise };
+    return Polygon::Contour { merged, contour.clockwise };
 }
 
-std::vector<Triangle> triangulate_polygon(const gfx::geometry::types::Component &component)
+std::vector<Triangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
 {
-    Contour merged;
+    Polygon::Contour merged;
     auto& merged_contour = 
         (component.holes.size() > 0)
             ? (merged = { merge_holes(component.contour, component.holes) }, merged)

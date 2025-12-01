@@ -1,13 +1,9 @@
-#include <demos/common/interactive/interactive-demo.h>
+#include "demos/common/interactive/interactive-demo.h"
 
-namespace demos::common::interactive
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-
+using namespace gfx;
 
 void InteractiveDemo::init()
 {

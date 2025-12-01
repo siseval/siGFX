@@ -1,24 +1,20 @@
 #include <iostream>
-#include <demos/common/core/demo-player.h>
-#include <demos/common/animations/star/star-demo.h>
-#include <demos/common/animations/snake/snake-demo.h>
-#include <demos/common/animations/fireworks/fireworks-demo.h>
-#include <demos/common/animations/space/space-demo.h>
-#include <demos/common/animations/video/video-demo.h>
-#include <demos/common/animations/fractal/fractal-demo.h>
-#include <demos/common/animations/boids/boids-demo.h>
-#include <demos/common/animations/shader/shader-demo.h>
-#include <demos/common/animations/text/text-demo.h>
 
-namespace demos::common::core
+#include "demos/common/core/demo-player.h"
+#include "demos/common/animations/star/star-demo.h"
+#include "demos/common/animations/snake/snake-demo.h"
+#include "demos/common/animations/fireworks/fireworks-demo.h"
+#include "demos/common/animations/space/space-demo.h"
+#include "demos/common/animations/video/video-demo.h"
+#include "demos/common/animations/fractal/fractal-demo.h"
+#include "demos/common/animations/boids/boids-demo.h"
+#include "demos/common/animations/shader/shader-demo.h"
+#include "demos/common/animations/text/text-demo.h"
+
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::animations;
-using namespace demos::common;
+using namespace gfx;
 
 void DemoPlayer::init()
 {
@@ -32,22 +28,22 @@ void DemoPlayer::init()
         std::cerr << "Warning: Could not load font directory: " << e.what() << std::endl;
     }
 
-    demos.emplace_back(std::make_shared<star::StarDemo>(renderer));
-    demos.emplace_back(std::make_shared<text::TextDemo>(renderer));
-    // demos.emplace_back(std::make_shared<video::VideoDemo>(renderer));
-    demos.emplace_back(std::make_shared<snake::SnakeDemo>(renderer));
-    demos.emplace_back(std::make_shared<boids::BoidsDemo>(renderer));
-    demos.emplace_back(std::make_shared<fractal::FractalDemo>(renderer));
-    demos.emplace_back(std::make_shared<shader::ShaderDemo>(renderer));
-    demos.emplace_back(std::make_shared<fireworks::FireworksDemo>(renderer));
-    demos.emplace_back(std::make_shared<space::SpaceDemo>(renderer));
+    demos.emplace_back(std::make_shared<StarDemo>(renderer));
+    demos.emplace_back(std::make_shared<TextDemo>(renderer));
+    // demos.emplace_back(std::make_shared<VideoDemo>(renderer));
+    demos.emplace_back(std::make_shared<SnakeDemo>(renderer));
+    demos.emplace_back(std::make_shared<BoidsDemo>(renderer));
+    demos.emplace_back(std::make_shared<FractalDemo>(renderer));
+    demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
+    demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
+    demos.emplace_back(std::make_shared<SpaceDemo>(renderer));
 
     cycle_demo(0);
 }
 
 void DemoPlayer::run()
 {
-    double last_frame_timestamp_us { utils::time_ms() };
+    double last_frame_timestamp_us { time_ms() };
     while (running)
     {
         if (screen_size_changed())
@@ -55,7 +51,7 @@ void DemoPlayer::run()
             resize(get_screen_size());
         }
 
-        double now_us { utils::time_us() };
+        double now_us { time_us() };
         double dt_sec { (now_us - last_frame_timestamp_us) / 1000000.0 };
 
         demos[current_demo]->render_frame(dt_sec);
@@ -73,7 +69,7 @@ void DemoPlayer::run()
     }
 }
 
-void DemoPlayer::resize(const gfx::math::Vec2i new_resolution)
+void DemoPlayer::resize(const gfx::Vec2i new_resolution)
 {
     renderer->set_resolution(new_resolution);
     demos[current_demo]->init();

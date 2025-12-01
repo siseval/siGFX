@@ -1,12 +1,11 @@
 #include <stack>
-#include <gfx/geometry/flatten.h>
 
-namespace gfx::geometry
+#include "gfx/geometry/flatten.h"
+
+namespace gfx
 {
 
-using namespace gfx::math;
-
-std::vector<Vec2d> flatten_bezier(const Vec2d p0, const Vec2d p1, const Vec2d p2, const double tolerance)
+std::vector<Vec2d> Flatten::flatten_bezier(const Vec2d p0, const Vec2d p1, const Vec2d p2, const double tolerance)
 {
     struct BezierSegment
     {
@@ -62,7 +61,7 @@ std::vector<Vec2d> flatten_bezier(const Vec2d p0, const Vec2d p1, const Vec2d p2
     return points;
 }
 
-std::vector<Vec2d> flatten_contour(const std::vector<std::pair<Vec2d, bool>> &points_on_off_curve)
+std::vector<Vec2d> Flatten::flatten_contour(const std::vector<std::pair<Vec2d, bool>> &points_on_off_curve)
 {
     std::vector<Vec2d> flattened_points;
 

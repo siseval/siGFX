@@ -1,11 +1,11 @@
-#ifndef TRIANGLE_2D_H
-#define TRIANGLE_2D_H
+#pragma once
 
-#include <gfx/math/vec2.h>
-#include <gfx/math/box2.h>
 #include <cmath>
 
-namespace gfx::geometry
+#include "gfx/math/vec2.h"
+#include "gfx/math/box2.h"
+
+namespace gfx
 {
 
 class Triangle
@@ -13,25 +13,25 @@ class Triangle
 
 public:
 
-    Triangle(const gfx::math::Vec2d& v0, const gfx::math::Vec2d& v1, const gfx::math::Vec2d& v2)
+    Triangle(const Vec2d& v0, const Vec2d& v1, const Vec2d& v2)
         : v0(v0), v1(v1), v2(v2)
     {
         precompute();
     }
 
     Triangle()
-        : v0(gfx::math::Vec2d::zero()), v1(gfx::math::Vec2d::zero()), v2(gfx::math::Vec2d::zero())
+        : v0(Vec2d::zero()), v1(Vec2d::zero()), v2(Vec2d::zero())
     {
         precompute();
     }
 
-    const gfx::math::Vec2d v0;
-    const gfx::math::Vec2d v1;
-    const gfx::math::Vec2d v2;
+    const Vec2d v0;
+    const Vec2d v1;
+    const Vec2d v2;
 
-    int corners_inside(const gfx::math::Box2d& box) const
+    int corners_inside(const Box2d& box) const
     {
-        gfx::math::Vec2d box_corners[4] = {
+        Vec2d box_corners[4] = {
             { box.min.x, box.min.y },
             { box.max.x, box.min.y },
             { box.max.x, box.max.y },
@@ -51,7 +51,7 @@ public:
         return count;
     }
 
-    bool point_inside(const gfx::math::Vec2d& point) const
+    bool point_inside(const Vec2d& point) const
     {
         double s = inv_area_2x * (a * point.x + b * point.y + c);
         double t = inv_area_2x * (d * point.x + e * point.y + f);
@@ -59,7 +59,7 @@ public:
         return s >= 0 && t >= 0 && (s + t) <= 1;
     }
 
-    double edge(const gfx::math::Vec2d& v_start, const gfx::math::Vec2d& v_end, const gfx::math::Vec2d& point) const
+    double edge(const Vec2d& v_start, const Vec2d& v_end, const Vec2d& point) const
     {
         return (v_end.x - v_start.x) * (point.y - v_start.y) - (v_end.y - v_start.y) * (point.x - v_start.x);
     }
@@ -111,6 +111,3 @@ private:
 };
 
 }
-
-#endif // TRIANGLE_2D_H
-

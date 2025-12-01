@@ -1,25 +1,25 @@
-#ifndef TEXT_DEMO_H
-#define TEXT_DEMO_H
+#pragma once
 
 #include <gfx/core/render-2D.h>
-#include <demos/common/core/gfx-demo.h>
 
-namespace demos::common::animations::text
+#include "demos/common/core/gfx-demo.h"
+
+namespace demos
 {
 
-class TextDemo : public demos::common::core::GfxDemo
+class TextDemo : public demos::GfxDemo
 {
 
 public:
 
-    TextDemo(const std::shared_ptr<gfx::core::Render2D> renderer)
+    TextDemo(const std::shared_ptr<gfx::Render2D> renderer)
         : GfxDemo(renderer) {}
 
     void init() override;
     void render_frame(const double dt) override;
     void end() override;
     void handle_input(const int input) override;
-    void report_mouse(const demos::common::core::MouseEvent event) override {}
+    void report_mouse(const demos::MouseEvent event) override {}
 
     std::vector<std::string> debug_text() override
     {
@@ -29,20 +29,18 @@ public:
         };
     }
 
-    inline gfx::core::types::Color4 get_clear_color() const override 
+    inline gfx::Color4 get_clear_color() const override 
     { 
-        return gfx::core::types::Color4(0.0, 0.0, 0.0, 1.0); 
+        return gfx::Color4(0.0, 0.0, 0.0, 1.0); 
     };
 
 private:
 
-    bool is_clockwise(std::vector<gfx::math::Vec2d> vertices);
+    bool is_clockwise(std::vector<gfx::Vec2d> vertices);
 
-    std::shared_ptr<gfx::primitives::Text2D> text_item;
+    std::shared_ptr<gfx::Text2D> text_item;
     int num_points = 0;
 
 };
 
 }
-
-#endif // TEXT_DEMO_H

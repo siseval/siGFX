@@ -1,13 +1,8 @@
-#include <gfx/primitives/ellipse-2D.h>
-#include <gfx/utils/transform.h>
+#include "gfx/primitives/ellipse-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::math;
-using namespace gfx::core::types;
-
 
 Box2d Ellipse2D::get_geometry_size() const
 {
@@ -27,7 +22,7 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { utils::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);
@@ -36,10 +31,10 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
 }
 
 
-bool Ellipse2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const
+bool Ellipse2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
 {
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-    Vec2d local_point { utils::transform_point(point, inverse_transform) - radius };
+    Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+    Vec2d local_point { Transform::transform_point(point, inverse_transform) - radius };
 
     return 
     (local_point.x * local_point.x) / (radius.x * radius.x) + 
@@ -68,8 +63,8 @@ bool Ellipse2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Ma
 //         inner_ring.push_back(Vec2d { inner_x, inner_y });
 //     }
 //
-//     std::vector<Vec2d> transformed_outer_ring = utils::transform_points(outer_ring, transform);
-//     std::vector<Vec2d> transformed_inner_ring = utils::transform_points(inner_ring, transform);
+//     std::vector<Vec2d> transformed_outer_ring = transform_points(outer_ring, transform);
+//     std::vector<Vec2d> transformed_inner_ring = transform_points(inner_ring, transform);
 //
 //     for (int i = 0; i < SEGMENTS; ++i)
 //     {
@@ -78,8 +73,8 @@ bool Ellipse2D::point_collides(const gfx::math::Vec2d point, const gfx::math::Ma
 //         Vec2d v2 = transformed_inner_ring[i];
 //         Vec2d v3 = transformed_inner_ring[(i + 1) % SEGMENTS];
 //
-//         utils::rasterize_filled_triangle(surface, Triangle { v0, v1, v2 }, get_color());
-//         utils::rasterize_filled_triangle(surface, Triangle { v1, v3, v2 }, get_color());
+//         rasterize_filled_triangle(surface, Triangle { v0, v1, v2 }, get_color());
+//         rasterize_filled_triangle(surface, Triangle { v1, v3, v2 }, get_color());
 //     }
 // }
 

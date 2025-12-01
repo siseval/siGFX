@@ -1,14 +1,8 @@
-#include <gfx/primitives/text-2D.h>
-#include <gfx/utils/transform.h>
-#include <gfx/text/utf-8.h>
+#include "gfx/primitives/text-2D.h"
+#include "gfx/text/utf-8.h"
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::math;
-using namespace gfx::core::types;
-using namespace gfx::text;
-
 
 Box2d Text2D::get_geometry_size() const
 {
@@ -77,7 +71,7 @@ Box2d Text2D::get_geometry_size() const
 }
 
 
-std::vector<Text2D::EdgeData> Text2D::preprocess_edges(const std::vector<ContourEdge> &edges) const
+std::vector<Text2D::EdgeData> Text2D::preprocess_edges(const std::vector<FontTTF::ContourEdge> &edges) const
 {
     std::vector<EdgeData> data;
     data.reserve(edges.size());
@@ -103,7 +97,7 @@ std::vector<Text2D::EdgeData> Text2D::preprocess_edges(const std::vector<Contour
     return data;
 }
 
-std::vector<std::vector<Text2D::ETEntry>> Text2D::build_edge_table(const std::vector<ContourEdge> &glyph, const Box2i &bounds) const
+std::vector<std::vector<Text2D::ETEntry>> Text2D::build_edge_table(const std::vector<FontTTF::ContourEdge> &glyph, const Box2i &bounds) const
 {
     std::vector<std::vector<ETEntry>> edge_table(bounds.max.y - bounds.min.y + 1);
 
@@ -160,7 +154,7 @@ std::vector<std::vector<Text2D::ETEntry>> Text2D::build_edge_table(const std::ve
     return edge_table;
 }
 
-bool Text2D::point_inside_glyph(const std::vector<Text2D::ETEntry> &edges, const gfx::math::Vec2d point) const
+bool Text2D::point_inside_glyph(const std::vector<Text2D::ETEntry> &edges, const Vec2d point) const
 {
     if (edges.empty())
     {

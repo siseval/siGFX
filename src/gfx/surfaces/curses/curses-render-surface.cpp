@@ -1,12 +1,9 @@
 #include <locale.h>
-#include <gfx/surfaces/curses/curses-render-surface.h>
 
-namespace gfx::surfaces
+#include "gfx/surfaces/curses/curses-render-surface.h"
+
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::math;
 
 int CursesRenderSurface::init()
 {
@@ -73,7 +70,7 @@ void CursesRenderSurface::clear_frame_buffer()
     }
 }
 
-inline void CursesRenderSurface::write_pixel(const gfx::math::Vec2i pos, const gfx::core::types::Color4 color, const int depth)
+inline void CursesRenderSurface::write_pixel(const Vec2i pos, const Color4 color, const int depth)
 {
     bool left_in_pixel { pos.x % 2 == 0 };
     bool top_in_pixel { pos.y % 2 == 0 };
@@ -97,7 +94,7 @@ inline void CursesRenderSurface::write_pixel(const gfx::math::Vec2i pos, const g
         bit_masks[top_in_pixel][left_in_pixel];
 }
 
-void CursesRenderSurface::resize(const gfx::math::Vec2i new_resolution)
+void CursesRenderSurface::resize(const Vec2i new_resolution)
 {
     resolution = new_resolution;
     frame_buffer->resize((resolution.x * resolution.y / 2), 0);

@@ -1,12 +1,9 @@
-#include <demos/common/animations/physics/physics-demo.h>
+#include "demos/common/animations/physics/physics-demo.h"
 
-namespace demos::common::animations::physics
+namespace demos
 {
 
-using namespace gfx::math;
-using namespace gfx::primitives;
-using namespace gfx::core::types;
-using namespace demos::common::core;
+using namespace gfx;
 
 void PhysicsDemo::init()
 {

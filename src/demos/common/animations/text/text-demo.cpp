@@ -1,18 +1,15 @@
 #include <gfx/text/font-manager-ttf.h>
 #include <gfx/geometry/flatten.h>
-#include <demos/common/animations/text/text-demo.h>
-#include <demos/common/core/demo-utils.h>
 
-namespace demos::common::animations::text
+#include "demos/common/animations/text/text-demo.h"
+#include "demos/common/core/demo-utils.h"
+
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::math;
-using namespace demos::common::core;
-using namespace gfx::primitives;
+using namespace gfx;
 
-class TextShader : public gfx::core::Shader2D
+class TextShader : public gfx::Shader2D
 {
     Color4 frag(const ShaderInput2D &input) const override
     {
@@ -96,7 +93,7 @@ void TextDemo::init()
     // renderer->add_item(bottom_item);
 }
 
-bool TextDemo::is_clockwise(std::vector<gfx::math::Vec2d> vertices)
+bool TextDemo::is_clockwise(std::vector<gfx::Vec2d> vertices)
 {
     double sum = 0.0;
     for (int i = 0; i < vertices.size(); ++i)
@@ -110,7 +107,7 @@ bool TextDemo::is_clockwise(std::vector<gfx::math::Vec2d> vertices)
 
 void TextDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
     double t { time_ms / 1000.0 };
 
@@ -129,7 +126,7 @@ void TextDemo::render_frame(const double dt)
 
     renderer->draw_frame();
 
-    last_frame_us = utils::time_us() - t0;
+    last_frame_us = time_us() - t0;
 }
 
 void TextDemo::handle_input(const int input)

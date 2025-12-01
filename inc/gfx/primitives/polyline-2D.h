@@ -1,36 +1,35 @@
-#ifndef POLYLINE_2D_H
-#define POLYLINE_2D_H
+#pragma once
 
-#include <gfx/core/primitive-2D.h>
-#include <gfx/math/box2.h>
-#include <gfx/math/vec2.h>
-#include <gfx/math/matrix.h>
-#include <gfx/geometry/triangle.h>
-#include <gfx/utils/transform.h>
-#include <gfx/geometry/triangulate.h>
-#include <gfx/geometry/rasterize.h>
-#include <gfx/geometry/types/polygon.h>
+#include "gfx/core/primitive-2D.h"
+#include "gfx/math/box2.h"
+#include "gfx/math/vec2.h"
+#include "gfx/math/matrix.h"
+#include "gfx/geometry/types/triangle.h"
+#include "gfx/geometry/transform.h"
+#include "gfx/geometry/triangulate.h"
+#include "gfx/geometry/types/polygon.h"
+#include "gfx/geometry/rasterize.h"
 
-namespace gfx::primitives
+namespace gfx
 {
 
-class Polyline2D : public gfx::core::PrimitiveTemplate<Polyline2D>
+class Polyline2D : public PrimitiveTemplate<Polyline2D>
 {
 
 public:
 
-    gfx::math::Box2d get_geometry_size() const override;
-    gfx::math::Box2d get_axis_aligned_bounding_box(const gfx::math::Matrix3x3d &transform) const override;
+    Box2d get_geometry_size() const override;
+    Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const override;
 
-    bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const override;
+    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override;
 
     bool cache_clockwise();
 
-    inline void add_point(const gfx::math::Vec2d point) { points.push_back(point); cache_clockwise(); set_obb_dirty(); }
-    inline void add_point(const double x, const double y) { points.push_back(gfx::math::Vec2d { x, y }); cache_clockwise(); set_obb_dirty(); }
-    inline void add_points(const std::vector<gfx::math::Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); set_obb_dirty(); }
+    inline void add_point(const Vec2d point) { points.push_back(point); cache_clockwise(); set_obb_dirty(); }
+    inline void add_point(const double x, const double y) { points.push_back(Vec2d { x, y }); cache_clockwise(); set_obb_dirty(); }
+    inline void add_points(const std::vector<Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); set_obb_dirty(); }
 
-    inline void set_point(const size_t index, const gfx::math::Vec2d point) 
+    inline void set_point(const size_t index, const Vec2d point) 
     { 
         if (index < points.size()) 
         { 
@@ -43,12 +42,12 @@ public:
     { 
         if (index < points.size()) 
         { 
-            points[index] = gfx::math::Vec2d { x, y }; 
+            points[index] = Vec2d { x, y }; 
             cache_clockwise();
             set_obb_dirty();
         } 
     }
-    inline void set_points(const std::vector<gfx::math::Vec2d> &new_points) { points = new_points; cache_clockwise(); set_obb_dirty(); }
+    inline void set_points(const std::vector<Vec2d> &new_points) { points = new_points; cache_clockwise(); set_obb_dirty(); }
     inline void clear_points() { points.clear(); }
 
     inline void set_segment_visible(const size_t index, const bool visible) 
@@ -71,14 +70,14 @@ public:
         return false; 
     }
 
-    inline const std::vector<gfx::math::Vec2d> get_points() const { return points; }
-    inline gfx::math::Vec2d get_point(const size_t index) const 
+    inline const std::vector<Vec2d> get_points() const { return points; }
+    inline Vec2d get_point(const size_t index) const 
     { 
         if (index < points.size()) 
         { 
             return points[index]; 
         } 
-        return gfx::math::Vec2d::zero(); 
+        return Vec2d::zero(); 
     }
 
     inline size_t get_num_points() const { return points.size(); }
@@ -96,7 +95,7 @@ public:
     inline bool get_fill() const { return do_fill; }
 
     template<typename EmitPixel>
-    void rasterize(const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         if (points.size() < 2)
         {
@@ -124,56 +123,56 @@ public:
 
         if (do_fill)
         {
-            std::vector<gfx::math::Vec2d> transformed_points { utils::transform_points(points, transform) };
+            std::vector<Vec2d> transformed_points { Transform::transform_points(points, transform) };
 
-            gfx::geometry::types::Component polygon { gfx::geometry::types::Component(transformed_points, clockwise) };
-            std::vector<gfx::geometry::Triangle> triangles { geometry::triangulate_polygon(polygon) };
+            Polygon::Component polygon(transformed_points, clockwise);
+            std::vector<Triangle> triangles { Triangulate::triangulate_polygon(polygon) };
 
             for (const auto& triangle : triangles)
             {
-                geometry::rasterize_filled_triangle(triangle, color, emit_pixel);
+                Rasterize::rasterize_filled_triangle(triangle, color, emit_pixel);
             }
         }
     }
 
     template<typename EmitPixel>
-    void rasterize_rounded_corner(const gfx::math::Vec2d pos, const double angle0, const double angle1, const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize_rounded_corner(const Vec2d pos, const double angle0, const double angle1, const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
-        std::vector<gfx::math::Vec2d> vertices;
+        std::vector<Vec2d> vertices;
 
         for (int i = 0; i <= CORNER_SEGMENTS; ++i)
         {
             double progress { static_cast<double>(i) / static_cast<double>(CORNER_SEGMENTS) };
             double theta { angle0 + (angle1 - angle0) * progress };
 
-            gfx::math::Vec2d vertex {
+            Vec2d vertex {
                 pos.x + (line_thickness / 2.0) * std::cos(theta),
                 pos.y + (line_thickness / 2.0) * std::sin(theta)
             };
 
-            vertices.push_back(utils::transform_point(vertex, transform));
+            vertices.push_back(Transform::transform_point(vertex, transform));
         }
-        gfx::math::Vec2d transformed_pos = utils::transform_point(pos, transform);
+        Vec2d transformed_pos = Transform::transform_point(pos, transform);
 
         for (int i = 0; i < vertices.size() - 1; ++i)
         {
-            geometry::rasterize_filled_triangle({ transformed_pos, vertices[i], vertices[i + 1] }, color, emit_pixel);
+            Rasterize::rasterize_filled_triangle({ transformed_pos, vertices[i], vertices[i + 1] }, color, emit_pixel);
         }
     }
 
     template<typename EmitPixel>
-    void rasterize_rounded_corners(const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize_rounded_corners(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         for (int i = 0; i < points.size(); ++i)
         {
-            gfx::math::Vec2d p0 { points[(i - 1 + points.size()) % points.size()] };
-            gfx::math::Vec2d p1 { points[i] };
-            gfx::math::Vec2d p2 { points[(i + 1) % points.size()] };
+            Vec2d p0 { points[(i - 1 + points.size()) % points.size()] };
+            Vec2d p1 { points[i] };
+            Vec2d p2 { points[(i + 1) % points.size()] };
 
-            gfx::math::Vec2d normal0 { (p0 - p1).normal().normalize() };
-            gfx::math::Vec2d normal1 { (p1 - p2).normal().normalize() };
+            Vec2d normal0 { (p0 - p1).normal().normalize() };
+            Vec2d normal1 { (p1 - p2).normal().normalize() };
 
-            gfx::math::Vec2d between { ((p1 - p0) + (p1 - p2)).normalize() };
+            Vec2d between { ((p1 - p0) + (p1 - p2)).normalize() };
 
             double angle0 { std::atan2(normal0.y, normal0.x) };
             double angle1 { std::atan2(normal1.y, normal1.x) };
@@ -192,28 +191,28 @@ public:
     }
 
     template<typename EmitPixel>
-    void rasterize_edge(const gfx::math::Vec2d start, const gfx::math::Vec2d end, const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize_edge(const Vec2d start, const Vec2d end, const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         double line_extent { line_thickness / 2.0 };
-        gfx::math::Vec2d normal { (end - start).normal().normalize() };
+        Vec2d normal { (end - start).normal().normalize() };
 
-        gfx::math::Vec2d offset { normal * line_extent };
+        Vec2d offset { normal * line_extent };
 
-        gfx::math::Vec2d v0 { start + offset };
-        gfx::math::Vec2d v1 { start - offset };
-        gfx::math::Vec2d v2 { end + offset };
-        gfx::math::Vec2d v3 { end - offset };
+        Vec2d v0 { start + offset };
+        Vec2d v1 { start - offset };
+        Vec2d v2 { end + offset };
+        Vec2d v3 { end - offset };
 
-        v0 = utils::transform_point(v0, transform);
-        v1 = utils::transform_point(v1, transform);
-        v2 = utils::transform_point(v2, transform);
-        v3 = utils::transform_point(v3, transform);
+        v0 = Transform::transform_point(v0, transform);
+        v1 = Transform::transform_point(v1, transform);
+        v2 = Transform::transform_point(v2, transform);
+        v3 = Transform::transform_point(v3, transform);
 
-        geometry::rasterize_filled_triangle({ v0, v1, v2 }, color, emit_pixel);
-        geometry::rasterize_filled_triangle({ v1, v3, v2 }, color, emit_pixel);
+        Rasterize::rasterize_filled_triangle({ v0, v1, v2 }, color, emit_pixel);
+        Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, color, emit_pixel);
     }
 
-    std::vector<gfx::math::Vec2d> points;
+    std::vector<Vec2d> points;
     std::vector<bool> segments_visible;
     bool do_close = false;
     bool do_fill = false;
@@ -224,5 +223,3 @@ public:
 };
 
 };
-
-#endif // POLYLINE_2D_H

@@ -1,18 +1,8 @@
-#include <gfx/primitives/polygon-2D.h>
-#include <gfx/utils/transform.h>
-#include <gfx/geometry/triangulate.h>
-#include <gfx/geometry/rasterize.h>
+#include "gfx/primitives/polygon-2D.h"
 
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::math;
-using namespace gfx::geometry;
-using namespace gfx::geometry::types;
-
 
 Box2d Polygon2D::get_geometry_size() const
 {
@@ -43,7 +33,7 @@ bool Polygon2D::point_collides(const Vec2d point, const Matrix3x3d &transform) c
 
 bool Polygon2D::cache_clockwise(const int component)
 {
-    Contour &contour = components[component].contour;
+    Polygon::Contour &contour = components[component].contour;
     double sum = 0.0;
     for (int i = 0; i < contour.vertices.size(); ++i)
     {
@@ -57,7 +47,7 @@ bool Polygon2D::cache_clockwise(const int component)
 
 bool Polygon2D::cache_clockwise_hole(const int component, const int hole)
 {
-    Contour &contour = components[component].holes[hole];
+    Polygon::Contour &contour = components[component].holes[hole];
     double sum = 0.0;
     for (int i = 0; i < contour.vertices.size(); ++i)
     {
@@ -69,7 +59,7 @@ bool Polygon2D::cache_clockwise_hole(const int component, const int hole)
     return contour.clockwise;
 }
 
-void Polygon2D::add_vertex(const gfx::math::Vec2d vertex, const int component) 
+void Polygon2D::add_vertex(const Vec2d vertex, const int component) 
 { 
     if (component >= components.size()) 
     { 
@@ -80,25 +70,25 @@ void Polygon2D::add_vertex(const gfx::math::Vec2d vertex, const int component)
     set_obb_dirty(); 
 }
 
-void Polygon2D::add_vertices(const std::vector<gfx::math::Vec2d> &new_vertices, const int component)
+void Polygon2D::add_vertices(const std::vector<Vec2d> &new_vertices, const int component)
 { 
     if (component >= components.size()) 
     { 
         components.resize(component + 1); 
     }
-    std::vector<gfx::math::Vec2d> &points { components[component].contour.vertices };
+    std::vector<Vec2d> &points { components[component].contour.vertices };
     points.insert(points.end(), new_vertices.begin(), new_vertices.end()); 
     cache_clockwise(component); 
     set_obb_dirty(); 
 }
 
-void Polygon2D::set_vertex(const size_t index, const gfx::math::Vec2d vertex, const int component)
+void Polygon2D::set_vertex(const size_t index, const Vec2d vertex, const int component)
 { 
     if (component >= components.size()) 
     { 
         components.resize(component + 1); 
     }
-    std::vector<gfx::math::Vec2d> &points { components[component].contour.vertices };
+    std::vector<Vec2d> &points { components[component].contour.vertices };
     if (index < points.size()) 
     { 
         points[index] = vertex; 
@@ -107,7 +97,7 @@ void Polygon2D::set_vertex(const size_t index, const gfx::math::Vec2d vertex, co
     } 
 }
 
-void Polygon2D::set_vertices(const std::vector<gfx::math::Vec2d> &new_vertices, const int component)
+void Polygon2D::set_vertices(const std::vector<Vec2d> &new_vertices, const int component)
 { 
     if (component >= components.size()) 
     { 
@@ -128,7 +118,7 @@ void Polygon2D::clear_vertices(const int component)
     set_obb_dirty(); 
 }
 
-std::vector<gfx::math::Vec2d> Polygon2D::get_vertices(const int component) const 
+std::vector<Vec2d> Polygon2D::get_vertices(const int component) const 
 { 
     if (component >= components.size())
     { 
@@ -137,7 +127,7 @@ std::vector<gfx::math::Vec2d> Polygon2D::get_vertices(const int component) const
     return components[component].contour.vertices;
 }
 
-void Polygon2D::add_hole_vertex(const gfx::math::Vec2d vertex, const int component, const int hole) 
+void Polygon2D::add_hole_vertex(const Vec2d vertex, const int component, const int hole) 
 { 
     if (component >= components.size()) 
     { 
@@ -148,7 +138,7 @@ void Polygon2D::add_hole_vertex(const gfx::math::Vec2d vertex, const int compone
     set_obb_dirty(); 
 }
 
-void Polygon2D::add_hole_vertices(const std::vector<gfx::math::Vec2d> &new_vertices, const int component, const int hole)
+void Polygon2D::add_hole_vertices(const std::vector<Vec2d> &new_vertices, const int component, const int hole)
 { 
     if (component >= components.size()) 
     { 
@@ -158,13 +148,13 @@ void Polygon2D::add_hole_vertices(const std::vector<gfx::math::Vec2d> &new_verti
     {
         components[component].holes.resize(hole + 1);
     }
-    std::vector<gfx::math::Vec2d> &points { components[component].holes[hole].vertices };
+    std::vector<Vec2d> &points { components[component].holes[hole].vertices };
     points.insert(points.end(), new_vertices.begin(), new_vertices.end()); 
     cache_clockwise_hole(component, hole); 
     set_obb_dirty(); 
 }
 
-void Polygon2D::set_hole_vertex(const size_t index, const gfx::math::Vec2d vertex, const int component, const int hole)
+void Polygon2D::set_hole_vertex(const size_t index, const Vec2d vertex, const int component, const int hole)
 { 
     if (component >= components.size()) 
     { 
@@ -174,7 +164,7 @@ void Polygon2D::set_hole_vertex(const size_t index, const gfx::math::Vec2d verte
     {
         components[component].holes.resize(hole + 1);
     }
-    std::vector<gfx::math::Vec2d> &points { components[component].holes[hole].vertices };
+    std::vector<Vec2d> &points { components[component].holes[hole].vertices };
     if (component < points.size()) 
     { 
         points[index] = vertex; 
@@ -183,7 +173,7 @@ void Polygon2D::set_hole_vertex(const size_t index, const gfx::math::Vec2d verte
     } 
 }
 
-void Polygon2D::set_hole_vertices(const std::vector<gfx::math::Vec2d> &new_vertices, const int component, const int hole)
+void Polygon2D::set_hole_vertices(const std::vector<Vec2d> &new_vertices, const int component, const int hole)
 { 
     if (component >= components.size()) 
     { 
@@ -212,7 +202,7 @@ void Polygon2D::clear_hole_vertices(const int component, const int hole)
     set_obb_dirty(); 
 }
 
-std::vector<gfx::math::Vec2d> Polygon2D::get_hole_vertices(const int component, const int hole) const 
+std::vector<Vec2d> Polygon2D::get_hole_vertices(const int component, const int hole) const 
 { 
     if (component >= components.size())
     { 

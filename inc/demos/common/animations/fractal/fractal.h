@@ -1,10 +1,9 @@
-#ifndef FRACTAL_H
-#define FRACTAL_H
+#pragma once
 
 #include <complex>
 #include <gfx/math/vec2.h>
 
-namespace demos::common::animations::fractal
+namespace demos
 {
 
 class Fractal
@@ -24,5 +23,3 @@ protected:
 };
 
 }
-
-#endif // FRACTAL_H

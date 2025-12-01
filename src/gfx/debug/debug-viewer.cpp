@@ -1,11 +1,8 @@
-#include <gfx/debug/debug-viewer.h>
-#include <gfx/utils/transform.h>
+#include "gfx/debug/debug-viewer.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::debug
+namespace gfx
 {
-
-using namespace gfx::math;
-using namespace gfx::core::types;
 
 void DebugViewer::clear()
 {
@@ -14,9 +11,9 @@ void DebugViewer::clear()
     anchor_items.clear();
 }
 
-std::vector<std::shared_ptr<gfx::core::Primitive2D>> DebugViewer::get_debug_items() const
+std::vector<std::shared_ptr<Primitive2D>> DebugViewer::get_debug_items() const
 {
-    std::vector<std::shared_ptr<gfx::core::Primitive2D>> items;
+    std::vector<std::shared_ptr<Primitive2D>> items;
 
     for (const auto& [id, item] : aabb_items)
     {
@@ -62,7 +59,7 @@ void DebugViewer::populate(const DebugInfo &info)
             Box2d aabb { primitive->get_axis_aligned_bounding_box(transform) };
             if (aabb_items.find(primitive->get_id()) == aabb_items.end())
             {
-                auto box_primitive { std::make_shared<gfx::primitives::Polyline2D>() };
+                auto box_primitive { std::make_shared<Polyline2D>() };
                 box_primitive->set_color(bounds_color);
                 box_primitive->set_line_thickness(1.0);
                 box_primitive->set_close(true);
@@ -81,7 +78,7 @@ void DebugViewer::populate(const DebugInfo &info)
             OBB2D obb { primitive->get_oriented_bounding_box(transform) };
             if (obb_items.find(primitive->get_id()) == obb_items.end())
             {
-                auto box_primitive { std::make_shared<gfx::primitives::Polyline2D>() };
+                auto box_primitive { std::make_shared<Polyline2D>() };
                 box_primitive->set_color(bounds_color);
                 box_primitive->set_line_thickness(1.0);
                 box_primitive->set_close(true);
@@ -100,7 +97,7 @@ void DebugViewer::populate(const DebugInfo &info)
             Vec2d anchor_world = primitive->get_position();
             if (anchor_items.find(primitive->get_id()) == anchor_items.end())
             {
-                auto anchor_primitive { std::make_shared<gfx::primitives::Circle2D>() };
+                auto anchor_primitive { std::make_shared<Circle2D>() };
                 anchor_primitive->set_color(anchor_color);
                 anchor_primitive->set_radius(1.0);
                 anchor_primitive->set_filled(true);
@@ -126,7 +123,7 @@ void DebugViewer::populate(const DebugInfo &info)
         {
             if (!fps_text_item)
             {
-                fps_text_item = std::make_shared<gfx::primitives::Text2D>();
+                fps_text_item = std::make_shared<Text2D>();
                 fps_text_item->set_font(font);
                 fps_text_item->set_font_size(font_size);
                 fps_text_item->set_smoothing_radius(0.6);
@@ -141,7 +138,7 @@ void DebugViewer::populate(const DebugInfo &info)
         {
             if (!num_items_text_item)
             {
-                num_items_text_item = std::make_shared<gfx::primitives::Text2D>();
+                num_items_text_item = std::make_shared<Text2D>();
                 num_items_text_item->set_font(font);
                 num_items_text_item->set_font_size(font_size);
                 num_items_text_item->set_smoothing_radius(0.6);

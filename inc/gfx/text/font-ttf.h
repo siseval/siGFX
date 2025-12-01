@@ -1,44 +1,45 @@
-#ifndef FONT_TTF_H
-#define FONT_TTF_H
+#pragma once
 
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <gfx/text/font.h>
-#include <gfx/math/box2.h>
 
-namespace gfx::text
-{
+#include "gfx/text/font.h"
+#include "gfx/math/box2.h"
 
-struct Point
+namespace gfx
 {
-    double x;
-    double y;
-    bool on_curve;
-};
-
-struct GlyphTTF
-{
-    gfx::math::Box2d bbox;
-    std::vector<std::vector<Point>> contours;
-};
-
-struct ContourEdge
-{
-    gfx::math::Vec2d v0;
-    gfx::math::Vec2d v1;
-};
-
-struct GlyphMetrics
-{
-    int advance_width;
-    int left_side_bearing;
-};
 
 class FontTTF
 {
 
 public:
+
+    struct Point
+    {
+        double x;
+        double y;
+        bool on_curve;
+    };
+
+    struct GlyphTTF
+    {
+        Box2d bbox;
+        std::vector<std::vector<Point>> contours;
+    };
+
+    struct ContourEdge
+    {
+        Vec2d v0;
+        Vec2d v1;
+    };
+
+    struct GlyphMetrics
+    {
+        int advance_width;
+        int left_side_bearing;
+    };
+
 
     FontTTF(int units_per_em, double ascent, double descent, double line_gap, int num_glyphs)
         : units_per_em(units_per_em), ascent(ascent), descent(descent), line_gap(line_gap), num_glyphs(num_glyphs) {}
@@ -112,5 +113,3 @@ private:
 };
 
 }
-
-#endif // FONT_TTF_H

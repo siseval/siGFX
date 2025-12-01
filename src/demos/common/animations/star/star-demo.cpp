@@ -1,15 +1,10 @@
-#include <demos/common/animations/star/star-demo.h>
-#include <demos/common/core/demo-utils.h>
+#include "demos/common/animations/star/star-demo.h"
+#include "demos/common/core/demo-utils.h"
 
-namespace demos::common::animations::star
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::core;
-
+using namespace gfx;
 
 void StarDemo::init()
 {
@@ -61,7 +56,7 @@ void StarDemo::init()
 
 void StarDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
 
     if (!paused)
     {

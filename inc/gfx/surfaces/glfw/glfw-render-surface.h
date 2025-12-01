@@ -1,20 +1,21 @@
-#ifndef GLFW_RENDER_SURFACE_H
-#define GLFW_RENDER_SURFACE_H
+#pragma once
 
 #include <string>
-#include <gfx/core/render-surface.h>
-#include <gfx/surfaces/glfw/glad.h>
+
+#include "gfx/surfaces/glfw/glad.h"
+#include "gfx/core/render-surface.h"
+
 #include <GLFW/glfw3.h>
 
-namespace gfx::surfaces
+namespace gfx
 {
 
-class GLFWRenderSurface : public gfx::core::RenderSurface
+class GLFWRenderSurface : public RenderSurface
 {
 
 public:
 
-    GLFWRenderSurface(const gfx::math::Vec2i resolution) 
+    GLFWRenderSurface(const Vec2i resolution) 
         : RenderSurface(resolution) {};
 
     int init() override;
@@ -25,7 +26,7 @@ public:
     void clear_palette() override {};
     void clear_frame_buffer() override;
 
-    void resize(const gfx::math::Vec2i new_resolution) override;
+    void resize(const Vec2i new_resolution) override;
 
     void print_frame_buffer();
 
@@ -40,7 +41,7 @@ public:
         }
     }
 
-    inline void set_clear_color(const gfx::core::types::Color4 color) override
+    inline void set_clear_color(const Color4 color) override
     {
         clear_color = color;
         glClearColor(
@@ -61,7 +62,7 @@ private:
 
     GLFWwindow* window;
 
-    gfx::math::Vec2i gl_window_size { 800, 600 };
+    Vec2i gl_window_size { 800, 600 };
     double refresh_rate_hz = 60.0;
 
     GLuint texture = 0;
@@ -73,5 +74,3 @@ private:
 };
 
 }
-
-#endif // GLFW_RENDER_SURFACE_H

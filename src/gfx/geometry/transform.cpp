@@ -1,12 +1,9 @@
-#include <gfx/utils/transform.h>
+#include "gfx/geometry/transform.h"
 
-namespace gfx::utils
+namespace gfx
 {
 
-using namespace gfx::math;
-
-
-Matrix3x3d translate(const Vec2d pos)
+Matrix3x3d Transform::translate(const Vec2d pos)
 {
     return Matrix3x3d {
         { 1, 0, pos.x },
@@ -15,7 +12,7 @@ Matrix3x3d translate(const Vec2d pos)
     };
 }
 
-Matrix3x3d rotate(const double angle)
+Matrix3x3d Transform::rotate(const double angle)
 {
     double sin_angle { std::sin(angle) };
     double cos_angle { std::cos(angle) };
@@ -27,7 +24,7 @@ Matrix3x3d rotate(const double angle)
     };
 }
 
-Matrix3x3d scale(const Vec2d scale)
+Matrix3x3d Transform::scale(const Vec2d scale)
 {
     return Matrix3x3d {
         { scale.x, 0, 0 },
@@ -36,24 +33,24 @@ Matrix3x3d scale(const Vec2d scale)
     };
 }
 
-Vec2d extract_translation(const Matrix3x3d &transform)
+Vec2d Transform::extract_translation(const Matrix3x3d &transform)
 {
     return Vec2d { transform(0, 2), transform(1, 2) };
 }
 
-double extract_rotation(const Matrix3x3d &transform)
+double Transform::extract_rotation(const Matrix3x3d &transform)
 {
     return std::atan2(transform(1, 0), transform(0, 0));
 }
 
-Vec2d extract_scale(const Matrix3x3d &transform)
+Vec2d Transform::extract_scale(const Matrix3x3d &transform)
 {
     double scale_x { std::sqrt(transform(0, 0) * transform(0, 0) + transform(1, 0) * transform(1, 0)) };
     double scale_y { std::sqrt(transform(0, 1) * transform(0, 1) + transform(1, 1) * transform(1, 1)) };
     return Vec2d { scale_x, scale_y };
 }
 
-Vec2d transform_point(const Vec2d pos, const Matrix3x3d &transform)
+Vec2d Transform::transform_point(const Vec2d pos, const Matrix3x3d &transform)
 {
     Matrix3x1d column_matrix {
         { pos.x }, 
@@ -64,7 +61,7 @@ Vec2d transform_point(const Vec2d pos, const Matrix3x3d &transform)
     return Vec2d { transformed(0, 0), transformed(1, 0), };
 }
 
-Vec2d transform_vector(const Vec2d vec, const Matrix3x3d &transform)
+Vec2d Transform::transform_vector(const Vec2d vec, const Matrix3x3d &transform)
 {
     Matrix3x1d column_matrix {
         { vec.x }, 
@@ -75,7 +72,7 @@ Vec2d transform_vector(const Vec2d vec, const Matrix3x3d &transform)
     return Vec2d { transformed(0, 0), transformed(1, 0), };
 }
 
-std::vector<Vec2d> transform_points(const std::vector<Vec2d> points, const Matrix3x3d &transform)
+std::vector<Vec2d> Transform::transform_points(const std::vector<Vec2d> points, const Matrix3x3d &transform)
 {
     std::vector<Vec2d> transformed_points;
     for (auto point : points)
@@ -85,7 +82,7 @@ std::vector<Vec2d> transform_points(const std::vector<Vec2d> points, const Matri
     return transformed_points;
 }
 
-std::vector<Vec2d> transform_vectors(const std::vector<Vec2d> vectors, const Matrix3x3d &transform)
+std::vector<Vec2d> Transform::transform_vectors(const std::vector<Vec2d> vectors, const Matrix3x3d &transform)
 {
     std::vector<Vec2d> transformed_vectors;
     for (auto vec : vectors)
@@ -95,7 +92,7 @@ std::vector<Vec2d> transform_vectors(const std::vector<Vec2d> vectors, const Mat
     return transformed_vectors;
 }
 
-Matrix3x3d invert_affine(const Matrix3x3d &m)
+Matrix3x3d Transform::invert_affine(const Matrix3x3d &m)
 {
     double a { m(0, 0) }, b { m(0, 1) }, c { m(0, 2) };
     double d { m(1, 0) }, e { m(1, 1) }, f { m(1, 2) };

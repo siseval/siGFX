@@ -1,18 +1,17 @@
-#ifndef TEXT_2D_H
-#define TEXT_2D_H
+#pragma once
 
-#include <gfx/core/primitive-2D.h>
-#include <gfx/text/font-ttf.h>
-#include <gfx/math/box2.h>
-#include <gfx/math/matrix.h>
-#include <gfx/math/vec2.h>
-#include <gfx/text/utf-8.h>
-#include <gfx/utils/transform.h>
+#include "gfx/core/primitive-2D.h"
+#include "gfx/text/font-ttf.h"
+#include "gfx/math/box2.h"
+#include "gfx/math/matrix.h"
+#include "gfx/math/vec2.h"
+#include "gfx/text/utf-8.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
 
-class Text2D : public gfx::core::PrimitiveTemplate<Text2D>
+class Text2D : public PrimitiveTemplate<Text2D>
 {
 
 public:
@@ -25,8 +24,8 @@ public:
     };
 
 
-    gfx::math::Box2d get_geometry_size() const override;
-    bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const override { return false; }
+    Box2d get_geometry_size() const override;
+    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override { return false; }
 
     void set_text(const std::string &new_text) 
     { 
@@ -35,7 +34,7 @@ public:
         set_size_dirty();
     }
 
-    void set_font(const std::shared_ptr<gfx::text::FontTTF> new_font) 
+    void set_font(const std::shared_ptr<FontTTF> new_font) 
     { 
         font = new_font; 
         set_edges_dirty();
@@ -69,7 +68,7 @@ public:
     inline double get_line_height_multiplier() const { return line_height_multiplier; }
 
     template<typename EmitPixel>
-    void rasterize_glyph_sdf(const std::vector<gfx::text::ContourEdge> &glyph, EmitPixel &&emit_pixel) const
+    void rasterize_glyph_sdf(const std::vector<FontTTF::ContourEdge> &glyph, EmitPixel &&emit_pixel) const
     {
         if (glyph.empty())
         {
@@ -78,7 +77,7 @@ public:
 
         std::vector<EdgeData> edges = preprocess_edges(glyph);
 
-        auto bounds = gfx::math::Box2i::unexpanded();
+        auto bounds = Box2i::unexpanded();
         for (const auto &e : glyph) 
         {
             bounds.expand(e.v0);
@@ -89,7 +88,7 @@ public:
         {
             for (int x = bounds.min.x - 1; x <= bounds.max.x + 1; ++x) 
             {
-                gfx::math::Vec2d p { x + 0.5, y + 0.5 };
+                Vec2d p { x + 0.5, y + 0.5 };
 
                 int winding = 0;
                 for (const auto &e : edges) 
@@ -123,7 +122,7 @@ public:
     }
     
     template<typename EmitPixel>
-    void rasterize_glyph(std::vector<gfx::text::ContourEdge> glyph, EmitPixel &&emit_pixel) const
+    void rasterize_glyph(std::vector<FontTTF::ContourEdge> glyph, EmitPixel &&emit_pixel) const
     {
         if (glyph.empty()) 
         {
@@ -132,7 +131,7 @@ public:
 
         std::vector<EdgeData> edges = preprocess_edges(glyph);
 
-        auto bounds { gfx::math::Box2i::unexpanded() };
+        auto bounds { Box2i::unexpanded() };
 
         for (const auto &edge : glyph)
         {
@@ -174,7 +173,7 @@ public:
 
                 for (int x = x0; x <= x1; ++x)
                 {
-                    gfx::math::Vec2d p { x + 0.5, y + 0.5 };
+                    Vec2d p { x + 0.5, y + 0.5 };
                     emit_pixel({ { x, y }, color });
                 }
             }
@@ -187,7 +186,7 @@ public:
     }
 
     template<typename EmitPixel>
-    void rasterize(const gfx::math::Matrix3x3d &transform, EmitPixel &&emit_pixel) const
+    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         double scale = font_size / font->get_units_per_em();
         double ascent = font->get_ascent() * scale;
@@ -197,10 +196,10 @@ public:
             font_size + line_gap : 
             font_size * line_height_multiplier;
 
-        gfx::math::Vec2d pen { gfx::math::Vec2d::zero() };
+        Vec2d pen { Vec2d::zero() };
 
-        gfx::math::Vec2d min { gfx::math::Vec2d(std::numeric_limits<double>::max()) };
-        gfx::math::Vec2d max { gfx::math::Vec2d(std::numeric_limits<double>::lowest()) };
+        Vec2d min { Vec2d(std::numeric_limits<double>::max()) };
+        Vec2d max { Vec2d(std::numeric_limits<double>::lowest()) };
 
         std::vector<double> line_widths { 0.0 };
         int line_index = 0;
@@ -211,7 +210,7 @@ public:
             uint32_t codepoint;
             size_t bytes;
 
-            if (!gfx::text::decode_utf8(text, i, codepoint, bytes))
+            if (!decode_utf8(text, i, codepoint, bytes))
             {
                 ++i;
                 continue;
@@ -231,7 +230,7 @@ public:
             {
                 size_t prev_bytes;
                 uint32_t prev_cp;
-                gfx::text::decode_utf8(text, i - 1, prev_cp, prev_bytes);
+                decode_utf8(text, i - 1, prev_cp, prev_bytes);
                 pen.x += font->get_kerning(prev_cp, codepoint) * scale;
                 line_widths[line_index] = pen.x;
             }
@@ -239,8 +238,8 @@ public:
             auto edges = font->get_glyph_edges(codepoint);
             for (auto &edge : edges)
             {
-                gfx::math::Vec2d v0 = edge.v0 * scale;
-                gfx::math::Vec2d v1 = edge.v1 * scale;
+                Vec2d v0 = edge.v0 * scale;
+                Vec2d v1 = edge.v1 * scale;
 
                 v0.x += pen.x; v1.x += pen.x;
                 v0.y = -v0.y + ascent + pen.y;
@@ -258,7 +257,7 @@ public:
             i += bytes;
         }
 
-        pen = gfx::math::Vec2d { 0.0, 0.0 };
+        pen = Vec2d { 0.0, 0.0 };
         line_index = 0;
         i = 0;
         while (i < text.size())
@@ -266,7 +265,7 @@ public:
             uint32_t codepoint;
             size_t bytes;
 
-            if (!gfx::text::decode_utf8(text, i, codepoint, bytes))
+            if (!decode_utf8(text, i, codepoint, bytes))
             {
                 ++i;
                 continue;
@@ -285,7 +284,7 @@ public:
             {
                 size_t prev_bytes;
                 uint32_t prev_cp;
-                gfx::text::decode_utf8(text, i - 1, prev_cp, prev_bytes);
+                decode_utf8(text, i - 1, prev_cp, prev_bytes);
                 pen.x += font->get_kerning(prev_cp, codepoint) * scale;
             }
 
@@ -310,8 +309,8 @@ public:
                 edge.v0.y = -edge.v0.y + ascent + pen.y - min.y;
                 edge.v1.y = -edge.v1.y + ascent + pen.y - min.y;
 
-                edge.v0 = utils::transform_point(edge.v0, transform);
-                edge.v1 = utils::transform_point(edge.v1, transform);
+                edge.v0 = Transform::transform_point(edge.v0, transform);
+                edge.v1 = Transform::transform_point(edge.v1, transform);
             }
 
             if (smoothing_radius > 0.0)
@@ -332,10 +331,10 @@ private:
 
     struct EdgeData
     {
-        gfx::math::Vec2d p0;
-        gfx::math::Vec2d p1;
-        gfx::math::Vec2d dir;
-        gfx::math::Vec2d normal;
+        Vec2d p0;
+        Vec2d p1;
+        Vec2d dir;
+        Vec2d normal;
         double inv_length_sq;
     };
 
@@ -346,11 +345,11 @@ private:
         int y_max;
     };
 
-    std::vector<EdgeData> preprocess_edges(const std::vector<gfx::text::ContourEdge> &edges) const;
-    std::vector<std::vector<ETEntry>> build_edge_table(const std::vector<gfx::text::ContourEdge> &edges, const gfx::math::Box2i &bounds) const;
-    bool point_inside_glyph(const std::vector<ETEntry> &edges, const gfx::math::Vec2d point) const;
-    double dist_to_segment(const EdgeData &edge_data, const gfx::math::Vec2d point) const;
-    double signed_distance_to_glyph(const std::vector<EdgeData> &edges, const gfx::math::Vec2d &point, const bool inside) const;
+    std::vector<EdgeData> preprocess_edges(const std::vector<FontTTF::ContourEdge> &edges) const;
+    std::vector<std::vector<ETEntry>> build_edge_table(const std::vector<FontTTF::ContourEdge> &edges, const Box2i &bounds) const;
+    bool point_inside_glyph(const std::vector<ETEntry> &edges, const Vec2d point) const;
+    double dist_to_segment(const EdgeData &edge_data, const Vec2d point) const;
+    double signed_distance_to_glyph(const std::vector<EdgeData> &edges, const Vec2d &point, const bool inside) const;
     double coverage_from_sdf(const double signed_distance) const;
     double coverage_to_alpha(const double coverage) const;
 
@@ -359,10 +358,10 @@ private:
 
     TextAlignment alignment = TextAlignment::LEFT;
 
-    gfx::math::Vec2d text_box { -1.0, -1.0 };
+    Vec2d text_box { -1.0, -1.0 };
 
     std::string text;
-    std::shared_ptr<gfx::text::FontTTF> font;
+    std::shared_ptr<FontTTF> font;
 
     double font_size;
     double line_height_multiplier = 1.2;
@@ -372,10 +371,8 @@ private:
     mutable bool edges_dirty = true;
     mutable bool size_dirty = true;
 
-    mutable gfx::math::Box2d cached_geometry_size;
-    mutable std::unordered_map<uint32_t, std::vector<gfx::text::ContourEdge>> cached_glyph_edges;
+    mutable Box2d cached_geometry_size;
+    mutable std::unordered_map<uint32_t, std::vector<FontTTF::ContourEdge>> cached_glyph_edges;
  };
 
 }
-
-#endif // TEXT_2D_H

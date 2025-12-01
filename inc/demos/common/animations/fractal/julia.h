@@ -1,10 +1,9 @@
-#ifndef JULIA_H
-#define JULIA_H
+#pragma once
 
 #include <complex>
 #include <demos/common/animations/fractal/fractal.h>
 
-namespace demos::common::animations::fractal
+namespace demos
 {
 
 class Julia : public Fractal
@@ -29,6 +28,3 @@ public:
 
 
 }
-
-#endif // JULIA_H
-

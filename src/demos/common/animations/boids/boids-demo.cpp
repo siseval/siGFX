@@ -1,15 +1,10 @@
-#include <demos/common/animations/boids/boids-demo.h>
-#include <demos/common/core/demo-utils.h>
+#include "demos/common/animations/boids/boids-demo.h"
+#include "demos/common/core/demo-utils.h"
 
-namespace demos::common::animations::boids
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::core;
-
+using namespace gfx;
 
 void BoidsDemo::init()
 {
@@ -62,12 +57,12 @@ void BoidsDemo::spawn_boid()
 {
     Vec2d resolution { get_resolution() };
     Vec2d position {
-        utils::random_double(0.0, resolution.x),
-        utils::random_double(0.0, resolution.y)
+        random_double(0.0, resolution.x),
+        random_double(0.0, resolution.y)
     };
     Vec2d velocity {
-        utils::random_double(-50.0, 50.0),
-        utils::random_double(-50.0, 50.0)
+        random_double(-50.0, 50.0),
+        random_double(-50.0, 50.0)
     };
     spawn_boid(position, velocity);
 }
@@ -267,9 +262,9 @@ void BoidsDemo::render_frame(const double dt)
     renderer->draw_frame();
 }
 
-void BoidsDemo::report_mouse(const demos::common::core::MouseEvent event)
+void BoidsDemo::report_mouse(const demos::MouseEvent event)
 {
-    if (event.type == demos::common::core::MouseEventType::MOVE)
+    if (event.type == demos::MouseEventType::MOVE)
     {
         Vec2i resolution { renderer->get_resolution() };
         mouse_position = Vec2d {
@@ -277,7 +272,7 @@ void BoidsDemo::report_mouse(const demos::common::core::MouseEvent event)
             event.position.y * static_cast<double>(resolution.y)
         };
     }
-    else if (event.type == demos::common::core::MouseEventType::LEFT_DOWN)
+    else if (event.type == demos::MouseEventType::LEFT_DOWN)
     {
         mouse_active = !mouse_active;
     }

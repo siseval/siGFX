@@ -1,12 +1,8 @@
-#include <gfx/primitives/bitmap-2D.h>
-#include <gfx/utils/transform.h>
+#include "gfx/primitives/bitmap-2D.h"
+#include "gfx/geometry/transform.h"
 
-namespace gfx::primitives
+namespace gfx
 {
-
-using namespace gfx::core::types;
-using namespace gfx::core;
-using namespace gfx::math;
 
 Box2d Bitmap2D::get_geometry_size() const
 {
@@ -21,8 +17,8 @@ Box2d Bitmap2D::get_geometry_size() const
 
 bool Bitmap2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
 {
-    Matrix3x3d inverse_transform { utils::invert_affine(transform) };
-    Vec2d local_point { utils::transform_point(point, inverse_transform) };
+    Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+    Vec2d local_point { Transform::transform_point(point, inverse_transform) };
 
     int img_x = static_cast<int>(local_point.x);
     int img_y = static_cast<int>(local_point.y);

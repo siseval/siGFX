@@ -1,15 +1,10 @@
-#include <demos/common/animations/fireworks/fireworks-demo.h>
-#include <demos/common/core/demo-utils.h>
+#include "demos/common/animations/fireworks/fireworks-demo.h"
+#include "demos/common/core/demo-utils.h"
 
-namespace demos::common::animations::fireworks
+namespace demos
 {
 
-using namespace gfx::core;
-using namespace gfx::core::types;
-using namespace gfx::primitives;
-using namespace gfx::math;
-using namespace demos::common::core;
-
+using namespace gfx;
 
 void FireworksDemo::init()
 {
@@ -31,7 +26,7 @@ void FireworksDemo::init()
 
 void FireworksDemo::render_frame(const double dt)
 {
-    double t0 { utils::time_us() };
+    double t0 { time_us() };
     double time_ms { t0 / 1000.0 };
 
     if (fireworks.size() < max_fireworks && (fireworks.empty() || (time_ms - last_spawn_time_ms) >= spawn_interval_ms))
@@ -61,12 +56,12 @@ void FireworksDemo::render_frame(const double dt)
 void FireworksDemo::spawn_firework()
 {
     Vec2d position {
-        static_cast<double>(utils::random_int(spawn_margins.x, get_resolution().x - spawn_margins.x)),
+        static_cast<double>(random_int(spawn_margins.x, get_resolution().x - spawn_margins.x)),
         static_cast<double>(get_resolution().y)
     };
 
-    double angle { utils::random_double(-angle_variation, angle_variation) - 90 };
-    Vec2d velocity { Vec2d::from_angle_degrees(angle, utils::random_double(firework_speed * 0.75, firework_speed * 1.25)) };
+    double angle { random_double(-angle_variation, angle_variation) - 90 };
+    Vec2d velocity { Vec2d::from_angle_degrees(angle, random_double(firework_speed * 0.75, firework_speed * 1.25)) };
 
     std::vector<Color4> colors { color_combinations[rand() % color_combinations.size()] };
     fireworks.emplace_back(renderer, position, velocity, options, colors);

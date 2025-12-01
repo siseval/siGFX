@@ -1,11 +1,10 @@
-#ifndef UUID_H
-#define UUID_H
+#pragma once
 
 #include <cstdlib>
 #include <cstdint>
 #include <functional>
 
-namespace gfx::utils
+namespace gfx
 {
 
 struct UUID
@@ -40,12 +39,10 @@ struct UUID
 }
 
 template <>
-struct std::hash<gfx::utils::UUID>
+struct std::hash<gfx::UUID>
 {
-    size_t operator()(const gfx::utils::UUID &uuid) const
+    size_t operator()(const gfx::UUID &uuid) const
     {
         return std::hash<uint64_t>()(uuid.part1) ^ (std::hash<uint64_t>()(uuid.part2) << 1);
     }
 };
-
-#endif // UUID_H
