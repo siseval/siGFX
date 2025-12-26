@@ -70,7 +70,14 @@ Matrix3x3d Primitive2D::get_transform() const
     Matrix3x3d rotation_matrix { Transform::rotate(rotation) };
     Matrix3x3d position_translation_matrix { Transform::translate(get_position()) };
 
+<<<<<<< HEAD
+    cached_transform = 
+        position_translation_matrix * rotation_matrix * 
+        scale_matrix * anchor_translation_matrix;
+
+=======
     cached_transform = position_translation_matrix * rotation_matrix * scale_matrix * anchor_translation_matrix;
+>>>>>>> dffdb0631f6dcb0f6cdaf39a229293a5db8bc9df
     transform_dirty = false;
 
     return cached_transform;
