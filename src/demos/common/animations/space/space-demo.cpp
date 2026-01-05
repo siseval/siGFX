@@ -14,37 +14,37 @@ void SpaceDemo::init()
 {
     time_scale = 0.01;
     clear_bodies();
-    renderer->get_render_surface()->clear_palette();
+    render2D->get_render_surface()->clear_palette();
     hovered_body = nullptr;
 
     std::vector<Vec2d> arrow_points { { -20, -20 }, { 30, 0 }, { -20, 20 }, { 0, 0 } };
-    spawn_velocity_indicator_head = renderer->create_polyline({ 0, 0 }, arrow_points, Color4 { 255, 255, 255 }, 2.0);
+    spawn_velocity_indicator_head = render2D->create_polyline({ 0, 0 }, arrow_points, Color4 { 255, 255, 255 }, 2.0);
     spawn_velocity_indicator_head->set_close(true);
     spawn_velocity_indicator_head->set_rounded_corners(true);
 
-    spawn_velocity_indicator_line = renderer->create_polyline({ 0, 0 }, { { 0, 0 }, { 10, 0 } }, Color4 { 255, 255, 255 }, 2.0);
+    spawn_velocity_indicator_line = render2D->create_polyline({ 0, 0 }, { { 0, 0 }, { 10, 0 } }, Color4 { 255, 255, 255 }, 2.0);
     spawn_velocity_indicator_line->set_rounded_corners(true);
 
-    spawn_radius_indicator = renderer->create_ellipse({ 0, 0 }, 10.0, Color4 { 255, 255, 255 }, 2.0);
+    spawn_radius_indicator = render2D->create_ellipse({ 0, 0 }, 10.0, Color4 { 255, 255, 255 }, 2.0);
     spawn_radius_indicator->set_anchor({ 0.5, 0.5 });
-    spawn_radius_indicator_inner = renderer->create_ellipse({ 0, 0 }, 10.0, Color4 { 200, 200, 200 }, 2.0);
+    spawn_radius_indicator_inner = render2D->create_ellipse({ 0, 0 }, 10.0, Color4 { 200, 200, 200 }, 2.0);
     spawn_radius_indicator_inner->set_filled(true);
 
-    renderer->add_item(spawn_velocity_indicator_head);
-    renderer->add_item(spawn_velocity_indicator_line);
-    renderer->add_item(spawn_radius_indicator);
-    renderer->add_item(spawn_radius_indicator_inner, spawn_radius_indicator);
+    render2D->add_item(spawn_velocity_indicator_head);
+    render2D->add_item(spawn_velocity_indicator_line);
+    render2D->add_item(spawn_radius_indicator);
+    render2D->add_item(spawn_radius_indicator_inner, spawn_radius_indicator);
 
     std::vector<Vec2d> bracket_points { { 20, 0 }, { 0, 20 }, { 0, 90, }, { 20, 110 } };
-    left_bracket = renderer->create_polyline({ 0, 0 }, bracket_points, Color4 { 255, 255, 255 }, min_bracket_thickness);
-    right_bracket = renderer->create_polyline({ 0, 0 }, bracket_points, Color4 { 255, 255, 255 }, min_bracket_thickness);
+    left_bracket = render2D->create_polyline({ 0, 0 }, bracket_points, Color4 { 255, 255, 255 }, min_bracket_thickness);
+    right_bracket = render2D->create_polyline({ 0, 0 }, bracket_points, Color4 { 255, 255, 255 }, min_bracket_thickness);
     right_bracket->set_rotation(std::numbers::pi);
     left_bracket->set_anchor({ 0.5, 0.5 });
     right_bracket->set_anchor({ 0.5, 0.5 });
     left_bracket->set_rounded_corners(true);
     right_bracket->set_rounded_corners(true);
-    renderer->add_item(left_bracket);
-    renderer->add_item(right_bracket);
+    render2D->add_item(left_bracket);
+    render2D->add_item(right_bracket);
 
     Simulate::solar_system(*this);
 }
@@ -67,7 +67,10 @@ void SpaceDemo::render_frame(const double dt)
 
     render_spawn_workflow();
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
+
     last_frame_us = time_us() - t0;
 }
 
@@ -209,7 +212,7 @@ void SpaceDemo::update_trails(const double time_lerp)
                     get_resolution()
                 ) 
             };
-            double margin { renderer->get_resolution().length() * 1.0 };
+            double margin { render2D->get_resolution().length() * 1.0 };
             if (trail_point_screen.x < -margin || trail_point_screen.x > get_resolution().x + margin ||
                 trail_point_screen.y < -margin || trail_point_screen.y > get_resolution().y + margin)
             {
@@ -221,7 +224,7 @@ void SpaceDemo::update_trails(const double time_lerp)
         for (int i = 0; i < trail->get_num_points(); ++i)
         {
             Vec2d point { trail->get_point(i) };
-            double margin { renderer->get_resolution().length() * 0.1 };
+            double margin { render2D->get_resolution().length() * 0.1 };
             if (point.x < -margin || point.x > get_resolution().x + margin ||
                 point.y < -margin || point.y > get_resolution().y + margin)
             {
@@ -337,10 +340,10 @@ std::shared_ptr<Body> SpaceDemo::spawn_body(const std::string name, const Vec2d 
     auto shape = std::make_shared<Ellipse2D>();
     shape->set_filled(true);
     shape->set_anchor({ 0.5, 0.5 });
-    renderer->add_item(shape);
+    render2D->add_item(shape);
 
-    auto trail = renderer->create_polyline({ 0, 0 }, std::vector<Vec2d>(trail_length, { 0, 0 }), Color4(1.0, 1.0, 1.0), 1.0);
-    renderer->add_item(trail);
+    auto trail = render2D->create_polyline({ 0, 0 }, std::vector<Vec2d>(trail_length, { 0, 0 }), Color4(1.0, 1.0, 1.0), 1.0);
+    render2D->add_item(trail);
 
     RenderBody render_body { shape, trail };
 
@@ -360,8 +363,8 @@ void SpaceDemo::remove_body(const std::shared_ptr<Body> body)
     {
         return;
     }
-    renderer->remove_item(body_items.at(body).ellipse);
-    renderer->remove_item(body_items.at(body).trail);
+    render2D->remove_item(body_items.at(body).ellipse);
+    render2D->remove_item(body_items.at(body).trail);
     body_items.erase(body);
     body_list.erase(std::remove(body_list.begin(), body_list.end(), body), body_list.end());
 }
@@ -465,7 +468,7 @@ void SpaceDemo::cancel_spawn_workflow()
 
 void SpaceDemo::report_mouse(const demos::MouseEvent event)
 {
-    mouse_pos = event.position * renderer->get_resolution();
+    mouse_pos = event.position * render2D->get_resolution();
     hover_mouse = true;
     switch (event.type)
     {

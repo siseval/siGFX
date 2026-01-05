@@ -108,12 +108,14 @@ void GLFWRenderSurface::clear() const
 void GLFWRenderSurface::clear_frame_buffer()
 {
     std::fill(frame_buffer->begin(), frame_buffer->end(), 0);
+    std::fill(depth_buffer->begin(), depth_buffer->end(), std::numeric_limits<float>::infinity());
 }
 
 void GLFWRenderSurface::resize(const Vec2i new_resolution)
 {
     resolution = new_resolution;
     frame_buffer->resize(resolution.x * resolution.y, 0);
+    depth_buffer->resize(resolution.x * resolution.y, std::numeric_limits<float>::infinity());
     if (window)
     {
         glfwSetWindowSize(window, new_resolution.x, new_resolution.y);

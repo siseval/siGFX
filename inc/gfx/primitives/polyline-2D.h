@@ -4,8 +4,8 @@
 #include "gfx/math/box2.h"
 #include "gfx/math/vec2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/types/triangle.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/types/barycentric-triangle.h"
+#include "gfx/geometry/transform-2D.h"
 #include "gfx/geometry/triangulate.h"
 #include "gfx/geometry/types/polygon.h"
 #include "gfx/geometry/rasterize.h"
@@ -123,10 +123,10 @@ public:
 
         if (do_fill)
         {
-            std::vector<Vec2d> transformed_points { Transform::transform_points(points, transform) };
+            std::vector<Vec2d> transformed_points { Transform2D::transform_points(points, transform) };
 
             Polygon::Component polygon(transformed_points, clockwise);
-            std::vector<Triangle> triangles { Triangulate::triangulate_polygon(polygon) };
+            std::vector<BarycentricTriangle> triangles { Triangulate::triangulate_polygon(polygon) };
 
             for (const auto& triangle : triangles)
             {
@@ -150,9 +150,9 @@ public:
                 pos.y + (line_thickness / 2.0) * std::sin(theta)
             };
 
-            vertices.push_back(Transform::transform_point(vertex, transform));
+            vertices.push_back(Transform2D::transform_point(vertex, transform));
         }
-        Vec2d transformed_pos = Transform::transform_point(pos, transform);
+        Vec2d transformed_pos = Transform2D::transform_point(pos, transform);
 
         for (int i = 0; i < vertices.size() - 1; ++i)
         {
@@ -203,10 +203,10 @@ public:
         Vec2d v2 { end + offset };
         Vec2d v3 { end - offset };
 
-        v0 = Transform::transform_point(v0, transform);
-        v1 = Transform::transform_point(v1, transform);
-        v2 = Transform::transform_point(v2, transform);
-        v3 = Transform::transform_point(v3, transform);
+        v0 = Transform2D::transform_point(v0, transform);
+        v1 = Transform2D::transform_point(v1, transform);
+        v2 = Transform2D::transform_point(v2, transform);
+        v3 = Transform2D::transform_point(v3, transform);
 
         Rasterize::rasterize_filled_triangle({ v0, v1, v2 }, color, emit_pixel);
         Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, color, emit_pixel);

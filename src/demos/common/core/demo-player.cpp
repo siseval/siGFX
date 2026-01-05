@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "demos/common/core/demo-player.h"
+#include "demos/common/animations/test-3D/test-3D-demo.h"
 #include "demos/common/animations/star/star-demo.h"
 #include "demos/common/animations/snake/snake-demo.h"
 #include "demos/common/animations/fireworks/fireworks-demo.h"
@@ -20,23 +21,24 @@ void DemoPlayer::init()
 {
     try 
     {
-        renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
-        renderer->set_debug_font(renderer->get_font("gohu-regular"));
+        render2D->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
+        render2D->set_debug_font(render2D->get_font("gohu-regular"));
     } 
     catch (std::runtime_error &e) 
     {
         std::cerr << "Warning: Could not load font directory: " << e.what() << std::endl;
     }
 
-    demos.emplace_back(std::make_shared<StarDemo>(renderer));
-    demos.emplace_back(std::make_shared<TextDemo>(renderer));
+    demos.emplace_back(std::make_shared<Test3DDemo>(render2D, render3D));
+    demos.emplace_back(std::make_shared<StarDemo>(render2D));
+    demos.emplace_back(std::make_shared<TextDemo>(render2D));
     // demos.emplace_back(std::make_shared<VideoDemo>(renderer));
-    demos.emplace_back(std::make_shared<SnakeDemo>(renderer));
-    demos.emplace_back(std::make_shared<BoidsDemo>(renderer));
-    demos.emplace_back(std::make_shared<FractalDemo>(renderer));
-    demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
-    demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
-    demos.emplace_back(std::make_shared<SpaceDemo>(renderer));
+    demos.emplace_back(std::make_shared<SnakeDemo>(render2D));
+    demos.emplace_back(std::make_shared<BoidsDemo>(render2D));
+    demos.emplace_back(std::make_shared<FractalDemo>(render2D));
+    demos.emplace_back(std::make_shared<ShaderDemo>(render2D));
+    demos.emplace_back(std::make_shared<FireworksDemo>(render2D));
+    demos.emplace_back(std::make_shared<SpaceDemo>(render2D));
 
     cycle_demo(0);
 }
@@ -71,7 +73,7 @@ void DemoPlayer::run()
 
 void DemoPlayer::resize(const gfx::Vec2i new_resolution)
 {
-    renderer->set_resolution(new_resolution);
+    render2D->set_resolution(new_resolution);
     demos[current_demo]->init();
 }
 
@@ -89,16 +91,16 @@ void DemoPlayer::handle_input(const int input)
             show_debug = !show_debug;
             break;
         case '4':
-            renderer->set_enable_debug_viewer(!renderer->get_enable_debug_viewer());
+            render2D->set_enable_debug_viewer(!render2D->get_enable_debug_viewer());
             break;
         case '5':
-            renderer->set_debug_viewer_show_aabb(!renderer->get_debug_viewer_show_aabb());
+            render2D->set_debug_viewer_show_aabb(!render2D->get_debug_viewer_show_aabb());
             break;
         case '6':
-            renderer->set_debug_viewer_show_obb(!renderer->get_debug_viewer_show_obb());
+            render2D->set_debug_viewer_show_obb(!render2D->get_debug_viewer_show_obb());
             break;
         case '7':
-            renderer->set_debug_viewer_show_anchor(!renderer->get_debug_viewer_show_anchor());
+            render2D->set_debug_viewer_show_anchor(!render2D->get_debug_viewer_show_anchor());
             break;
         case 'N':
             cycle_demo(1);
@@ -134,11 +136,12 @@ void DemoPlayer::cycle_demo(const int direction)
 {
     demos[current_demo]->end();
     current_demo = (current_demo + direction + demos.size()) % demos.size();
-    renderer->clear_items();
+    render2D->clear_items();
+    render3D->clear_items();
 
-    if (demos[current_demo]->get_clear_color() != renderer->get_clear_color())
+    if (demos[current_demo]->get_clear_color() != render2D->get_clear_color())
     {
-        renderer->set_clear_color(demos[current_demo]->get_clear_color());
+        render2D->set_clear_color(demos[current_demo]->get_clear_color());
     }
 
     demos[current_demo]->init();

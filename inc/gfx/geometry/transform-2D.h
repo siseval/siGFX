@@ -6,7 +6,7 @@
 namespace gfx
 {
 
-class Transform
+class Transform2D
 {
 
 public:

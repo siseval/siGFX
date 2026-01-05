@@ -3,7 +3,7 @@
 #include "gfx/core/primitive-2D.h"
 #include "gfx/math/box2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -37,13 +37,13 @@ public:
 
         double line_extent { line_thickness / 2.0 };
         Box2d AABB { get_axis_aligned_bounding_box(transform) };
-        Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+        Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
         for (int y = AABB.min.y; y <= AABB.max.y; y++)
         {
             for (int x = AABB.min.x; x <= AABB.max.x; x++)
             {
                 Vec2d pos { 
-                    Transform::transform_point(
+                    Transform2D::transform_point(
                         Vec2d { 
                             static_cast<double>(x) , 
                             static_cast<double>(y) 

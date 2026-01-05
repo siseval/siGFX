@@ -6,7 +6,7 @@
 #include "gfx/math/matrix.h"
 #include "gfx/math/vec2.h"
 #include "gfx/text/utf-8.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -309,8 +309,8 @@ public:
                 edge.v0.y = -edge.v0.y + ascent + pen.y - min.y;
                 edge.v1.y = -edge.v1.y + ascent + pen.y - min.y;
 
-                edge.v0 = Transform::transform_point(edge.v0, transform);
-                edge.v1 = Transform::transform_point(edge.v1, transform);
+                edge.v0 = Transform2D::transform_point(edge.v0, transform);
+                edge.v1 = Transform2D::transform_point(edge.v1, transform);
             }
 
             if (smoothing_radius > 0.0)

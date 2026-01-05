@@ -20,11 +20,13 @@ public:
         const gfx::Vec2d viewport_scaling { 1, 1 };
 
         auto surface = std::make_shared<gfx::GLFWRenderSurface>(resolution);
-        renderer = std::make_shared<gfx::Render2D>(surface, viewport_scaling);
+        render2D = std::make_shared<gfx::Render2D>(surface, viewport_scaling);
+        render3D = std::make_shared<gfx::Render3D>(surface);
 
         glfwSetWindowUserPointer(surface->get_window(), this);
 
         glfwSetInputMode(surface->get_window(), GLFW_STICKY_KEYS, GLFW_TRUE);
+        glfwSetInputMode(surface->get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         glfwSetMouseButtonCallback(surface->get_window(), mouse_callback);
         glfwSetScrollCallback(surface->get_window(), scroll_callback);
@@ -34,7 +36,7 @@ public:
 
     gfx::Vec2i get_screen_size() override
     {
-        return renderer->get_render_surface()->get_resolution();
+        return render2D->get_render_surface()->get_resolution();
         // int w, h;
         // glfwGetFramebufferSize(get_window(), &w, &h);
         // return { w, h };
@@ -126,7 +128,7 @@ private:
 
         double x, y;
         glfwGetCursorPos(win, &x, &y);
-        event.position = gfx::Vec2i{ (int)x, (int)y } / self->renderer->get_viewport_scaling();
+        event.position = gfx::Vec2i{ (int)x, (int)y } / self->render2D->get_viewport_scaling();
 
         self->demos[self->current_demo]->report_mouse(event);
     }
@@ -167,7 +169,7 @@ private:
 
     GLFWwindow* get_window()
     {
-        return std::static_pointer_cast<gfx::GLFWRenderSurface>(renderer->get_render_surface())->get_window();
+        return std::static_pointer_cast<gfx::GLFWRenderSurface>(render2D->get_render_surface())->get_window();
     }
 
     gfx::Vec2d get_scaling(GLFWwindow* win)

@@ -6,7 +6,7 @@
 #include "gfx/math/box2.h"
 #include "gfx/math/vec2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -41,14 +41,14 @@ public:
 
         double line_extent { line_thickness / 2.0 };
         Box2d AABB { get_axis_aligned_bounding_box(transform) };
-        Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+        Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
 
         auto worker = [&](int start_y, int end_y) {
             for (int y = start_y; y <= end_y; y++)
             {
                 for (int x = AABB.min.x; x <= AABB.max.x; x++)
                 {
-                    Vec2d pos { Transform::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - radius };
+                    Vec2d pos { Transform2D::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - radius };
                     Vec2d r_outer { radius + Vec2d(line_extent) };
                     Vec2d r_inner { radius - Vec2d(line_extent) };
 

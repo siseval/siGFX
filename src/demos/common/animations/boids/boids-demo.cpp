@@ -8,10 +8,10 @@ using namespace gfx;
 
 void BoidsDemo::init()
 {
-    Vec2i resolution { renderer->get_resolution() };
+    Vec2i resolution { render2D->get_resolution() };
 
-    renderer->clear_items();
-    renderer->get_render_surface()->clear_palette();
+    render2D->clear_items();
+    render2D->get_render_surface()->clear_palette();
     boids.clear();
 
     perception_radius = resolution.x * 0.05;
@@ -41,15 +41,15 @@ void BoidsDemo::spawn_boid(const Vec2d position, const Vec2d velocity)
         { 0, 5 },
         { 2, 0 },
     };
-    auto boid_primitive { renderer->create_polyline(position, boid_shape, Color4(1.0, 1.0, 1.0, 1.0), 1.0) };
+    auto boid_primitive { render2D->create_polyline(position, boid_shape, Color4(1.0, 1.0, 1.0, 1.0), 1.0) };
     std::shared_ptr<Boid> boid { std::make_shared<Boid>() };
     boid->velocity = velocity;
     boid->position = position;
     boid->shape = boid_primitive;
     boid->shape->set_anchor({ 0.2, 0.5 });
     boid->shape->set_fill(true);
-    boid->shape->set_scale(renderer->get_resolution().x * 0.001 * boid_scale);
-    renderer->add_item(boid_primitive);
+    boid->shape->set_scale(render2D->get_resolution().x * 0.001 * boid_scale);
+    render2D->add_item(boid_primitive);
     boids.push_back(boid);
 }
 
@@ -69,7 +69,7 @@ void BoidsDemo::spawn_boid()
 
 void BoidsDemo::remove_boid(const std::shared_ptr<Boid> boid)
 {
-    renderer->remove_item(boid->shape);
+    render2D->remove_item(boid->shape);
     boids.erase(std::remove(boids.begin(), boids.end(), boid), boids.end());
 }
 
@@ -259,14 +259,16 @@ void BoidsDemo::render_frame(const double dt)
     process_boids(dt);
     render_boids();
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 void BoidsDemo::report_mouse(const demos::MouseEvent event)
 {
     if (event.type == demos::MouseEventType::MOVE)
     {
-        Vec2i resolution { renderer->get_resolution() };
+        Vec2i resolution { render2D->get_resolution() };
         mouse_position = Vec2d {
             event.position.x * static_cast<double>(resolution.x),
             event.position.y * static_cast<double>(resolution.y)

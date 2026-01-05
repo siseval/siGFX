@@ -1,5 +1,4 @@
 #include "gfx/debug/debug-viewer.h"
-#include "gfx/geometry/transform.h"
 
 namespace gfx
 {
@@ -116,38 +115,38 @@ void DebugViewer::populate(const DebugInfo &info)
         {
             return;
         }
+    }
 
-        double text_scale = 1.0; //(info.resolution.y / font_size) * 0.05;
+    double text_scale = 1.0; //(info.resolution.y / font_size) * 0.05;
 
-        if (show_fps)
+    if (show_fps)
+    {
+        if (!fps_text_item)
         {
-            if (!fps_text_item)
-            {
-                fps_text_item = std::make_shared<Text2D>();
-                fps_text_item->set_font(font);
-                fps_text_item->set_font_size(font_size);
-                fps_text_item->set_smoothing_radius(0.6);
-                fps_text_item->set_color(text_color);
-                fps_text_item->set_scale(text_scale);
-                fps_text_item->set_position(5.0, 5.0);
-            }
-            fps_text_item->set_text("FPS: " + std::to_string(static_cast<int>(info.fps)));
+            fps_text_item = std::make_shared<Text2D>();
+            fps_text_item->set_font(font);
+            fps_text_item->set_font_size(font_size);
+            fps_text_item->set_smoothing_radius(0.6);
+            fps_text_item->set_color(text_color);
+            fps_text_item->set_scale(text_scale);
+            fps_text_item->set_position(5.0, 5.0);
         }
+        fps_text_item->set_text("FPS: " + std::to_string(static_cast<int>(info.fps)));
+    }
 
-        if (show_num_items)
+    if (show_num_items)
+    {
+        if (!num_items_text_item)
         {
-            if (!num_items_text_item)
-            {
-                num_items_text_item = std::make_shared<Text2D>();
-                num_items_text_item->set_font(font);
-                num_items_text_item->set_font_size(font_size);
-                num_items_text_item->set_smoothing_radius(0.6);
-                num_items_text_item->set_color(text_color);
-                num_items_text_item->set_scale(text_scale);
-                num_items_text_item->set_position(5.0, font_size * text_scale + 5.0);
-            }
-            num_items_text_item->set_text("Items: " + std::to_string(info.num_items));
+            num_items_text_item = std::make_shared<Text2D>();
+            num_items_text_item->set_font(font);
+            num_items_text_item->set_font_size(font_size);
+            num_items_text_item->set_smoothing_radius(0.6);
+            num_items_text_item->set_color(text_color);
+            num_items_text_item->set_scale(text_scale);
+            num_items_text_item->set_position(5.0, font_size * text_scale + 5.0);
         }
+        num_items_text_item->set_text("Items: " + std::to_string(info.num_items));
     }
 }
 

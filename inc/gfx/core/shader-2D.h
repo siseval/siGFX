@@ -10,6 +10,7 @@ struct ShaderInput2D
 {
     Vec2d uv;
     double t;
+    double w = 0;
 };
 
 class Shader2D

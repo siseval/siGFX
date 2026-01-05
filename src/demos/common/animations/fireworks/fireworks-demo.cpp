@@ -50,7 +50,9 @@ void FireworksDemo::render_frame(const double dt)
         fireworks.erase(fireworks.begin() + index);
     }
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 void FireworksDemo::spawn_firework()
@@ -64,7 +66,7 @@ void FireworksDemo::spawn_firework()
     Vec2d velocity { Vec2d::from_angle_degrees(angle, random_double(firework_speed * 0.75, firework_speed * 1.25)) };
 
     std::vector<Color4> colors { color_combinations[rand() % color_combinations.size()] };
-    fireworks.emplace_back(renderer, position, velocity, options, colors);
+    fireworks.emplace_back(render2D, position, velocity, options, colors);
 }
 
 void FireworksDemo::handle_input(const int input)
@@ -90,7 +92,7 @@ void FireworksDemo::handle_input(const int input)
 void FireworksDemo::end()
 {
     fireworks.clear();
-    renderer->clear_items();
+    render2D->clear_items();
 }
 
 }

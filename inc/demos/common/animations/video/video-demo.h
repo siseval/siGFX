@@ -47,7 +47,7 @@ private:
     int current_video { 0 };
     std::string video_name;
 
-    std::shared_ptr<gfx::Bitmap2D> bitmap { renderer->create_bitmap({ 0, 0 }, { 800, 600 }) };
+    std::shared_ptr<gfx::Bitmap2D> bitmap { render2D->create_bitmap({ 0, 0 }, { 800, 600 }) };
     double time_since_last_frame { 0.0 };
     int frame_number { 1 };
     bool paused { false };

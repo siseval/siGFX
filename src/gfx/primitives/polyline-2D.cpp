@@ -1,5 +1,5 @@
 #include "gfx/primitives/polyline-2D.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -29,7 +29,7 @@ Box2d Polyline2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) con
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform2D::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);

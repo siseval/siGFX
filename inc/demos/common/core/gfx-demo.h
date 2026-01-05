@@ -2,6 +2,7 @@
 
 #include <string>
 #include <gfx/core/render-2D.h>
+#include <gfx/core/render-3D.h>
 
 namespace demos
 {
@@ -28,8 +29,14 @@ class GfxDemo
 
 public:
 
-    GfxDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : renderer(renderer) {}
+    GfxDemo(const std::shared_ptr<gfx::Render2D> render2D)
+        : render2D(render2D) {}
+
+    GfxDemo(const std::shared_ptr<gfx::Render2D> render2D,
+            const std::shared_ptr<gfx::Render3D> render3D)
+        : render2D(render2D), render3D(render3D) 
+    {
+    }
 
     virtual void init() = 0;
     virtual void render_frame(const double dt) = 0;
@@ -39,8 +46,8 @@ public:
 
     virtual std::vector<std::string> debug_text() { return {}; }
 
-    inline std::shared_ptr<gfx::Render2D> get_renderer() const { return renderer; }
-    inline gfx::Vec2i get_resolution() const { return renderer->get_resolution(); }
+    inline std::shared_ptr<gfx::Render2D> get_renderer() const { return render2D; }
+    inline gfx::Vec2i get_resolution() const { return render2D->get_resolution(); }
 
     inline double get_fps() const 
     { 
@@ -50,9 +57,9 @@ public:
     inline std::vector<std::string> info_text()
     {
         std::vector<std::string> info;
-        info.push_back("resolution: " + std::to_string(renderer->get_resolution().round().x) + "x" + std::to_string(renderer->get_resolution().round().y));
+        info.push_back("resolution: " + std::to_string(render2D->get_resolution().round().x) + "x" + std::to_string(render2D->get_resolution().round().y));
         info.push_back("fps: " + std::to_string(static_cast<int>(get_fps())));
-        info.push_back("items: " + std::to_string(renderer->num_items()));
+        info.push_back("items: " + std::to_string(render2D->num_items()));
 
         return info;
     }
@@ -63,7 +70,8 @@ public:
 protected:
 
 
-    std::shared_ptr<gfx::Render2D> renderer;
+    std::shared_ptr<gfx::Render2D> render2D;
+    std::shared_ptr<gfx::Render3D> render3D;
     double last_frame_us = 0.0;
 };
 

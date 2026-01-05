@@ -23,8 +23,8 @@ void SnakeDemo::init()
     head_dimensions = { segment_length * 2.5, segment_width * 2.5 };
     target_bounds_margin = resolution * 0.1;
 
-    renderer->clear_items();
-    renderer->get_render_surface()->clear_palette();
+    render2D->clear_items();
+    render2D->get_render_surface()->clear_palette();
     segments.clear();
     segment_palette.clear();
 
@@ -43,13 +43,13 @@ void SnakeDemo::init()
         { head_dimensions.x / 2, -head_dimensions.y / 2 }
     };
 
-    head = renderer->create_polyline(center, head_points, Color4(0.0, 1.0, 0.0, 1.0), 2.0);
+    head = render2D->create_polyline(center, head_points, Color4(0.0, 1.0, 0.0, 1.0), 2.0);
     head->set_close(true);
     head->set_fill(true);
     head->set_rounded_corners(true);
     head->set_scale(scale);
     head->set_depth(0);
-    renderer->add_item(head);
+    render2D->add_item(head);
 
     std::vector<Vec2d> tongue_points {
         { 0, 0 },
@@ -59,21 +59,21 @@ void SnakeDemo::init()
         { head_dimensions.x * 0.4, -head_dimensions.y * 0.2 },
         { head_dimensions.x * 0.2, -head_dimensions.y * 0.05 },
     };
-    tongue = renderer->create_polyline({ head_dimensions.x, 0 }, tongue_points, Color4(1.0, 0.0, 0.0, 1.0), 0.5);
+    tongue = render2D->create_polyline({ head_dimensions.x, 0 }, tongue_points, Color4(1.0, 0.0, 0.0, 1.0), 0.5);
     tongue->set_close(true);
     tongue->set_fill(true);
     tongue->set_rounded_corners(true);
     tongue->set_depth(1);
-    renderer->add_item(tongue, head);
+    render2D->add_item(tongue, head);
 
     for (int i = 0; i < num_segments; ++i)
     {
         add_segment();
     }
 
-    target_marker = renderer->create_circle(head_target, 1.0, Color4(1.0, 0.0, 0.0, 1.0), 1.0);
+    target_marker = render2D->create_circle(head_target, 1.0, Color4(1.0, 0.0, 0.0, 1.0), 1.0);
     target_marker->set_filled(true);
-    renderer->add_item(target_marker);
+    render2D->add_item(target_marker);
 
     spawn();
 }
@@ -120,7 +120,7 @@ void SnakeDemo::move_head(const double dt)
     {
         if (Vec2d::distance(head->get_position(), food[i]->get_position()) < segment_length * 0.8)
         {
-            renderer->remove_item(food[i]);
+            render2D->remove_item(food[i]);
             food.erase(food.begin() + i);
             update_scale(scale + 0.02);
             add_segment();
@@ -211,7 +211,9 @@ void SnakeDemo::render_frame(const double dt)
         move_segments();
     }
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 Vec2d SnakeDemo::closest_food()
@@ -251,7 +253,7 @@ void SnakeDemo::remove_food()
         return; 
     }
 
-    renderer->remove_item(food.back());
+    render2D->remove_item(food.back());
     food.pop_back();
 }
 
@@ -261,26 +263,26 @@ void SnakeDemo::add_food()
         random_int(target_bounds_margin.x, get_resolution().x - target_bounds_margin.x),
         random_int(target_bounds_margin.y, get_resolution().y - target_bounds_margin.y)
     };
-    food.push_back(renderer->create_circle(pos, food_radius, Color4(1.0, 0.7, 0.0, 1.0), 1.0));
+    food.push_back(render2D->create_circle(pos, food_radius, Color4(1.0, 0.7, 0.0, 1.0), 1.0));
     food.back()->set_filled(true);
-    renderer->add_item(food.back());
+    render2D->add_item(food.back());
 }
 
 void SnakeDemo::add_segment()
 {
-    auto segment { renderer->create_ellipse({ 0, 0 }, { 0, 0 }, Color4(0, 0, 0)) };
+    auto segment { render2D->create_ellipse({ 0, 0 }, { 0, 0 }, Color4(0, 0, 0)) };
     segment->set_filled(true);
     segment->set_anchor({ 0.5, 0.5 });
     if (!segments.empty())
     {
-        Vec2d pos { dead ? static_cast<Vec2d>(renderer->get_resolution() / 2.0) : segments.back()->get_position() };
+        Vec2d pos { dead ? static_cast<Vec2d>(render2D->get_resolution() / 2.0) : segments.back()->get_position() };
         segment->set_position(pos);
         segment->set_rotation(segments.back()->get_rotation());
     }
     segment->set_scale(scale);
 
     segments.push_back(segment);
-    renderer->add_item(segment);
+    render2D->add_item(segment);
 
     update_segments();
 }
@@ -292,7 +294,7 @@ void SnakeDemo::remove_segment()
         return;
     }
 
-    renderer->remove_item(segments.back());
+    render2D->remove_item(segments.back());
     segments.pop_back();
 
     update_segments();
@@ -378,7 +380,7 @@ void SnakeDemo::handle_input(const int input)
 
 void SnakeDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
     dead = true;
 }
 

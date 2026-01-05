@@ -25,9 +25,9 @@ public:
     {
         return { 
             "dt: " + std::to_string(last_frame_us / CLOCKS_PER_SEC),
-            "longest_recalc: " + std::to_string(renderer->get_scene_graph()->longest_recalc_time / 1000.0) + " ms",
-            "previous_recalc: " + std::to_string(renderer->get_scene_graph()->previous_recalc_time / 1000.0) + " ms",
-            "recalc_count: " + std::to_string(renderer->get_scene_graph()->get_transform_recalculation_count()),
+            "longest_recalc: " + std::to_string(render2D->get_scene_graph()->longest_recalc_time / 1000.0) + " ms",
+            "previous_recalc: " + std::to_string(render2D->get_scene_graph()->previous_recalc_time / 1000.0) + " ms",
+            "recalc_count: " + std::to_string(render2D->get_scene_graph()->get_transform_recalculation_count()),
         };
     }
 

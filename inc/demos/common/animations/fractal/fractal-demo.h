@@ -45,7 +45,7 @@ private:
     void handle_mouse_pan(const double dt);
     inline gfx::Vec2d screen_to_world(const gfx::Vec2d pos)
     {
-        gfx::Vec2d resolution { renderer->get_resolution() };
+        gfx::Vec2d resolution { render2D->get_resolution() };
         return {
             view.min.x + (static_cast<double>(cursor_pos.x) / resolution.x) * (view.max.x - view.min.x),
             view.min.y + (static_cast<double>(cursor_pos.y) / resolution.y) * (view.max.y - view.min.y)

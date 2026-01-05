@@ -20,6 +20,7 @@ struct SceneNode2D
         }
         return UUID(0, 0);
     }
+
     std::shared_ptr<Primitive2D> primitive;
     Matrix3x3d global_transform = Matrix3x3d::identity();
     uint64_t cached_transform_version = 0;

@@ -28,10 +28,18 @@ public:
         debug_viewer(std::make_shared<DebugViewer>()),
         viewport_scaling(viewport_scaling) 
     {
-        surface->init();
     }
 
     void draw_frame() const;
+    void clear_frame() const
+    {
+        surface->clear_frame_buffer();
+        surface->clear();
+    }
+    void present_frame() const
+    {
+        surface->present();
+    }
 
     Matrix3x3d get_global_transform() const;
 
@@ -134,6 +142,10 @@ public:
 
     inline void load_font_directory(const std::filesystem::path &path = "") { font_manager->load_font_directory(path); }
 
+    inline void set_blend_mode(const RenderSurface::BlendMode mode) { blend_mode = mode; }
+    inline RenderSurface::BlendMode get_blend_mode() const { return blend_mode; }
+
+
     inline std::shared_ptr<FontTTF> get_font(const std::string &name) const { return font_manager->get_font(name); }
 
 private:
@@ -148,6 +160,8 @@ private:
     std::shared_ptr<FontTTF> default_font;
 
     std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> draw_queue;
+
+    RenderSurface::BlendMode blend_mode = RenderSurface::BlendMode::ALPHA;
 
     mutable double last_frame_time_us = 0.0;
 

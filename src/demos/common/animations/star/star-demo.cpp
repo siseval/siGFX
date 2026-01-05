@@ -12,8 +12,8 @@ void StarDemo::init()
     Vec2d center { resolution / 2 };
     double distance_ratio = 16;
 
-    renderer->clear_items();
-    renderer->get_render_surface()->clear_palette();
+    render2D->clear_items();
+    render2D->get_render_surface()->clear_palette();
     polylines.clear();
     colors.clear();
 
@@ -42,7 +42,7 @@ void StarDemo::init()
             { -resolution.x / distance_ratio, 0 },
         };
 
-        auto polyline { renderer->create_polyline(center, points, color) };
+        auto polyline { render2D->create_polyline(center, points, color) };
         polyline->set_close(true);
         polyline->set_fill(true);
         polyline->set_rounded_corners(true);
@@ -50,7 +50,7 @@ void StarDemo::init()
         polyline->set_depth(i);
 
         polylines.push_back(polyline);
-        renderer->add_item(polyline);
+        render2D->add_item(polyline);
     }
 }
 
@@ -75,7 +75,9 @@ void StarDemo::render_frame(const double dt)
         polyline->set_line_thickness(1 + progress * 1 + (1 + sin_t) * 1);
     }
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 void StarDemo::handle_input(const int input)
@@ -114,7 +116,7 @@ void StarDemo::handle_input(const int input)
 
 void StarDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
     polylines.clear();
 }
 

@@ -12,7 +12,9 @@ void InteractiveDemo::init()
 void InteractiveDemo::render_frame(const double dt)
 {
     double t0 { static_cast<double>(clock()) };
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
     last_frame_us = static_cast<double>(clock()) - t0;
 }
 
@@ -40,11 +42,11 @@ void InteractiveDemo::remove_selected()
     { 
         return; 
     }
-    renderer->remove_item(selected);
+    render2D->remove_item(selected);
     items.erase(items.begin() + selected_index);
     for (int i = 0; i < items.size(); ++i)
     {
-        if (!renderer->contains_item(items[i]))
+        if (!render2D->contains_item(items[i]))
         {
             items.erase(items.begin() + i);
             i--;
@@ -65,7 +67,7 @@ void InteractiveDemo::add_circle(const bool child)
     Vec2d center { get_resolution() / 2.0 };
     Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-    auto circle { renderer->create_circle(center, 10, color, 3) };
+    auto circle { render2D->create_circle(center, 10, color, 3) };
     circle->set_anchor({ 0.5, 0.5 });
 
     items.push_back(circle);
@@ -73,10 +75,10 @@ void InteractiveDemo::add_circle(const bool child)
     if (child && get_selected() != nullptr)
     {
         circle->set_position({ 0, 0 });
-        renderer->add_item(circle, get_selected());
+        render2D->add_item(circle, get_selected());
         return;
     }
-    renderer->add_item(circle);
+    render2D->add_item(circle);
 }
 
 void InteractiveDemo::add_ellipse(const bool child)
@@ -84,7 +86,7 @@ void InteractiveDemo::add_ellipse(const bool child)
     Vec2d center { get_resolution() / 2.0 };
     Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-    auto ellipse { renderer->create_ellipse(center, { 10, 10 }, color, 3) };
+    auto ellipse { render2D->create_ellipse(center, { 10, 10 }, color, 3) };
     ellipse->set_anchor({ 0.5, 0.5 });
 
     items.push_back(ellipse);
@@ -92,10 +94,10 @@ void InteractiveDemo::add_ellipse(const bool child)
     if (child && get_selected() != nullptr)
     {
         ellipse->set_position({ 0, 0 });
-        renderer->add_item(ellipse, get_selected());
+        render2D->add_item(ellipse, get_selected());
         return;
     }
-    renderer->add_item(ellipse);
+    render2D->add_item(ellipse);
 }
 
 void InteractiveDemo::add_polyline(const bool child)
@@ -103,7 +105,7 @@ void InteractiveDemo::add_polyline(const bool child)
     Vec2d center { get_resolution() / 2.0 };
     Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-    auto polyline { renderer->create_polyline(center, { { 0, 0 }, { 20, 0 }, { 10, 10 }, { 5, 30 } }, color, 3) };
+    auto polyline { render2D->create_polyline(center, { { 0, 0 }, { 20, 0 }, { 10, 10 }, { 5, 30 } }, color, 3) };
     polyline->set_close(true);
     polyline->set_rounded_corners(true);
     polyline->set_anchor({ 0.5, 0.5 });
@@ -113,15 +115,15 @@ void InteractiveDemo::add_polyline(const bool child)
     if (child && get_selected() != nullptr)
     {
         polyline->set_position({ 0, 0 });
-        renderer->add_item(polyline, get_selected());
+        render2D->add_item(polyline, get_selected());
         return;
     }
-    renderer->add_item(polyline);
+    render2D->add_item(polyline);
 }
 
 void InteractiveDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
     items.clear();
     selected_index = -1;
 }
@@ -240,10 +242,10 @@ void InteractiveDemo::handle_input(const int input)
             break;
 
         case 'R':
-            renderer->clear_items();
+            render2D->clear_items();
             for (int i = 0; i < items.size(); ++i)
             {
-                if (!renderer->contains_item(items[i]))
+                if (!render2D->contains_item(items[i]))
                 {
                     items.erase(items.begin() + i);
                     i--;

@@ -2,7 +2,9 @@ set(GFX_GEOMETRY_SOURCES
     flatten.cpp
     rasterize.cpp
     triangulate.cpp
-    transform.cpp
+    transform-2D.cpp
+    transform-3D.cpp
+    polygon-mesh.cpp
 )
 
 add_library(gfx_geometry STATIC ${GFX_GEOMETRY_SOURCES})

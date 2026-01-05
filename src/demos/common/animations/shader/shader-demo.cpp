@@ -51,7 +51,7 @@ void ShaderDemo::init()
 
     shader = std::make_shared<WaterSurfaceShader>();
 
-    quad = renderer->create_polygon(center, {
+    quad = render2D->create_polygon(center, {
         { 0, 0 },
         { resolution.x, 0 },
         { resolution.x, resolution.y },
@@ -62,8 +62,8 @@ void ShaderDemo::init()
     quad->set_shader(shader);
     quad->set_use_shader(true);
 
-    renderer->clear_items();
-    renderer->add_item(quad);
+    render2D->clear_items();
+    render2D->add_item(quad);
 }
 
 void ShaderDemo::update_ripples(const double dt)
@@ -110,7 +110,9 @@ void ShaderDemo::render_frame(const double dt)
         std::sin(t * 0.7 + 4.0) * 0.1 + 0.2
     );
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 Vec2d ShaderDemo::get_random_position()
@@ -153,15 +155,15 @@ void ShaderDemo::report_mouse(const MouseEvent event)
     {
         case MouseEventType::LEFT_DOWN:
             {
-                spawn_ripple(event.position * renderer->get_resolution());
+                spawn_ripple(event.position * render2D->get_resolution());
             }
             break;
         case MouseEventType::MOVE:
             {
-                mouse_position = event.position * renderer->get_resolution();
+                mouse_position = event.position * render2D->get_resolution();
                 if (spawn_timer > spawn_interval_sec)
                 {
-                    spawn_ripple(event.position * renderer->get_resolution());
+                    spawn_ripple(event.position * render2D->get_resolution());
                     spawn_timer = 0.0;
                 }
             }
@@ -173,7 +175,7 @@ void ShaderDemo::report_mouse(const MouseEvent event)
 
 void ShaderDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
 }
 
 }

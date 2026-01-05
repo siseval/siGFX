@@ -19,7 +19,7 @@ void PhysicsDemo::handle_input(const int input)
 
 void PhysicsDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
 }
 
 }

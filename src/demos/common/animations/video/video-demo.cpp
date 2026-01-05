@@ -13,11 +13,11 @@ void VideoDemo::init()
 {
     load_video(videos[current_video]);
 
-    renderer->clear_items();
-    Vec2i resolution { renderer->get_resolution() };
-    Vec2d center { renderer->center() };
+    render2D->clear_items();
+    Vec2i resolution { render2D->get_resolution() };
+    Vec2d center { render2D->center() };
 
-    auto bitmap { renderer->create_bitmap(center, { 800, 600 }) };
+    auto bitmap { render2D->create_bitmap(center, { 800, 600 }) };
     bitmap->set_anchor({ 0.5, 0.5 });
     bitmap->set_scale(0.2);
 }
@@ -29,7 +29,7 @@ void VideoDemo::render_frame(const double dt)
 
     double fps = 60.0;
     int num_frames = 6573;
-    renderer->clear_items();
+    render2D->clear_items();
 
     if (!paused)
     {
@@ -46,15 +46,17 @@ void VideoDemo::render_frame(const double dt)
         frame_number = 1;
     }
 
-    Vec2i resolution { renderer->get_resolution() };
+    Vec2i resolution { render2D->get_resolution() };
     Bitmap bm { Bitmap::decode_bmp("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/" + video_name + "/" + std::to_string(frame_number) + ".bmp") };
 
     bm.compress_colors(palette);
     bitmap->load_bitmap(bm);
     bitmap->set_scale(static_cast<double>(resolution.x) / static_cast<double>(bm.resolution.x));
-    renderer->add_item(bitmap);
+    render2D->add_item(bitmap);
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 void VideoDemo::cycle_video(const int direction)
@@ -135,7 +137,7 @@ void VideoDemo::handle_input(const int input)
 
 void VideoDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
 }
 
 }

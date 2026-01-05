@@ -1,5 +1,5 @@
 #include "gfx/primitives/ellipse-2D.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -22,7 +22,7 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { Transform::transform_points(corners, transform) };
+    std::vector<Vec2d> transformed_corners { Transform2D::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);
@@ -33,8 +33,8 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
 
 bool Ellipse2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
 {
-    Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
-    Vec2d local_point { Transform::transform_point(point, inverse_transform) - radius };
+    Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
+    Vec2d local_point { Transform2D::transform_point(point, inverse_transform) - radius };
 
     return 
     (local_point.x * local_point.x) / (radius.x * radius.x) + 

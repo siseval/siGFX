@@ -5,7 +5,7 @@
 #include "gfx/core/types/bitmap.h"
 #include "gfx/math/box2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
@@ -62,14 +62,14 @@ public:
     void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
     {
         Box2d AABB { get_axis_aligned_bounding_box(transform) };
-        Matrix3x3d inverse_transform { Transform::invert_affine(transform) };
+        Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
 
         for (int y = static_cast<int>(AABB.min.y); y < static_cast<int>(AABB.max.y); ++y)
         {
             for (int x = static_cast<int>(AABB.min.x); x < static_cast<int>(AABB.max.x); ++x)
             {
                 Vec2d pos { static_cast<double>(x), static_cast<double>(y) };
-                Vec2d local_pos = Transform::transform_point(pos, inverse_transform);
+                Vec2d local_pos = Transform2D::transform_point(pos, inverse_transform);
 
                 int img_x = static_cast<int>(local_pos.x);
                 int img_y = static_cast<int>(local_pos.y);

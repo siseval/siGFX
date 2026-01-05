@@ -2,10 +2,8 @@
 
 #include <thread>
 
-#include "gfx/core/render-surface.h"
 #include "gfx/math/vec2.h"
-#include "gfx/math/matrix.h"
-#include "gfx/geometry/types/triangle.h"
+#include "gfx/geometry/types/barycentric-triangle.h"
 #include "gfx/core/types/pixel.h"
 #include "gfx/core/types/color4.h"
 
@@ -18,7 +16,7 @@ class Rasterize
 public:
 
     template<typename EmitPixel>
-    static void rasterize_filled_triangle(const Triangle &triangle, const Color4 color, EmitPixel &&emit_pixel)
+    static void rasterize_filled_triangle(const BarycentricTriangle &triangle, const Color4 color, EmitPixel &&emit_pixel)
     {
         Box2d bounds {
             Vec2d {

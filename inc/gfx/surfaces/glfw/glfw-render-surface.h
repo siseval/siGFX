@@ -16,7 +16,10 @@ class GLFWRenderSurface : public RenderSurface
 public:
 
     GLFWRenderSurface(const Vec2i resolution) 
-        : RenderSurface(resolution) {};
+        : RenderSurface(resolution) 
+    {
+        init();
+    };
 
     int init() override;
 

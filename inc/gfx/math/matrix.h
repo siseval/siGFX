@@ -41,6 +41,19 @@ public:
         return result;
     }
 
+    static Matrix<T, rows, cols> zero()
+    {
+        Matrix<T, rows, cols> result;
+        for (int r = 0; r < rows; ++r)
+        {
+            for (int c = 0; c < cols; ++c)
+            {
+                result(r, c) = T(0);
+            }
+        }
+        return result;
+    }
+
     T& operator()(int r, int c) 
     { 
         return data[r][c]; 
@@ -156,4 +169,6 @@ private:
 
 using Matrix3x3d = Matrix<double, 3, 3>;
 using Matrix3x1d = Matrix<double, 3, 1>;
+using Matrix4x4d = Matrix<double, 4, 4>;
+using Matrix4x1d = Matrix<double, 4, 1>;
 }

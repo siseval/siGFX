@@ -1,13 +1,11 @@
 #include "gfx/core/render-2D.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
 
 void Render2D::draw_frame() const
 {
-    surface->clear_frame_buffer();
-
     double t { std::chrono::duration<double, std::micro>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count() };
@@ -28,11 +26,6 @@ void Render2D::draw_frame() const
         get_draw_queue() 
     };
 
-    auto emit_pixel {
-        ([&](const Pixel &pixel) {
-            surface->write_pixel(pixel.position, pixel.color);
-        })};
-
     for (const auto& [primitive, transform] : draw_queue)
     {
         if (!primitive->is_visible())
@@ -42,7 +35,9 @@ void Render2D::draw_frame() const
 
         if (!primitive->get_use_shader())
         {
-            primitive->rasterize(transform, emit_pixel);
+            primitive->rasterize(transform, ([&](const Pixel &pixel) {
+                    surface->write_pixel(pixel.position, pixel.color, primitive->get_depth(), blend_mode);
+                }));
             continue;
         }
 
@@ -51,13 +46,11 @@ void Render2D::draw_frame() const
             ShaderInput2D input { uv, t / 1000000.0 };
             Color4 shaded_color { primitive->get_shader()->frag(input) };
             shaded_color = shaded_color.set_alpha(shaded_color.a_double() * (pixel.color.a_double()));
-            surface->write_pixel(pixel.position, shaded_color);
-        }));
+            surface->write_pixel(pixel.position, shaded_color, primitive->get_depth(), blend_mode);
+            }));
     }
-
-    surface->clear();
-    surface->present();
 }
+
 
 std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_draw_queue() const
 {
@@ -78,7 +71,7 @@ std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_d
 
 Matrix3x3d Render2D::get_global_transform() const
 {
-    Matrix3x3d scale { Transform::scale(viewport_scaling) };
+    Matrix3x3d scale { Transform2D::scale(viewport_scaling) };
     return scale;
 }
 

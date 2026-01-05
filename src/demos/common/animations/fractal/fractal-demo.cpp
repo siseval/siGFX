@@ -12,20 +12,20 @@ using namespace gfx;
 
 void FractalDemo::init()
 {
-    renderer->clear_items();
-    renderer->get_render_surface()->clear_palette();
+    render2D->clear_items();
+    render2D->get_render_surface()->clear_palette();
 
-    cursor_pos = renderer->center();
+    cursor_pos = render2D->center();
     view = { { -2.0, -2.0 }, { 2.0, 2.0 } };
-    view.min *= renderer->get_aspect_ratio();
-    view.max *= renderer->get_aspect_ratio();
+    view.min *= render2D->get_aspect_ratio();
+    view.max *= render2D->get_aspect_ratio();
     zoom_velocity = 0.0;
     pan_velocity = { 0.0, 0.0 };
 
     fractal = Julia();
-    Vec2i resolution { renderer->get_resolution() };
-    bitmap = renderer->create_bitmap({ 0, 0 }, resolution * renderer->get_viewport_scaling());
-    bitmap->set_scale(Vec2d { 1.0, 1.0 } / renderer->get_viewport_scaling());
+    Vec2i resolution { render2D->get_resolution() };
+    bitmap = render2D->create_bitmap({ 0, 0 }, resolution * render2D->get_viewport_scaling());
+    bitmap->set_scale(Vec2d { 1.0, 1.0 } / render2D->get_viewport_scaling());
 
     for (int i = 0; i < num_colors; ++i)
     {
@@ -33,7 +33,7 @@ void FractalDemo::init()
         colors.emplace_back(Color4::lerp(color0, color1, exponential_step(t, 30.0)));
     }
 
-    renderer->add_item(bitmap);
+    render2D->add_item(bitmap);
 }
 
 void FractalDemo::update_view(const double dt)
@@ -73,7 +73,7 @@ void FractalDemo::update_view(const double dt)
 
 void FractalDemo::handle_mouse_pan(const double dt)
 {
-    Vec2d resolution { renderer->get_resolution() };
+    Vec2d resolution { render2D->get_resolution() };
     Vec2d center { resolution / 2.0 };
     if (Vec2d::distance(cursor_pos, center) > resolution.y * mouse_pan_threshold)
     {
@@ -166,7 +166,9 @@ void FractalDemo::render_frame(const double dt)
         thread.join();
     }
 
-    renderer->draw_frame();
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
 bool FractalDemo::is_inside_cardioid_or_bulb(double re, double im)
@@ -254,7 +256,7 @@ void FractalDemo::report_mouse(const MouseEvent event)
     }
     else if (event.type == MouseEventType::MOVE)
     {
-        cursor_pos = event.position * renderer->get_resolution();
+        cursor_pos = event.position * render2D->get_resolution();
     }
     else if (event.type == MouseEventType::LEFT_DOWN)
     {
@@ -264,7 +266,7 @@ void FractalDemo::report_mouse(const MouseEvent event)
 
 void FractalDemo::end()
 {
-    renderer->clear_items();
+    render2D->clear_items();
 }
 
 }

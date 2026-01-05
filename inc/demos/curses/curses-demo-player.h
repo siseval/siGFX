@@ -17,7 +17,7 @@ public:
     CursesDemoPlayer() : demos::DemoPlayer()
     {
         auto surface { std::make_shared<gfx::CursesRenderSurface>(demos::get_screen_size() * 2) };
-        renderer = std::make_shared<gfx::Render2D>(surface, gfx::Vec2d { 2, 1 });
+        render2D = std::make_shared<gfx::Render2D>(surface, gfx::Vec2d { 2, 1 });
     }
 
     gfx::Vec2i get_screen_size() override
@@ -83,8 +83,8 @@ private:
             default:
                 break;
         }
-        gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_viewport_scaling();
-        event.position = position / renderer->get_resolution();
+        gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / render2D->get_viewport_scaling();
+        event.position = position / render2D->get_resolution();
         return event;
     }
 

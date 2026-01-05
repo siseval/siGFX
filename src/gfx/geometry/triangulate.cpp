@@ -4,7 +4,7 @@
 namespace gfx
 {
 
-bool Triangulate::is_convex(const Triangle &triangle, const bool clockwise)
+bool Triangulate::is_convex(const BarycentricTriangle &triangle, const bool clockwise)
 {
     Vec2d ab { triangle.v1 - triangle.v0 };
     Vec2d ac { triangle.v2 - triangle.v0 };
@@ -12,7 +12,7 @@ bool Triangulate::is_convex(const Triangle &triangle, const bool clockwise)
     return clockwise ? cross > 0 : cross < 0;
 }
 
-bool Triangulate::is_ear(const int index, const std::vector<int> &indices, const std::vector<Vec2d> &vertices, const Triangle &triangle, const int i0, const int i1, const int i2, const bool clockwise)
+bool Triangulate::is_ear(const int index, const std::vector<int> &indices, const std::vector<Vec2d> &vertices, const BarycentricTriangle &triangle, const int i0, const int i1, const int i2, const bool clockwise)
 {
     if (!is_convex(triangle, clockwise))
     {
@@ -125,7 +125,7 @@ Polygon::Contour Triangulate::merge_holes(const Polygon::Contour &contour, const
     return Polygon::Contour { merged, contour.clockwise };
 }
 
-std::vector<Triangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
+std::vector<BarycentricTriangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
 {
     Polygon::Contour merged;
     auto& merged_contour = 
@@ -136,7 +136,7 @@ std::vector<Triangle> Triangulate::triangulate_polygon(const Polygon::Component 
     const std::vector<Vec2d> &vertices { merged_contour.vertices };
     const bool clockwise { merged_contour.clockwise };
 
-    std::vector<Triangle> triangles;
+    std::vector<BarycentricTriangle> triangles;
     if (vertices.size() < 3)
     {
         return triangles;
@@ -158,7 +158,7 @@ std::vector<Triangle> Triangulate::triangulate_polygon(const Polygon::Component 
             int cur_index { indices[i] };
             int next_index { indices[(i + 1) >= indices.size() ? 0 : i + 1] };
 
-            Triangle candidate { vertices[prev_index], vertices[cur_index], vertices[next_index] };
+            BarycentricTriangle candidate { vertices[prev_index], vertices[cur_index], vertices[next_index] };
 
             if (is_ear(i, indices, vertices, candidate, prev_index, cur_index, next_index, clockwise))
             {

@@ -4,10 +4,10 @@
 #include "gfx/math/box2.h"
 #include "gfx/math/vec2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/types/triangle.h"
+#include "gfx/geometry/types/barycentric-triangle.h"
 #include "gfx/geometry/types/polygon.h"
 #include "gfx/geometry/triangulate.h"
-#include "gfx/geometry/transform.h"
+#include "gfx/geometry/transform-2D.h"
 #include "gfx/geometry/rasterize.h"
 
 namespace gfx
@@ -63,18 +63,18 @@ private:
         for (const auto &hole : component.holes)
         {
             transformed_holes.push_back(Polygon::Contour { 
-                Transform::transform_points(hole.vertices, transform),
+                Transform2D::transform_points(hole.vertices, transform),
                 hole.clockwise 
             });
         }
 
         Polygon::Component transformed_component { 
-            Transform::transform_points(component.contour.vertices, transform),
+            Transform2D::transform_points(component.contour.vertices, transform),
             component.contour.clockwise,
             transformed_holes
         };
 
-        std::vector<Triangle> triangles { 
+        std::vector<BarycentricTriangle> triangles { 
             Triangulate::triangulate_polygon(transformed_component)
         };
 
