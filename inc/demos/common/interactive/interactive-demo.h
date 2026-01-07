@@ -12,8 +12,11 @@ class InteractiveDemo : public demos::GfxDemo
 
 public:
 
-    InteractiveDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    InteractiveDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -21,6 +24,8 @@ public:
     void handle_char(const int input) override;
 
 private:
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     std::vector<std::shared_ptr<gfx::Primitive2D>> items;
     int selected_index = -1;

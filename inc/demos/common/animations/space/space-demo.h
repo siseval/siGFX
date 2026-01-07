@@ -29,10 +29,13 @@ class SpaceDemo : public demos::GfxDemo
 
 public:
 
-    SpaceDemo(const std::shared_ptr<gfx::Render2D> renderer) : 
+    SpaceDemo(const std::shared_ptr<gfx::RenderEngine> renderer) : 
         GfxDemo(renderer), 
         body_items(std::unordered_map<std::shared_ptr<Body>, RenderBody>()),
-        body_trails(std::unordered_map<std::shared_ptr<Body>, std::vector<gfx::Vec2d>>()) {}
+        body_trails(std::unordered_map<std::shared_ptr<Body>, std::vector<gfx::Vec2d>>()) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
 
     void init() override;
@@ -105,6 +108,8 @@ private:
 
     gfx::Vec2d predict_orbital_pos(std::shared_ptr<Body> body, const double future_time);
     std::shared_ptr<Body> get_largest_body();
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     double t_sec { 0.0 };
 

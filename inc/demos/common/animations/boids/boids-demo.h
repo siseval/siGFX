@@ -20,8 +20,11 @@ class BoidsDemo : public demos::GfxDemo
 
 public:
 
-    BoidsDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    BoidsDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -57,6 +60,8 @@ private:
     void spawn_boid(const gfx::Vec2d position, const gfx::Vec2d velocity);
     void spawn_boid();
     void remove_boid(const std::shared_ptr<Boid> boid);
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     gfx::Vec2d mouse_position;
     bool mouse_active = false;

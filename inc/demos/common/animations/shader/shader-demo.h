@@ -34,8 +34,11 @@ class ShaderDemo : public demos::GfxDemo
 
 public:
 
-    ShaderDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    ShaderDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -61,6 +64,8 @@ private:
     void spawn_ripple(const gfx::Vec2d position);
     void update_ripples(const double dt);
     gfx::Vec2d get_random_position();
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     std::shared_ptr<WaterSurfaceShader> shader;
 

@@ -12,8 +12,11 @@ class SnakeDemo : public demos::GfxDemo
 
 public:
 
-    SnakeDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    SnakeDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -49,6 +52,8 @@ private:
     void add_segment();
     void remove_segment();
     void update_scale(const double s);
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     bool control = false;
     bool dead = true;

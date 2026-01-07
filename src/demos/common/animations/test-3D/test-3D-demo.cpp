@@ -1,7 +1,6 @@
 #include "demos/common/animations/test-3D/test-3D-demo.h"
 
 #include "demos/common/core/demo-utils.h"
-#include "gfx/core/camera.h"
 
 using namespace gfx;
 
@@ -10,29 +9,29 @@ namespace demos
 
 void Test3DDemo::init()
 {
-    Camera camera;
-    camera.set_position({ 0.0, 0.0, -5.0 });
-    camera.set_rotation({ 0.0, 0.0, 0.0 });
-    camera.set_z_near(0.1);
-    camera.set_z_far(1000.0);
-    render3D->set_camera(camera);
-    render3D->set_light_direction({ -1.0, 1.0, -1.0 });
-    render3D->set_ambient_light(0.5);
+    renderer->set_camera_position(0.0, 5.0, 0.0);
+    renderer->set_camera_rotation_degrees(0.0, 0.0, 0.0);
+    renderer->set_camera_fov_degrees(75.0);
+    renderer->set_camera_z_near(0.1);
+    renderer->set_camera_z_far(1000.0);
+
+    renderer->set_light_direction(-1.0, 1.0, -1.0);
+    renderer->set_ambient_light(0.5);
 
     sphere = std::make_shared<Sphere3D>();
     sphere->set_radius(1.0);
-    render3D->add_item(sphere);
+    renderer->add_primitive(sphere);
     
     floor_item = std::make_shared<Plane3D>();
     floor_item->set_size(20.0, 20.0);
-    floor_item->set_position(0.0, -8.0, 0.0);
+    floor_item->set_position(0.0, -15.0, 0.0);
 
-    render3D->add_item(floor_item);
+    renderer->add_primitive(floor_item);
 
     cube = std::make_shared<Cuboid3D>();
     cube->set_size(2.0, 2.0, 2.0);
 
-    render3D->add_item(cube);
+    renderer->add_primitive(cube);
 }
 
 void Test3DDemo::render_frame(const double dt)
@@ -66,10 +65,9 @@ void Test3DDemo::render_frame(const double dt)
     poll_held_keys(dt);
     update_camera(dt);
 
-    render2D->clear_frame();
-    render3D->draw_frame();
-    render2D->draw_frame();
-    render2D->present_frame();
+    renderer->clear_frame();
+    renderer->render_frame();
+    renderer->present_frame();
 
     last_frame_ms = time_ms();
 }
@@ -78,7 +76,7 @@ void Test3DDemo::update_camera(const double dt)
 {
     camera_velocity = camera_velocity * std::pow(0.8, dt * 60.0);
     camera_velocity = camera_velocity.limit(max_camera_speed);
-    render3D->set_camera_position(render3D->get_camera().get_position() + camera_velocity * dt);
+    renderer->set_camera_position(renderer->get_camera_position() + camera_velocity * dt);
 }
 
 void Test3DDemo::handle_char(const int input)
@@ -98,8 +96,8 @@ void Test3DDemo::poll_held_keys(const double dt)
 
 void Test3DDemo::camera_movement(const Key input, const double dt)
 {
-    Vec3d cam_pos { render3D->get_camera().get_position() };
-    Vec3d forward { render3D->get_camera().get_forward_vector() };
+    Vec3d cam_pos { renderer->get_camera_position() };
+    Vec3d forward { renderer->get_camera_forward() };
     forward.y = 0.0;
 
     switch (input)
@@ -169,10 +167,10 @@ void Test3DDemo::report_mouse(const demos::MouseEvent event)
         case MouseEventType::MOVE:
             {
                 Vec2d delta { event.position - prev_mouse_pos };
-                render3D->set_camera_rotation({
-                    render3D->get_camera().get_rotation().x + delta.y,
-                    render3D->get_camera().get_rotation().y + delta.x,
-                    render3D->get_camera().get_rotation().z
+                renderer->set_camera_rotation({
+                    renderer->get_camera_rotation().x + delta.y,
+                    renderer->get_camera_rotation().y + delta.x,
+                    renderer->get_camera_rotation().z
                 });
                 prev_mouse_pos = event.position;
                 break;
@@ -206,8 +204,7 @@ void Test3DDemo::report_mouse(const demos::MouseEvent event)
 
 void Test3DDemo::end()
 {
-    render2D->clear_items();
-    render3D->clear_items();
+    renderer->clear_scene();
 }
 
 }

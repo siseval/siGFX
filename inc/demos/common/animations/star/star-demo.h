@@ -12,8 +12,11 @@ class StarDemo : public demos::GfxDemo
 
 public:
 
-    StarDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    StarDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -23,6 +26,8 @@ public:
 
 private:
 
+    std::shared_ptr<gfx::Render2D> render2D;
+    
     int num_polylines = 32;
     std::vector<std::shared_ptr<gfx::Polyline2D>> polylines;
     std::vector<gfx::Color4> colors;

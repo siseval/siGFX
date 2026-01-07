@@ -13,8 +13,11 @@ class FireworksDemo : public demos::GfxDemo
 
 public:
 
-    FireworksDemo(const std::shared_ptr<gfx::Render2D> renderer)
-    : GfxDemo(renderer) {}
+    FireworksDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+    : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -34,6 +37,8 @@ public:
 private:
 
     void spawn_firework();
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     Firework::FireworkOptions options;
 

@@ -1,4 +1,4 @@
-#include <gfx/core/render-2D.h>
+#include <gfx/core/render-engine.h>
 #include <gfx/surfaces/curses/curses-render-surface.h>
 
 #include "demos/curses/curses-utils.h"
@@ -15,7 +15,7 @@ void run()
     set_bold(true);
 
     auto surface { std::make_shared<CursesRenderSurface>(get_screen_size() * 2) };
-    InteractiveDemo demo(std::make_shared<gfx::Render2D>(surface, Vec2d { 2, 1 }));
+    InteractiveDemo demo(std::make_shared<gfx::RenderEngine>(surface));
 
     bool running = true;
 

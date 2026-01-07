@@ -16,8 +16,11 @@ class FractalDemo : public demos::GfxDemo
 
 public:
 
-    FractalDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    FractalDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -51,6 +54,8 @@ private:
             view.min.y + (static_cast<double>(cursor_pos.y) / resolution.y) * (view.max.y - view.min.y)
         };
     }
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     Julia fractal;
     std::shared_ptr<gfx::Bitmap2D> bitmap;

@@ -17,8 +17,7 @@ Matrix4x4d Camera::get_view_matrix() const
 
 Matrix4x4d Camera::get_projection_matrix(const double aspect_ratio) const
 {
-    double fov_rad { fov * (std::numbers::pi / 180.0) };
-    double f { 1.0 / std::tan(fov_rad / 2.0) };
+    double f { 1.0 / std::tan(fov / 2.0) };
 
     Matrix4x4d projection { Matrix4x4d::zero() };
     projection(0, 0) = f / aspect_ratio;

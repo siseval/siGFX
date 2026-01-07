@@ -16,7 +16,7 @@ void RenderEngine::present_frame()
 
 void RenderEngine::clear_frame()
 {
-    surface->clear();
+    surface->clear_frame_buffer();
 }
 
 void RenderEngine::add_primitive(const std::shared_ptr<Primitive2D> primitive)
@@ -43,6 +43,36 @@ void RenderEngine::clear_3D_scene()
 void RenderEngine::clear_2D_scene()
 {
     render2D->clear_items();
+}
+
+int RenderEngine::num_primitives() const
+{
+    return num_2D_primitives() + num_3D_primitives();
+}
+
+int RenderEngine::num_2D_primitives() const
+{
+    return render2D->num_items();
+}
+
+int RenderEngine::num_3D_primitives() const
+{
+    return render3D->num_items();
+}
+
+void RenderEngine::set_resolution(const Vec2i new_resolution)
+{
+    surface->resize(new_resolution);
+}
+
+void RenderEngine::set_resolution(const int width, const int height)
+{
+    surface->resize(Vec2i { width, height });
+}
+
+Vec2i RenderEngine::get_resolution() const
+{
+    return surface->get_resolution();
 }
 
 void RenderEngine::set_camera_position(const Vec3d position)
@@ -78,6 +108,21 @@ void RenderEngine::set_camera_rotation_degrees(const double x_deg, const double 
 void RenderEngine::set_camera_fov(const double fov_degrees)
 {
     render3D->set_camera_fov(fov_degrees);
+}
+
+void RenderEngine::set_camera_fov_degrees(const double fov_degrees)
+{
+    render3D->set_camera_fov_degrees(fov_degrees);
+}
+
+void RenderEngine::set_camera_z_near(const double z_near)
+{
+    render3D->set_camera_z_near(z_near);
+}
+
+void RenderEngine::set_camera_z_far(const double z_far)
+{
+    render3D->set_camera_z_far(z_far);
 }
 
 void RenderEngine::set_light_direction(const Vec3d direction)
@@ -130,17 +175,7 @@ void RenderEngine::set_font_directory(const std::filesystem::path &path)
     render2D->set_font_directory(path);
 }
 
-void RenderEngine::set_font_directory(const std::string &path)
-{
-    render2D->set_font_directory(path);
-}
-
-void RenderEngine::load_fonts_from_directory(const std::filesystem::path &path)
-{
-    render2D->load_font_directory(path);
-}
-
-void RenderEngine::load_fonts_from_directory(const std::string &path)
+void RenderEngine::load_font_directory(const std::filesystem::path &path)
 {
     render2D->load_font_directory(path);
 }
@@ -153,6 +188,11 @@ std::filesystem::path RenderEngine::get_font_directory() const
 std::shared_ptr<FontTTF> RenderEngine::get_font(const std::string &name) const
 {
     return render2D->get_font(name);
+}
+
+bool RenderEngine::is_font_loaded(const std::string &name) const
+{
+    return render2D->is_font_loaded(name);
 }
 
 void RenderEngine::debug_viewer_enable(const bool enable)
@@ -180,6 +220,26 @@ void RenderEngine::debug_viewer_set_font(const std::shared_ptr<FontTTF> font)
     render2D->set_debug_font(font);
 }
 
+bool RenderEngine::is_debug_viewer_enabled() const
+{
+    return render2D->get_enable_debug_viewer();
+}
+
+bool RenderEngine::is_debug_viewer_showing_aabb() const
+{
+    return render2D->get_debug_viewer_show_aabb();
+}
+
+bool RenderEngine::is_debug_viewer_showing_obb() const
+{
+    return render2D->get_debug_viewer_show_obb();
+}
+
+bool RenderEngine::is_debug_viewer_showing_anchor() const
+{
+    return render2D->get_debug_viewer_show_anchor();
+}
+
 void RenderEngine::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
 {
     surface = new_surface;
@@ -187,9 +247,29 @@ void RenderEngine::set_render_surface(const std::shared_ptr<RenderSurface> new_s
     render3D->set_render_surface(new_surface);
 }
 
+std::shared_ptr<RenderSurface> RenderEngine::get_render_surface() const
+{
+    return surface;
+}
+
+std::shared_ptr<Render2D> RenderEngine::get_render_2D() const
+{
+    return render2D;
+}
+
+std::shared_ptr<Render3D> RenderEngine::get_render_3D() const
+{
+    return render3D;
+}
+
 void RenderEngine::set_clear_color(const Color4 color)
 {
     surface->set_clear_color(color);
+}
+
+Color4 RenderEngine::get_clear_color() const
+{
+    return surface->get_clear_color();
 }
 
 }

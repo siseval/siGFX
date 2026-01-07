@@ -12,7 +12,7 @@ class PhysicsDemo : public demos::GfxDemo
 
 public:
 
-    PhysicsDemo(const std::shared_ptr<gfx::Render2D> renderer)
+    PhysicsDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
         : GfxDemo(renderer) {}
 
     void init() override;

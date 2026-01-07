@@ -19,7 +19,6 @@ void PhysicsDemo::handle_char(const int input)
 
 void PhysicsDemo::end()
 {
-    render2D->clear_items();
 }
 
 }

@@ -50,6 +50,11 @@ public:
         scene_graph->clear();
     }
 
+    int num_items() const
+    {
+        return scene_graph->num_items();
+    }
+
     Vec2i get_resolution() const 
     { 
         return surface->get_resolution();
@@ -98,6 +103,21 @@ public:
     void set_camera_fov(const double fov)
     {
         camera.set_fov(fov);
+    }
+
+    void set_camera_fov_degrees(const double fov_degrees)
+    {
+        camera.set_fov_degrees(fov_degrees);
+    }
+
+    void set_camera_z_near(const double z_near)
+    {
+        camera.set_z_near(z_near);
+    }
+
+    void set_camera_z_far(const double z_far)
+    {
+        camera.set_z_far(z_far);
     }
 
     double get_camera_fov() const

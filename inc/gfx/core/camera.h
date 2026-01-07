@@ -31,6 +31,11 @@ public:
         fov = f;
     }
 
+    inline void set_fov_degrees(const double fov_degrees)
+    {
+        fov = fov_degrees * std::numbers::pi / 180;
+    }
+
     inline double get_fov() const
     {
         return fov;
@@ -66,9 +71,9 @@ private:
 
     Vec3d position;
     Vec3d rotation;
-    double z_near = 0.1;
-    double z_far = 4.0;
-    double fov = 60.0;
+    double z_near;
+    double z_far;
+    double fov;
 };
 
 }

@@ -18,8 +18,11 @@ enum class Video
 
 public:
 
-    VideoDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    VideoDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -41,6 +44,8 @@ private:
     void load_video(const Video video);
     void load_bad_apple();
     void load_p5();
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     std::vector<gfx::Color4> palette;
     std::vector<Video> videos { Video::BAD_APPLE, Video::P5 };

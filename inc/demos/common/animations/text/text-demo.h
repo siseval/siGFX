@@ -12,8 +12,11 @@ class TextDemo : public demos::GfxDemo
 
 public:
 
-    TextDemo(const std::shared_ptr<gfx::Render2D> renderer)
-        : GfxDemo(renderer) {}
+    TextDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) 
+    {
+        render2D = renderer->get_render_2D();
+    }
 
     void init() override;
     void render_frame(const double dt) override;
@@ -37,6 +40,8 @@ public:
 private:
 
     bool is_clockwise(std::vector<gfx::Vec2d> vertices);
+
+    std::shared_ptr<gfx::Render2D> render2D;
 
     std::shared_ptr<gfx::Text2D> text_item;
     int num_points = 0;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "demos/common/core/gfx-demo.h"
-#include "gfx/primitives/polygon-3D.h"
 #include "gfx/primitives/cuboid-3D.h"
 #include "gfx/primitives/plane-3D.h"
 #include "gfx/primitives/sphere-3D.h"
@@ -16,9 +15,8 @@ class Test3DDemo : public GfxDemo
 
 public:
 
-    Test3DDemo(const std::shared_ptr<gfx::Render2D> renderer,
-                 const std::shared_ptr<gfx::Render3D> renderer3D)
-        : GfxDemo(renderer, renderer3D) {}
+    Test3DDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer) {}
 
     void init() override;
     void render_frame(const double dt) override;
