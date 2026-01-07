@@ -10,8 +10,8 @@ const PolygonMesh& Sphere3D::get_mesh() const
         return mesh_data;
     }
 
-    int rings = 20;
-    int segments = 20;
+    int rings = 12;
+    int segments = 12;
 
     std::vector<PolygonMesh::Vertex> sphere_vertices;
 
@@ -21,8 +21,8 @@ const PolygonMesh& Sphere3D::get_mesh() const
         {
             double phi0 = std::numbers::pi * r / rings;
             double phi1 = std::numbers::pi * (r + 1) / rings;
-            double theta0 = 2.0f * std::numbers::pi * s / segments;
-            double theta1 = 2.0f * std::numbers::pi * (s + 1) / segments;
+            double theta0 = 2.0 * std::numbers::pi * s / segments;
+            double theta1 = 2.0 * std::numbers::pi * (s + 1) / segments;
 
             auto get_pos = [&](double phi, double theta) {
                 double x = radius * std::sin(phi) * std::cos(theta);
