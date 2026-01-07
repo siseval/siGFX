@@ -22,7 +22,7 @@ public:
     void init() override;
     void render_frame(const double dt) override;
     void end() override;
-    void handle_input(const int input) override;
+    void handle_char(const int input) override;
     void report_mouse(const demos::MouseEvent event) override;
 
     std::vector<std::string> debug_text() override

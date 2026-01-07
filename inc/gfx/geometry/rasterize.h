@@ -16,18 +16,26 @@ class Rasterize
 public:
 
     template<typename EmitPixel>
-    static void rasterize_filled_triangle(const BarycentricTriangle &triangle, const Color4 color, EmitPixel &&emit_pixel)
+    static void rasterize_filled_triangle(const BarycentricTriangle &triangle, const Color4 color, EmitPixel &&emit_pixel, const Vec2d screen_resolution = Vec2d { -1.0, -1.0 })
     {
         Box2d bounds {
             Vec2d {
-                std::min({triangle.v0.x,triangle.v1.x,triangle.v2.x }),
-                std::min({triangle.v0.y,triangle.v1.y,triangle.v2.y })
+                std::min({ triangle.v0.x, triangle.v1.x, triangle.v2.x }),
+                std::min({ triangle.v0.y, triangle.v1.y, triangle.v2.y })
             }.round(),
             Vec2d {
-                std::max({triangle.v0.x,triangle.v1.x,triangle.v2.x }),
-                std::max({triangle.v0.y,triangle.v1.y,triangle.v2.y })
+                std::max({ triangle.v0.x, triangle.v1.x, triangle.v2.x }),
+                std::max({ triangle.v0.y, triangle.v1.y, triangle.v2.y })
             }.round()
         };
+
+        if (screen_resolution.x > 0.0 && screen_resolution.y > 0.0)
+        {
+            bounds.min.x = std::max(0.0, bounds.min.x);
+            bounds.min.y = std::max(0.0, bounds.min.y);
+            bounds.max.x = std::min((screen_resolution.x) - 1, bounds.max.x);
+            bounds.max.y = std::min((screen_resolution.y) - 1, bounds.max.y);
+        }
 
         int corners_inside = triangle.corners_inside(bounds);
         if (corners_inside == 4)

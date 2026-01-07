@@ -203,7 +203,7 @@ void FractalDemo::set_a_frequency(const double freq)
     a_frequency = freq;
 }
 
-void FractalDemo::handle_input(const int input)
+void FractalDemo::handle_char(const int input)
 {
     switch (input)
     {

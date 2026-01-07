@@ -131,7 +131,7 @@ void ShaderDemo::spawn_ripple(const Vec2d position)
     shader->ripples.push_back(ripple);
 }
 
-void ShaderDemo::handle_input(const int input)
+void ShaderDemo::handle_char(const int input)
 {
     switch (input)
     {

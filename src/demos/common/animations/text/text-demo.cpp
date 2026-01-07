@@ -131,7 +131,7 @@ void TextDemo::render_frame(const double dt)
     last_frame_us = time_us() - t0;
 }
 
-void TextDemo::handle_input(const int input)
+void TextDemo::handle_char(const int input)
 {
 }
 

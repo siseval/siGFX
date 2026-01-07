@@ -3,7 +3,6 @@
 
 #include "demos/curses/curses-utils.h"
 #include "demos/common/interactive/interactive-demo.h"
-#include "demos/common/core/demo-utils.h"
 
 namespace demos
 {
@@ -39,7 +38,7 @@ void run()
         }
         else
         {
-            demo.handle_input(input);
+            demo.handle_char(input);
         }
     }
 

@@ -119,7 +119,7 @@ void VideoDemo::load_p5()
     };
 }
 
-void VideoDemo::handle_input(const int input)
+void VideoDemo::handle_char(const int input)
 {
     switch (input)
     {

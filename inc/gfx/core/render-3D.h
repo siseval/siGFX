@@ -90,9 +90,37 @@ public:
         return camera.get_rotation();
     }
 
+    Vec3d get_camera_forward() const
+    {
+        return camera.get_forward_vector();
+    }
+
+    void set_light_direction(const Vec3d dir)
+    {
+        light_dir = dir.normalize();
+    }
+
+    Vec3d get_light_direction() const
+    {
+        return light_dir;
+    }
+
+    void set_ambient_light(const double intensity)
+    {
+        ambient_light = intensity;
+    }
+
+    double get_ambient_light() const
+    {
+        return ambient_light;
+    }
+
 private:
 
     Camera camera;
+    Vec3d light_dir { 0.0, 0.0, -1.0 };
+    double ambient_light { 0.2 };
+
     std::shared_ptr<gfx::SceneGraph3D> scene_graph;
     std::shared_ptr<gfx::RenderSurface> surface;
 

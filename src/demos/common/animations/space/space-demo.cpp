@@ -382,7 +382,7 @@ void SpaceDemo::clear_bodies()
     }
 }
 
-void SpaceDemo::handle_input(const int input)
+void SpaceDemo::handle_char(const int input)
 {
     camera.handle_input(input);
 

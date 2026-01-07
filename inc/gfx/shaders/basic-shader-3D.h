@@ -32,11 +32,20 @@ private:
                 { 1.0 }
             };
 
-            Matrix4x1d clip = projection_matrix * view_matrix * model_matrix * pos_h;
+            Matrix4x1d normal_h {
+                { input.normal.x },
+                { input.normal.y },
+                { input.normal.z },
+                { 0.0 }
+            };
+
+            Matrix4x1d pos_clip = projection_matrix * view_matrix * model_matrix * pos_h;
+            Matrix4x1d normal_clip = model_matrix * normal_h;
 
             VertOutput out {
-                .xyz = { clip(0,0), clip(1,0), clip(2,0) },
-                .w = clip(3,0),
+                .xyz = { pos_clip(0,0), pos_clip(1,0), pos_clip(2,0) },
+                .w = pos_clip(3,0),
+                .normal = { normal_clip(0,0), normal_clip(1,0), normal_clip(2,0) }
             };
 
             return out;
@@ -48,12 +57,13 @@ private:
 
         Color4 frag(const Shader3D::FragInput &input) const override
         {
-            double depth = std::clamp(input.depth, 0.0, 1.0);
+            double diffuse = std::max(0.0, Vec3d::dot(input.normal, light_dir));
+            double ambient = 0.1;
+            double intensity = ambient + (1.0 - ambient) * diffuse;
 
-            double shade = depth;
+            Vec3d rgb { input.normal * 0.5 };
 
-            int intensity = (1 - shade) * 255;
-            return Color4(255, 255, 255, intensity);
+            return Color4(intensity, intensity, intensity, 1.0);
         }
     };
  

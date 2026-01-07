@@ -22,6 +22,7 @@ public:
     {
         Vec3d xyz;
         double w;
+        Vec3d normal;
     };
 
     struct FragInput
@@ -29,6 +30,7 @@ public:
         Vec3d uvw;
         double depth;
         double t;
+        Vec3d normal;
     };
 
     class VertShader
@@ -59,8 +61,26 @@ public:
 
     class FragShader
     {
+
     public:
+
         virtual Color4 frag(const FragInput &input) const = 0;
+
+        void set_light_direction(const Vec3d& dir)
+        {
+            light_dir = dir.normalize();
+        }
+
+        void set_ambient_intensity(const double intensity)
+        {
+            ambient_intensity = intensity;
+        }
+
+    protected:
+
+        Vec3d light_dir;
+        double ambient_intensity;
+
     };
 
     VertOutput vert(const VertInput &input) const

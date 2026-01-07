@@ -80,7 +80,7 @@ void StarDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
-void StarDemo::handle_input(const int input)
+void StarDemo::handle_char(const int input)
 {
     switch (input)
     {

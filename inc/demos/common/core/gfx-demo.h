@@ -24,6 +24,37 @@ struct MouseEvent
     gfx::Vec2d position;
 };
 
+enum class KeyEventType
+{
+    KEY_PRESS,
+    KEY_RELEASE,
+    KEY_REPEAT,
+};
+
+enum class Key
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    W,
+    A,
+    S,
+    D,
+    Q,
+    E,
+    SHIFT,
+    CTRL,
+    SPACE,
+    UNKNOWN
+};
+
+struct KeyEvent
+{
+    KeyEventType type;
+    Key key;
+};
+
 class GfxDemo
 {
 
@@ -40,8 +71,9 @@ public:
 
     virtual void init() = 0;
     virtual void render_frame(const double dt) = 0;
-    virtual void handle_input(const int input) = 0;
+    virtual void handle_char(const int input) = 0;
     virtual void report_mouse(const MouseEvent event) {}
+    virtual void report_key(const KeyEvent event) {}
     virtual void end() = 0;
 
     virtual std::vector<std::string> debug_text() { return {}; }

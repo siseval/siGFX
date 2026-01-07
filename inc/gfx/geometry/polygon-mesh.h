@@ -17,6 +17,7 @@ public:
     struct Vertex
     {
         gfx::Vec3d pos;
+        Vec3d normal;
     };
 
     struct Triangle
@@ -25,7 +26,6 @@ public:
         uint32_t v1;
         uint32_t v2;
     };
-
 
     PolygonMesh() = default;
 

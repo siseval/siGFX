@@ -280,7 +280,7 @@ void BoidsDemo::report_mouse(const demos::MouseEvent event)
     }
 }
 
-void BoidsDemo::handle_input(const int input)
+void BoidsDemo::handle_char(const int input)
 {
 }
 

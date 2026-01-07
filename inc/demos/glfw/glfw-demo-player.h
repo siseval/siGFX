@@ -29,6 +29,7 @@ public:
         glfwSetInputMode(surface->get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         glfwSetMouseButtonCallback(surface->get_window(), mouse_callback);
+        glfwSetKeyCallback(surface->get_window(), key_callback);
         glfwSetScrollCallback(surface->get_window(), scroll_callback);
         glfwSetCursorPosCallback(surface->get_window(), cursor_callback);
         glfwSetCharCallback(surface->get_window(), char_callback);
@@ -164,7 +165,68 @@ private:
             return;
         }
         self->handle_input(key);
-        self->demos[self->current_demo]->handle_input(key);
+        self->demos[self->current_demo]->handle_char(key);
+    }
+
+    static Key glfw_key_to_key(int glfw_key)
+    {
+        switch (glfw_key)
+        {
+            case GLFW_KEY_UP:
+                return Key::UP;
+            case GLFW_KEY_DOWN:
+                return Key::DOWN;
+            case GLFW_KEY_LEFT:
+                return Key::LEFT;
+            case GLFW_KEY_RIGHT:
+                return Key::RIGHT;
+            case GLFW_KEY_W:
+                return Key::W;
+            case GLFW_KEY_A:
+                return Key::A;
+            case GLFW_KEY_S:
+                return Key::S;
+            case GLFW_KEY_D:
+                return Key::D;
+            case GLFW_KEY_Q:
+                return Key::Q;
+            case GLFW_KEY_E:
+                return Key::E;
+            case GLFW_KEY_LEFT_SHIFT:
+            case GLFW_KEY_RIGHT_SHIFT:
+                return Key::SHIFT;
+            case GLFW_KEY_LEFT_CONTROL:
+            case GLFW_KEY_RIGHT_CONTROL:
+                return Key::CTRL;
+            case GLFW_KEY_SPACE:
+                return Key::SPACE;
+            default:
+                return Key::UNKNOWN;
+        }
+    }
+
+    static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
+    {
+        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        if (!self) 
+        {
+            return;
+        }
+        KeyEvent event {
+            .type = [&]() { switch (action)
+                {
+                    case GLFW_PRESS:
+                        return KeyEventType::KEY_PRESS;
+                    case GLFW_RELEASE:
+                        return KeyEventType::KEY_RELEASE;
+                    case GLFW_REPEAT:
+                        return KeyEventType::KEY_REPEAT;
+                    default:
+                        return KeyEventType::KEY_RELEASE;
+                }}(),
+            .key = glfw_key_to_key(key)
+        };
+        self->demos[self->current_demo]->report_key(event);
     }
 
     GLFWwindow* get_window()

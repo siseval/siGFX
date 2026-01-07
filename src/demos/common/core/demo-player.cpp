@@ -67,7 +67,7 @@ void DemoPlayer::run()
 
         int input { get_input() };
         handle_input(input);
-        demos[current_demo]->handle_input(input);
+        demos[current_demo]->handle_char(input);
     }
 }
 

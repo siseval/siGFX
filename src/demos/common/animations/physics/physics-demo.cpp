@@ -13,7 +13,7 @@ void PhysicsDemo::render_frame(const double dt)
 {
 }
 
-void PhysicsDemo::handle_input(const int input)
+void PhysicsDemo::handle_char(const int input)
 {
 }
 

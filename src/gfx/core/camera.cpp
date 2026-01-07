@@ -28,6 +28,21 @@ Matrix4x4d Camera::get_projection_matrix(const double aspect_ratio) const
     projection(2, 3) = -z_near * z_far / (z_far - z_near);
     projection(3, 2) = 1.0;
 
-    return projection;}
+    return projection;
+}
+
+Vec3d Camera::get_forward_vector() const
+{
+    double pitch_rad { rotation.x };
+    double yaw_rad { rotation.y };
+
+    Vec3d forward {
+        std::cos(pitch_rad) * std::sin(yaw_rad),
+        std::sin(pitch_rad),
+        std::cos(pitch_rad) * std::cos(yaw_rad)
+    };
+
+    return forward.normalize();
+}
 
 }

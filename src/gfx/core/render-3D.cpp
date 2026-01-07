@@ -1,6 +1,7 @@
 #include "gfx/core/render-3D.h"
 
 #include "gfx/geometry/rasterize.h"
+#include "gfx/geometry/transform-3D.h"
 
 namespace gfx
 {
@@ -22,14 +23,34 @@ void Render3D::draw_frame()
             camera.get_view_matrix(),
             camera.get_projection_matrix(get_aspect_ratio())
         );
+        shader->get_fragment_shader()->set_light_direction(light_dir);
+        shader->get_fragment_shader()->set_ambient_intensity(ambient_light);
 
         for (const auto& tri : mesh.get_triangles())
         {
+            bool skip_triangle { false };
+
             std::array<PolygonMesh::Vertex, 3> triangle_vertices {
                 mesh.get_vertices().at(tri.v0),
                 mesh.get_vertices().at(tri.v1),
                 mesh.get_vertices().at(tri.v2)
             };
+
+            Vec3d world_v0 { Transform3D::transform_point(triangle_vertices[0].pos, transform) };
+            Vec3d world_v1 { Transform3D::transform_point(triangle_vertices[1].pos, transform) };
+            Vec3d world_v2 { Transform3D::transform_point(triangle_vertices[2].pos, transform) };
+
+            Vec3d face_normal = Vec3d::cross(
+                world_v2 - world_v0,
+                world_v1 - world_v0
+            ).normalize();
+
+            Vec3d to_camera = (camera.get_position() - world_v0).normalize();
+
+            if (Vec3d::dot(face_normal, to_camera) <= 0.0)
+            {
+                continue;
+            }
 
             std::array<Shader3D::VertOutput, 3> verts;
 
@@ -38,7 +59,7 @@ void Render3D::draw_frame()
                 const auto& vertex { triangle_vertices[i] };
                 Shader3D::VertInput vert_input { 
                     .pos = vertex.pos,
-                    .normal = vertex.pos
+                    .normal = vertex.normal
                 };
                 verts[i] = primitive->get_shader()->vert(vert_input);
             }
@@ -51,7 +72,6 @@ void Render3D::draw_frame()
             };
 
             std::array<ScreenVertex, 3> screen_vertices;
-            bool skip_triangle { false };
 
             for (int i = 0; i < 3 && !skip_triangle; ++i)
             {
@@ -103,7 +123,7 @@ void Render3D::draw_frame()
             };
 
             Rasterize::rasterize_filled_triangle(triangle, primitive->get_color(), [&](const Pixel &pixel) {
-                Vec3d w = triangle.barycentric_weights(pixel.position);
+                Vec3d w = triangle.barycentric_weights(pixel.position + Vec2d { 0.5, 0.5 });
 
                 // double inv_w_p = 
                 //     w.x * one_over_w[0] +
@@ -117,14 +137,20 @@ void Render3D::draw_frame()
 
                 double depth_normalized { depth };
 
+                Vec3d normal_p = (
+                    verts[0].normal * w.x + 
+                    verts[1].normal * w.y + 
+                    verts[2].normal * w.z).normalize();
+
                 Shader3D::FragInput frag_input;
                 frag_input.depth = depth_normalized;
                 frag_input.t = t;
+                frag_input.normal = normal_p;
 
                 Color4 color = primitive->get_shader()->frag(frag_input);
 
                 surface->write_pixel(pixel.position, color, depth);
-            });
+            }, resolution);
         }
     }
 }

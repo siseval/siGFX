@@ -128,7 +128,7 @@ void InteractiveDemo::end()
     selected_index = -1;
 }
 
-void InteractiveDemo::handle_input(const int input)
+void InteractiveDemo::handle_char(const int input)
 {
     auto selected { get_selected() };
 
