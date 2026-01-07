@@ -32,7 +32,6 @@ void Test3DDemo::init()
     cube = std::make_shared<Cuboid3D>();
     cube->set_size(2.0, 2.0, 2.0);
 
-
     render3D->add_item(cube);
 }
 
