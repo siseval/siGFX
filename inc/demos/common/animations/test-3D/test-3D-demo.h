@@ -1,7 +1,10 @@
 #pragma once
 
 #include "demos/common/core/gfx-demo.h"
-#include "demos/common/core/demo-utils.h"
+#include "gfx/primitives/polygon-3D.h"
+#include "gfx/primitives/cuboid-3D.h"
+#include "gfx/primitives/plane-3D.h"
+#include "gfx/primitives/sphere-3D.h"
 
 #include <map>
 
@@ -36,9 +39,9 @@ private:
     void camera_movement(const Key key, const double dt);
     void poll_held_keys(const double dt);
 
-    std::shared_ptr<gfx::Primitive3D> cube;
-    std::shared_ptr<gfx::Primitive3D> sphere;
-    std::shared_ptr<gfx::Primitive3D> floor_item;
+    std::shared_ptr<gfx::Cuboid3D> cube;
+    std::shared_ptr<gfx::Sphere3D> sphere;
+    std::shared_ptr<gfx::Plane3D> floor_item;
 
     gfx::Vec2d prev_mouse_pos { 0.0, 0.0 };
 

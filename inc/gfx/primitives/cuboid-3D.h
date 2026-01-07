@@ -1,0 +1,27 @@
+#pragma once
+
+#include "gfx/core/primitive-3D.h"
+
+namespace gfx
+{
+
+class Cuboid3D : public Primitive3D
+{
+
+public:
+
+    Cuboid3D() = default;
+
+    const PolygonMesh& get_mesh() const override;
+
+    void set_size(const Vec3d& new_size);
+    void set_size(const double width, const double height, const double depth);
+    Vec3d get_size() const;
+
+private:
+
+    Vec3d size;
+
+};
+
+}

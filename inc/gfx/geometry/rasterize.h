@@ -16,7 +16,7 @@ class Rasterize
 public:
 
     template<typename EmitPixel>
-    static void rasterize_filled_triangle(const BarycentricTriangle &triangle, const Color4 color, EmitPixel &&emit_pixel, const Vec2d screen_resolution = Vec2d { -1.0, -1.0 })
+    static void rasterize_filled_triangle(const BarycentricTriangle &triangle, const Color4 color, EmitPixel &&emit_pixel, const Vec2d clip_bounds = Vec2d { -1.0, -1.0 })
     {
         Box2d bounds {
             Vec2d {
@@ -29,12 +29,12 @@ public:
             }.round()
         };
 
-        if (screen_resolution.x > 0.0 && screen_resolution.y > 0.0)
+        if (clip_bounds.x > 0.0 && clip_bounds.y > 0.0)
         {
             bounds.min.x = std::max(0.0, bounds.min.x);
             bounds.min.y = std::max(0.0, bounds.min.y);
-            bounds.max.x = std::min((screen_resolution.x) - 1, bounds.max.x);
-            bounds.max.y = std::min((screen_resolution.y) - 1, bounds.max.y);
+            bounds.max.x = std::min((clip_bounds.x) - 1, bounds.max.x);
+            bounds.max.y = std::min((clip_bounds.y) - 1, bounds.max.y);
         }
 
         int corners_inside = triangle.corners_inside(bounds);

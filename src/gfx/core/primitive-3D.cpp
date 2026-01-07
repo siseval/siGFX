@@ -32,7 +32,7 @@ Matrix4x4d Primitive3D::get_transform() const
 
 Box3d Primitive3D::get_geometry_size() const
 {
-    return mesh.get_extent();
+    return get_mesh().get_extent();
 }
 
 }

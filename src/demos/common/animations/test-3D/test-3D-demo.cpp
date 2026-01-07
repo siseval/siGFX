@@ -19,107 +19,19 @@ void Test3DDemo::init()
     render3D->set_light_direction({ -1.0, 1.0, -1.0 });
     render3D->set_ambient_light(0.5);
 
-    const int sectors = 20;
-    const int stacks = 20;
-    const float radius = 1.0f;
-
-    std::vector<PolygonMesh::Vertex> sphere_vertices;
-    std::vector<PolygonMesh::Triangle> sphere_triangles;
-
-    for (int i = 0; i <= stacks; ++i) 
-    {
-        double stack_angle = std::numbers::pi / 2 - (double)i * std::numbers::pi / stacks;
-        double xy = radius * cos(stack_angle);
-        double z = radius * sin(stack_angle);
-
-        for (int j = 0; j <= sectors; ++j) 
-        {
-            double sector_angle = (double)j * 2 * std::numbers::pi / sectors;
-
-            double x = xy * cos(sector_angle);
-            double y = xy * sin(sector_angle);
-
-            Vec3d pos{ x, z, y };
-            
-            Vec3d normal = pos.normalize();
-
-            sphere_vertices.push_back({ pos, normal });
-        }
-    }
-
-    for (int i = 0; i < stacks; ++i) 
-    {
-        int k1 = i * (sectors + 1);
-        int k2 = k1 + sectors + 1;
-
-        for (int j = 0; j < sectors; ++j, ++k1, ++k2) 
-        {
-            if (i != 0) 
-            {
-                sphere_triangles.push_back({ (uint32_t)k1, (uint32_t)k2, (uint32_t)k1 + 1 });
-            }
-
-            if (i != (stacks - 1)) 
-            {
-                sphere_triangles.push_back({ (uint32_t)k1 + 1, (uint32_t)k2, (uint32_t)k2 + 1 });
-            }
-        }
-    }
-
-    PolygonMesh sphere_mesh(sphere_vertices, sphere_triangles);
-    sphere = std::make_shared<Primitive3D>();
-    sphere->mesh = sphere_mesh;
+    sphere = std::make_shared<Sphere3D>();
+    sphere->set_radius(1.0);
     render3D->add_item(sphere);
-
-    std::vector<PolygonMesh::Vertex> floor_vertices = {
-        { { -10.0, -2.0, -10.0 }, { 0.0, 1.0, 0.0 } },
-        { {  10.0, -2.0, -10.0 }, { 0.0, 1.0, 0.0 } },
-        { {  10.0, -2.0,  10.0 }, { 0.0, 1.0, 0.0 } },
-        { { -10.0, -2.0,  10.0 }, { 0.0, 1.0, 0.0 } }
-    };
-    std::vector<PolygonMesh::Triangle> floor_triangles = {
-        { 0, 1, 2 },
-        { 0, 2, 3 }
-    };
-    PolygonMesh floor_mesh(floor_vertices, floor_triangles);
-
-    floor_item = std::make_shared<Primitive3D>();
-    floor_item->mesh = floor_mesh;
-    floor_item->set_position(0.0, -15.0, 0.0);
+    
+    floor_item = std::make_shared<Plane3D>();
+    floor_item->set_size(20.0, 20.0);
+    floor_item->set_position(0.0, -8.0, 0.0);
 
     render3D->add_item(floor_item);
 
-    std::vector<PolygonMesh::Vertex> box_vertices = {
-        {{-1, -1, -1}, { 0,  0, -1}}, {{ 1, -1, -1}, { 0,  0, -1}}, {{ 1,  1, -1}, { 0,  0, -1}},
-        {{-1, -1, -1}, { 0,  0, -1}}, {{ 1,  1, -1}, { 0,  0, -1}}, {{-1,  1, -1}, { 0,  0, -1}},
+    cube = std::make_shared<Cuboid3D>();
+    cube->set_size(2.0, 2.0, 2.0);
 
-        {{ 1, -1,  1}, { 0,  0,  1}}, {{-1, -1,  1}, { 0,  0,  1}}, {{-1,  1,  1}, { 0,  0,  1}},
-        {{ 1, -1,  1}, { 0,  0,  1}}, {{-1,  1,  1}, { 0,  0,  1}}, {{ 1,  1,  1}, { 0,  0,  1}},
-
-        {{-1, -1,  1}, { 0, -1,  0}}, {{ 1, -1,  1}, { 0, -1,  0}}, {{ 1, -1, -1}, { 0, -1,  0}},
-        {{-1, -1,  1}, { 0, -1,  0}}, {{ 1, -1, -1}, { 0, -1,  0}}, {{-1, -1, -1}, { 0, -1,  0}},
-
-        {{-1,  1, -1}, { 0,  1,  0}}, {{ 1,  1, -1}, { 0,  1,  0}}, {{ 1,  1,  1}, { 0,  1,  0}},
-        {{-1,  1, -1}, { 0,  1,  0}}, {{ 1,  1,  1}, { 0,  1,  0}}, {{-1,  1,  1}, { 0,  1,  0}},
-
-        {{ 1, -1, -1}, { 1,  0,  0}}, {{ 1, -1,  1}, { 1,  0,  0}}, {{ 1,  1,  1}, { 1,  0,  0}},
-        {{ 1, -1, -1}, { 1,  0,  0}}, {{ 1,  1,  1}, { 1,  0,  0}}, {{ 1,  1, -1}, { 1,  0,  0}},
-
-        {{-1, -1,  1}, {-1,  0,  0}}, {{-1, -1, -1}, {-1,  0,  0}}, {{-1,  1, -1}, {-1,  0,  0}},
-        {{-1, -1,  1}, {-1,  0,  0}}, {{-1,  1, -1}, {-1,  0,  0}}, {{-1,  1,  1}, {-1,  0,  0}}
-    };
-    std::vector<PolygonMesh::Triangle> box_triangles;
-    for (uint32_t i = 0; i < box_vertices.size(); i += 3) 
-    {
-        box_triangles.push_back({ i, i + 1, i + 2 });
-    }
-
-
-
-    PolygonMesh mesh(box_vertices, box_triangles);
-
-    cube = std::make_shared<Primitive3D>();
-    cube->mesh = mesh;
 
     render3D->add_item(cube);
 }

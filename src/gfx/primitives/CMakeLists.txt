@@ -1,8 +1,12 @@
 set(GFX_PRIMITIVES_SOURCES
     circle-2D.cpp
+    cuboid-3D.cpp
     ellipse-2D.cpp
+    sphere-3D.cpp
     polyline-2D.cpp
     polygon-2D.cpp
+    polygon-3D.cpp
+    plane-3D.cpp
     bitmap-2D.cpp
     text-2D.cpp
 )

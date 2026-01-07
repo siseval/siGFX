@@ -145,8 +145,9 @@ public:
     inline void set_blend_mode(const RenderSurface::BlendMode mode) { blend_mode = mode; }
     inline RenderSurface::BlendMode get_blend_mode() const { return blend_mode; }
 
-
     inline std::shared_ptr<FontTTF> get_font(const std::string &name) const { return font_manager->get_font(name); }
+
+    inline void set_render_surface(const std::shared_ptr<RenderSurface> new_surface) { surface = new_surface; }
 
 private:
 

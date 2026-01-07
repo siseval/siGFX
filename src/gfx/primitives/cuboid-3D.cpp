@@ -1,0 +1,74 @@
+#include "gfx/primitives/cuboid-3D.h"
+
+namespace gfx
+{
+
+const PolygonMesh& Cuboid3D::get_mesh() const
+{
+    if (!is_mesh_dirty())
+    {
+        return mesh_data;
+    }
+
+    mesh_data.clear();
+
+    double w = size.x * 0.5;
+    double h = size.y * 0.5;
+    double d = size.z * 0.5;
+
+    std::vector<PolygonMesh::Vertex> vertices = {
+        {{-w, -h, -d}, { 0,  0, -1}}, {{-w,  h, -d}, { 0,  0, -1}}, {{ w,  h, -d}, { 0,  0, -1}},
+        {{-w, -h, -d}, { 0,  0, -1}}, {{ w,  h, -d}, { 0,  0, -1}}, {{ w, -h, -d}, { 0,  0, -1}},
+
+        {{-w, -h,  d}, { 0,  0,  1}}, {{ w, -h,  d}, { 0,  0,  1}}, {{ w,  h,  d}, { 0,  0,  1}},
+        {{-w, -h,  d}, { 0,  0,  1}}, {{ w,  h,  d}, { 0,  0,  1}}, {{-w,  h,  d}, { 0,  0,  1}},
+
+        {{-w, -h,  d}, {-1,  0,  0}}, {{-w,  h,  d}, {-1,  0,  0}}, {{-w,  h, -d}, {-1,  0,  0}},
+        {{-w, -h,  d}, {-1,  0,  0}}, {{-w,  h, -d}, {-1,  0,  0}}, {{-w, -h, -d}, {-1,  0,  0}},
+
+        {{ w, -h, -d}, { 1,  0,  0}}, {{ w,  h, -d}, { 1,  0,  0}}, {{ w,  h,  d}, { 1,  0,  0}},
+        {{ w, -h, -d}, { 1,  0,  0}}, {{ w,  h,  d}, { 1,  0,  0}}, {{ w, -h,  d}, { 1,  0,  0}},
+
+        {{-w,  h, -d}, { 0,  1,  0}}, {{-w,  h,  d}, { 0,  1,  0}}, {{ w,  h,  d}, { 0,  1,  0}},
+        {{-w,  h, -d}, { 0,  1,  0}}, {{ w,  h,  d}, { 0,  1,  0}}, {{ w,  h, -d}, { 0,  1,  0}},
+
+        {{-w, -h,  d}, { 0, -1,  0}}, {{-w, -h, -d}, { 0, -1,  0}}, {{ w, -h, -d}, { 0, -1,  0}},
+        {{-w, -h,  d}, { 0, -1,  0}}, {{ w, -h, -d}, { 0, -1,  0}}, {{ w, -h,  d}, { 0, -1,  0}}
+    };
+
+    mesh_data.set_vertices(vertices);
+
+    std::vector<PolygonMesh::Triangle> triangles = {
+        { 0,  1,  2 }, { 3,  4,  5 },
+        { 6,  7,  8 }, { 9,  10, 11 },
+        { 12, 13, 14 }, { 15, 16, 17 },
+        { 18, 19, 20 }, { 21, 22, 23 },
+        { 24, 25, 26 }, { 27, 28, 29 },
+        { 30, 31, 32 }, { 33, 34, 35 }
+    };
+
+    mesh_data.set_triangles(triangles);
+
+    set_mesh_dirty(false);
+
+    return mesh_data;
+}
+
+void Cuboid3D::set_size(const Vec3d& new_size)
+{
+    size = new_size;
+    set_mesh_dirty(true);
+}
+
+void Cuboid3D::set_size(const double width, const double height, const double depth)
+{
+    size = Vec3d { width, height, depth };
+    set_mesh_dirty(true);
+}
+
+Vec3d Cuboid3D::get_size() const
+{
+    return size;
+}
+
+}

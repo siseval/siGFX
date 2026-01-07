@@ -22,20 +22,22 @@ public:
         return id;
     }
 
+    virtual const PolygonMesh& get_mesh() const = 0;
+
     Matrix4x4d get_transform() const;
     Box3d get_geometry_size() const;
 
     void set_position(const Vec3d &pos)
     {
         position = pos;
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     void set_position(const double x, const double y, const double z)
     {
         position = Vec3d { x, y, z };
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
@@ -47,28 +49,28 @@ public:
     void set_rotation(const Vec3d &rot)
     {
         rotation = rot;
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     void set_rotation(const double x, const double y, const double z)
     {
         rotation = Vec3d { x, y, z };
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     void set_rotation_degrees(const Vec3d &rot)
     {
         rotation = Vec3d { rot.x * std::numbers::pi / 180, rot.y * std::numbers::pi / 180, rot.z * std::numbers::pi / 180 };
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     void set_rotation_degrees(const double x, const double y, const double z)
     {
         rotation = Vec3d { x * std::numbers::pi / 180, y * std::numbers::pi / 180, z * std::numbers::pi / 180 };
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
@@ -85,14 +87,14 @@ public:
     void set_scale(const Vec3d &s)
     {
         scale = s;
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     void set_scale(const double x, const double y, const double z)
     {
         scale = Vec3d { x, y, z };
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
@@ -104,19 +106,14 @@ public:
     void set_anchor(const Vec3d &a)
     {
         anchor = a;
-        set_transform_dirty();
+        set_transform_dirty(true);
         increment_transform_version();
     }
 
     Vec3d get_anchor() const
     {
         return anchor;
-    }
-
-    const PolygonMesh& get_mesh() const
-    {
-        return mesh;
-    }
+    } 
 
     std::shared_ptr<Shader3D> get_shader() const
     {
@@ -143,13 +140,26 @@ public:
         color = col;
     }
 
-    PolygonMesh mesh;
+protected:
 
-private:
-
-    void set_transform_dirty() const
+    void set_mesh_dirty(const bool dirty) const
     {
-        transform_dirty = true;
+        mesh_dirty = dirty;
+    }
+
+    void set_transform_dirty(const bool dirty) const
+    {
+        transform_dirty = dirty;
+    }
+
+    bool is_mesh_dirty() const
+    {
+        return mesh_dirty;
+    }
+
+    bool is_transform_dirty() const
+    {
+        return transform_dirty;
     }
 
     void increment_transform_version()
@@ -165,6 +175,9 @@ private:
     Vec3d rotation;
     Vec3d scale { 1.0, 1.0, 1.0 };
     Vec3d anchor;
+
+    mutable PolygonMesh mesh_data;
+    mutable bool mesh_dirty = true;
 
     mutable Matrix4x4d cached_transform;
     mutable bool transform_dirty = true;

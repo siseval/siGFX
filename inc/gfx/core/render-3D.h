@@ -85,9 +85,24 @@ public:
         camera.set_rotation(rot);
     }
 
+    void set_camera_rotation_degrees(const Vec3d rot_deg)
+    {
+        camera.set_rotation_degrees(rot_deg);
+    }
+
     Vec3d get_camera_rotation() const
     {
         return camera.get_rotation();
+    }
+
+    void set_camera_fov(const double fov)
+    {
+        camera.set_fov(fov);
+    }
+
+    double get_camera_fov() const
+    {
+        return camera.get_fov();
     }
 
     Vec3d get_camera_forward() const
@@ -113,6 +128,11 @@ public:
     double get_ambient_light() const
     {
         return ambient_light;
+    }
+
+    void set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
+    {
+        surface = new_surface;
     }
 
 private:

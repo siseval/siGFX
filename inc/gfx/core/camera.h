@@ -41,6 +41,11 @@ public:
         rotation = rot;
     }
 
+    inline void set_rotation_degrees(const Vec3d rot_deg)
+    {
+        rotation = Vec3d { rot_deg.x * std::numbers::pi / 180, rot_deg.y * std::numbers::pi / 180, rot_deg.z * std::numbers::pi / 180 };
+    }
+
     inline Vec3d get_rotation() const
     {
         return rotation;

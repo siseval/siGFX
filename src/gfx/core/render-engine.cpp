@@ -1,0 +1,195 @@
+#include "gfx/core/render-engine.h"
+
+namespace gfx
+{
+
+void RenderEngine::render_frame()
+{
+    render3D->draw_frame();
+    render2D->draw_frame();
+}
+
+void RenderEngine::present_frame()
+{
+    surface->present();
+}
+
+void RenderEngine::clear_frame()
+{
+    surface->clear();
+}
+
+void RenderEngine::add_primitive(const std::shared_ptr<Primitive2D> primitive)
+{
+    render2D->add_item(primitive);
+}
+
+void RenderEngine::add_primitive(const std::shared_ptr<Primitive3D> primitive)
+{
+    render3D->add_item(primitive);
+}
+
+void RenderEngine::clear_scene()
+{
+    render2D->clear_items();
+    render3D->clear_items();
+}
+
+void RenderEngine::clear_3D_scene()
+{
+    render3D->clear_items();
+}
+
+void RenderEngine::clear_2D_scene()
+{
+    render2D->clear_items();
+}
+
+void RenderEngine::set_camera_position(const Vec3d position)
+{
+    render3D->set_camera_position(position);
+}
+
+void RenderEngine::set_camera_position(const double x, const double y, const double z)
+{
+    render3D->set_camera_position(Vec3d { x, y, z });
+}
+
+void RenderEngine::set_camera_rotation(const Vec3d rotation_degrees)
+{
+    render3D->set_camera_rotation(rotation_degrees);
+}
+
+void RenderEngine::set_camera_rotation(const double x_deg, const double y_deg, const double z_deg)
+{
+    render3D->set_camera_rotation(Vec3d { x_deg, y_deg, z_deg });
+}
+
+void RenderEngine::set_camera_rotation_degrees(const Vec3d rotation_degrees)
+{
+    render3D->set_camera_rotation_degrees(rotation_degrees);
+}
+
+void RenderEngine::set_camera_rotation_degrees(const double x_deg, const double y_deg, const double z_deg)
+{
+    render3D->set_camera_rotation_degrees(Vec3d { x_deg, y_deg, z_deg });
+}
+
+void RenderEngine::set_camera_fov(const double fov_degrees)
+{
+    render3D->set_camera_fov(fov_degrees);
+}
+
+void RenderEngine::set_light_direction(const Vec3d direction)
+{
+    render3D->set_light_direction(direction);
+}
+
+void RenderEngine::set_light_direction(const double x, const double y, const double z)
+{
+    render3D->set_light_direction(Vec3d { x, y, z });
+}
+
+void RenderEngine::set_ambient_light(const double intensity)
+{
+    render3D->set_ambient_light(intensity);
+}
+
+Vec3d RenderEngine::get_camera_position() const
+{
+    return render3D->get_camera_position();
+}
+
+Vec3d RenderEngine::get_camera_rotation() const
+{
+    return render3D->get_camera_rotation();
+}
+
+double RenderEngine::get_camera_fov() const
+{
+    return render3D->get_camera_fov();
+}
+
+Vec3d RenderEngine::get_camera_forward() const
+{
+    return render3D->get_camera().get_forward_vector();
+}
+
+Vec3d RenderEngine::get_light_direction() const
+{
+    return render3D->get_light_direction();
+}
+
+double RenderEngine::get_ambient_light() const
+{
+    return render3D->get_ambient_light();
+}
+
+void RenderEngine::set_font_directory(const std::filesystem::path &path)
+{
+    render2D->set_font_directory(path);
+}
+
+void RenderEngine::set_font_directory(const std::string &path)
+{
+    render2D->set_font_directory(path);
+}
+
+void RenderEngine::load_fonts_from_directory(const std::filesystem::path &path)
+{
+    render2D->load_font_directory(path);
+}
+
+void RenderEngine::load_fonts_from_directory(const std::string &path)
+{
+    render2D->load_font_directory(path);
+}
+
+std::filesystem::path RenderEngine::get_font_directory() const
+{
+    return render2D->get_font_directory();
+}
+
+std::shared_ptr<FontTTF> RenderEngine::get_font(const std::string &name) const
+{
+    return render2D->get_font(name);
+}
+
+void RenderEngine::debug_viewer_enable(const bool enable)
+{
+    render2D->set_enable_debug_viewer(enable);
+}
+
+void RenderEngine::debug_viewer_show_aabb(const bool show)
+{
+    render2D->set_debug_viewer_show_aabb(show);
+}
+
+void RenderEngine::debug_viewer_show_obb(const bool show)
+{
+    render2D->set_debug_viewer_show_obb(show);
+}
+
+void RenderEngine::debug_viewer_show_anchor(const bool show)
+{
+    render2D->set_debug_viewer_show_anchor(show);
+}
+
+void RenderEngine::debug_viewer_set_font(const std::shared_ptr<FontTTF> font)
+{
+    render2D->set_debug_font(font);
+}
+
+void RenderEngine::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
+{
+    surface = new_surface;
+    render2D->set_render_surface(new_surface);
+    render3D->set_render_surface(new_surface);
+}
+
+void RenderEngine::set_clear_color(const Color4 color)
+{
+    surface->set_clear_color(color);
+}
+
+}

@@ -41,8 +41,8 @@ void Render3D::draw_frame()
             Vec3d world_v2 { Transform3D::transform_point(triangle_vertices[2].pos, transform) };
 
             Vec3d face_normal = Vec3d::cross(
-                world_v2 - world_v0,
-                world_v1 - world_v0
+                world_v1 - world_v0,
+                world_v2 - world_v0
             ).normalize();
 
             Vec3d to_camera = (camera.get_position() - world_v0).normalize();
