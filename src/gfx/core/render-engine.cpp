@@ -272,4 +272,105 @@ Color4 RenderEngine::get_clear_color() const
     return surface->get_clear_color();
 }
 
+
+std::shared_ptr<Circle2D> RenderEngine::create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness) const
+{
+    return render2D->create_circle(position, radius, color, line_thickness);
+}
+
+std::shared_ptr<Circle2D> RenderEngine::create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness) const
+{
+    return create_circle(Vec2d { x, y }, radius, color, line_thickness);
+}
+
+std::shared_ptr<Ellipse2D> RenderEngine::create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness) const
+{
+    return render2D->create_ellipse(position, radius, color, line_thickness);
+}
+
+std::shared_ptr<Ellipse2D> RenderEngine::create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness) const
+{
+    return create_ellipse(Vec2d { x, y }, Vec2d { radius_x, radius_y }, color, line_thickness);
+}
+
+std::shared_ptr<Polyline2D> RenderEngine::create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const
+{
+    return render2D->create_polyline(position, points, color, line_thickness);
+}
+
+std::shared_ptr<Polyline2D> RenderEngine::create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const
+{
+    return create_polyline(Vec2d { x, y }, points, color, line_thickness);
+}
+
+std::shared_ptr<Polygon2D> RenderEngine::create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color) const
+{
+    return render2D->create_polygon(position, points, color);
+}
+
+std::shared_ptr<Polygon2D> RenderEngine::create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color) const
+{
+    return create_polygon(Vec2d { x, y }, points, color);
+}
+
+std::shared_ptr<Bitmap2D> RenderEngine::create_bitmap(const Vec2d position, const Bitmap &bm) const
+{
+    return render2D->create_bitmap(position, bm);
+}
+
+std::shared_ptr<Bitmap2D> RenderEngine::create_bitmap(const double x, const double y, const Bitmap &bm) const
+{
+    return create_bitmap(Vec2d { x, y }, bm);
+}
+
+std::shared_ptr<Bitmap2D> RenderEngine::create_bitmap(const Vec2d position, const Vec2i resolution) const
+{
+    return render2D->create_bitmap(position, resolution);
+}
+
+std::shared_ptr<Bitmap2D> RenderEngine::create_bitmap(const double x, const double y, const Vec2i resolution) const
+{
+    return create_bitmap(Vec2d { x, y }, resolution);
+}
+
+std::shared_ptr<Text2D> RenderEngine::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const
+{
+    return get_render_2D()->create_text(position, text, font, font_size, color);
+}
+
+std::shared_ptr<Text2D> RenderEngine::create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const
+{
+    return create_text(Vec2d { x, y }, text, font, font_size, color);
+}
+
+std::shared_ptr<Cuboid3D> RenderEngine::create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const
+{
+    return render3D->create_cuboid(position, size, color);
+}
+
+std::shared_ptr<Cuboid3D> RenderEngine::create_cuboid(const double x, const double y, const double z, const double size_x, const double size_y, const double size_z, const Color4 color) const
+{
+    return create_cuboid(Vec3d { x, y, z }, Vec3d { size_x, size_y, size_z }, color);
+}
+
+std::shared_ptr<Plane3D> RenderEngine::create_plane(const Vec3d position, const Vec2d size, const Color4 color) const
+{
+    return render3D->create_plane(position, size, color);
+}
+
+std::shared_ptr<Plane3D> RenderEngine::create_plane(const double x, const double y, const double z, const double size_x, const double size_y, const Color4 color) const
+{
+    return create_plane(Vec3d { x, y, z }, Vec2d { size_x, size_y }, color);
+}
+
+std::shared_ptr<Sphere3D> RenderEngine::create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments) const
+{
+    return render3D->create_sphere(position, radius, color, segments);
+}
+
+std::shared_ptr<Sphere3D> RenderEngine::create_sphere(const double x, const double y, const double z, const double radius, const Color4 color, const int segments) const
+{
+    return create_sphere(Vec3d { x, y, z }, radius, color, segments);
+}
+
 }

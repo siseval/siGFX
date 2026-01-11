@@ -39,7 +39,7 @@ private:
                 { 0.0 }
             };
 
-            Matrix4x1d pos_clip = projection_matrix * view_matrix * model_matrix * pos_h;
+            Matrix4x1d pos_clip = mvp_matrix * pos_h;
             Matrix4x1d normal_clip = model_matrix * normal_h;
 
             VertOutput out {

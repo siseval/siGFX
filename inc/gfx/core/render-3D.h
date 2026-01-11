@@ -2,6 +2,10 @@
 
 #include "gfx/core/scene-graph-3D.h"
 #include "gfx/core/render-surface.h"
+#include "gfx/core/primitive-3D.h"
+#include "gfx/primitives/cuboid-3D.h"
+#include "gfx/primitives/sphere-3D.h"
+#include "gfx/primitives/plane-3D.h"
 #include "gfx/core/camera.h"
 
 #include <memory>
@@ -34,6 +38,10 @@ public:
 
     std::shared_ptr<SceneGraph3D> get_scene_graph() const { return scene_graph; };
     std::shared_ptr<RenderSurface> get_render_surface() const { return surface; };
+
+    std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const;
+    std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16) const;
+    std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color) const;
 
     void add_item(const std::shared_ptr<Primitive3D>& item)
     {
@@ -158,8 +166,8 @@ public:
 private:
 
     Camera camera;
-    Vec3d light_dir { 0.0, 0.0, -1.0 };
-    double ambient_light { 0.2 };
+    Vec3d light_dir;
+    double ambient_light;
 
     std::shared_ptr<gfx::SceneGraph3D> scene_graph;
     std::shared_ptr<gfx::RenderSurface> surface;

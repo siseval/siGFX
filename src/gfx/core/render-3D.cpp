@@ -155,4 +155,38 @@ void Render3D::draw_frame()
     }
 }
 
+std::shared_ptr<Cuboid3D> Render3D::create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const
+{
+    auto cuboid { std::make_shared<Cuboid3D>() };
+
+    cuboid->set_position(position);
+    cuboid->set_size(size);
+    cuboid->set_color(color);
+
+    return cuboid;
+}
+
+std::shared_ptr<Plane3D> Render3D::create_plane(const Vec3d position, const Vec2d size, const Color4 color) const
+{
+    auto plane { std::make_shared<Plane3D>() };
+
+    plane->set_position(position);
+    plane->set_size(size);
+    plane->set_color(color);
+
+    return plane;
+}
+
+std::shared_ptr<Sphere3D> Render3D::create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments) const
+{
+    auto sphere { std::make_shared<Sphere3D>() };
+
+    sphere->set_position(position);
+    sphere->set_radius(radius);
+    sphere->set_color(color);
+    sphere->set_num_segments(segments);
+
+    return sphere;
+}
+
 }

@@ -92,6 +92,36 @@ public:
 
     Color4 get_clear_color() const;
 
+    std::shared_ptr<Circle2D> create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness = 1.0) const;
+    std::shared_ptr<Circle2D> create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness = 1.0) const;
+
+    std::shared_ptr<Ellipse2D> create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness = 1.0) const;
+    std::shared_ptr<Ellipse2D> create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness = 1.0) const;
+
+    std::shared_ptr<Polyline2D> create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness = 1.0) const;
+    std::shared_ptr<Polyline2D> create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness = 1.0) const;
+
+    std::shared_ptr<Polygon2D> create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 fill_color) const;
+    std::shared_ptr<Polygon2D> create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color) const;
+
+    std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Bitmap &bm) const;
+    std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Bitmap &bm) const;
+
+    std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Vec2i resolution) const;
+    std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Vec2i resolution) const;
+
+    std::shared_ptr<Text2D> create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const;
+    std::shared_ptr<Text2D> create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const;
+
+    std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const;
+    std::shared_ptr<Cuboid3D> create_cuboid(const double x, const double y, const double z, const double size_x, const double size_y, const double size_z, const Color4 color) const;
+
+    std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color) const;
+    std::shared_ptr<Plane3D> create_plane(const double x, const double y, const double z, const double size_x, const double size_y, const Color4 color) const;
+
+    std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16) const;
+    std::shared_ptr<Sphere3D> create_sphere(const double x, const double y, const double z, const double radius, const Color4 color, const int segments = 16) const;
+
 private:
 
     std::shared_ptr<RenderSurface> surface;

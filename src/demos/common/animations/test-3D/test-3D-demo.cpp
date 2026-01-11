@@ -18,19 +18,13 @@ void Test3DDemo::init()
     renderer->set_light_direction(-1.0, 1.0, -1.0);
     renderer->set_ambient_light(0.5);
 
-    sphere = std::make_shared<Sphere3D>();
-    sphere->set_radius(1.0);
+    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4::white());
     renderer->add_primitive(sphere);
     
-    floor_item = std::make_shared<Plane3D>();
-    floor_item->set_size(20.0, 20.0);
-    floor_item->set_position(0.0, -15.0, 0.0);
-
+    floor_item = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4::white());
     renderer->add_primitive(floor_item);
 
-    cube = std::make_shared<Cuboid3D>();
-    cube->set_size(2.0, 2.0, 2.0);
-
+    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4::red());
     renderer->add_primitive(cube);
 }
 
