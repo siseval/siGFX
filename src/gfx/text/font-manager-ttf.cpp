@@ -33,6 +33,47 @@ static uint32_t read_u32(const std::uint8_t* data)
            static_cast<uint32_t>(data[3]);
 }
 
+std::unordered_map<std::string, std::shared_ptr<FontTTF>> FontManagerTTF::get_loaded_fonts() const
+{
+    return loaded_fonts;
+}
+
+std::shared_ptr<FontTTF> FontManagerTTF::get_font(const std::string &name)
+{
+    auto it = loaded_fonts.find(name);
+    return it != loaded_fonts.end() ? it->second : nullptr;
+}
+
+bool FontManagerTTF::is_font_loaded(const std::string &name) const
+{
+    return loaded_fonts.find(name) != loaded_fonts.end();
+}
+
+void FontManagerTTF::add_font(const std::string &name, const std::shared_ptr<FontTTF> font)
+{
+    loaded_fonts[name] = font;
+}
+
+void FontManagerTTF::unload_font(const std::string &name)
+{
+    loaded_fonts.erase(name);
+}
+
+void FontManagerTTF::unload_all_fonts()
+{
+    loaded_fonts.clear();
+}
+
+void FontManagerTTF::set_font_directory_path(const std::filesystem::path &path)
+{
+    font_directory_path = path;
+}
+
+std::filesystem::path FontManagerTTF::get_font_directory_path() const
+{
+    return font_directory_path;
+}
+
 void FontManagerTTF::load_font_directory(const std::filesystem::path &path)
 {
     std::filesystem::path dir_path = path;

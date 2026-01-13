@@ -68,17 +68,43 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
     return bounds;
 }
 
-
-bool Ellipse2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
+Vec2d Ellipse2D::get_radius() const
 {
-    Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
-    Vec2d local_point { Transform2D::transform_point(point, inverse_transform) - radius };
-
-    return 
-    (local_point.x * local_point.x) / (radius.x * radius.x) + 
-    (local_point.y * local_point.y) / (radius.y * radius.y) <= 1.0;
+    return radius;
 }
 
+void Ellipse2D::set_radius(const Vec2d r)
+{
+    radius = r;
+    set_obb_dirty();
+}
+
+void Ellipse2D::set_radius(const double rx, const double ry)
+{
+    radius = Vec2d { rx, ry };
+    set_obb_dirty();
+}
+
+double Ellipse2D::get_line_thickness() const
+{
+    return line_thickness;
+}
+
+void Ellipse2D::set_line_thickness(const double t)
+{
+    line_thickness = t;
+    set_obb_dirty();
+}
+
+bool Ellipse2D::get_filled() const
+{
+    return filled;
+}
+
+void Ellipse2D::set_filled(const bool f)
+{
+    filled = f;
+}
 
 
 // void Ellipse2D::rasterize_polygon_ring(std::shared_ptr<RenderSurface> surface, const Matrix3x3d &transform) const

@@ -16,8 +16,6 @@ public:
 
     Box2d get_geometry_size() const override;
 
-    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override;
-
     void add_vertex(const Vec2d vertex, const int component = 0);
     void add_vertices(const std::vector<Vec2d> &new_vertices, const int component = 0);
 

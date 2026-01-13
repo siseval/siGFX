@@ -8,6 +8,22 @@
 namespace gfx
 {
 
+SceneGraph2D::SceneGraph2D() :
+    root(std::make_shared<SceneNode2D>(nullptr)),
+    nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode2D>>())
+{
+}
+
+std::shared_ptr<SceneNode2D> SceneGraph2D::get_root() const
+{
+    return root;
+}
+
+void SceneGraph2D::set_root_transform(const Matrix3x3d& transform)
+{
+    root->global_transform = transform;
+}
+
 bool SceneGraph2D::transforms_dirty() const
 {
     for (const auto& [id, node] : nodes)
@@ -137,6 +153,11 @@ void SceneGraph2D::add_item(const std::shared_ptr<Primitive2D> item, const std::
     root->children.push_back(new_node);
 } 
 
+void SceneGraph2D::add_item(const std::shared_ptr<Primitive2D> item)
+{
+    add_item(item, nullptr);
+}
+
 void SceneGraph2D::remove_item(const std::shared_ptr<Primitive2D> item)
 {
     if (!nodes.contains(item->get_id()))
@@ -164,6 +185,27 @@ void SceneGraph2D::remove_item(const std::shared_ptr<Primitive2D> item)
 
         nodes.erase(node->get_id());
     }
+}
+
+void SceneGraph2D::clear()
+{
+    root->children.clear();
+    nodes.clear();
+}
+
+int SceneGraph2D::num_items() const
+{
+    return nodes.size();
+}
+
+bool SceneGraph2D::contains_item(const std::shared_ptr<Primitive2D> item) const
+{
+    return nodes.contains(item->get_id());
+}
+
+int SceneGraph2D::get_transform_recalculation_count() const
+{
+    return transform_recalculation_count;
 }
 
 }

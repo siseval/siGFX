@@ -24,52 +24,24 @@ public:
     std::vector<Vec2i> rasterize(const Matrix3x3d &transform) const override;
 
     Box2d get_geometry_size() const override;
-    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override { return false; }
 
-    void set_text(const std::string &new_text) 
-    { 
-        text = new_text; 
-        set_edges_dirty();
-        set_size_dirty();
-    }
+    void set_text(const std::string &new_text);
+    void set_font(const std::shared_ptr<FontTTF> new_font);
+    void set_font_size(const double new_font_size);
+    void set_alignment(const TextAlignment new_alignment);
 
-    void set_font(const std::shared_ptr<FontTTF> new_font) 
-    { 
-        font = new_font; 
-        set_edges_dirty();
-        set_size_dirty();
-    }
+    TextAlignment get_alignment() const;
 
-    void set_font_size(const double new_font_size) 
-    { 
-        font_size = new_font_size; 
-        set_edges_dirty();
-        set_size_dirty();
-    }
+    void set_smoothing_radius(const double radius);
+    double get_smoothing_radius() const;
 
-    void set_alignment(const TextAlignment new_alignment) 
-    { 
-        alignment = new_alignment; 
-        set_size_dirty();
-    }
-
-    TextAlignment get_alignment() const { return alignment; }
-
-    void set_smoothing_radius(const double radius) { smoothing_radius = radius; }
-    double get_smoothing_radius() const { return smoothing_radius; }
-
-    void set_line_height_multiplier(const double multiplier) 
-    { 
-        line_height_multiplier = multiplier; 
-        set_size_dirty();
-    }
-
-    inline double get_line_height_multiplier() const { return line_height_multiplier; }
+    void set_line_height_multiplier(const double multiplier);
+    inline double get_line_height_multiplier() const;
 
     void rasterize_glyph_sdf(const std::vector<FontTTF::ContourEdge> &glyph, std::vector<Vec2i> &pixels) const;
     void rasterize_glyph(std::vector<FontTTF::ContourEdge> glyph, std::vector<Vec2i> &pixels) const;
 
-    private:
+private:
 
     struct EdgeData
     {
@@ -95,8 +67,8 @@ public:
     double coverage_from_sdf(const double signed_distance) const;
     double coverage_to_alpha(const double coverage) const;
 
-    void set_edges_dirty() { edges_dirty = true; }
-    void set_size_dirty() { size_dirty = true; }
+    void set_edges_dirty();
+    void set_size_dirty();
 
     TextAlignment alignment = TextAlignment::LEFT;
 

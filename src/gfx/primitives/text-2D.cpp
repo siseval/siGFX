@@ -477,5 +477,68 @@ void Text2D::rasterize_glyph(std::vector<FontTTF::ContourEdge> glyph, std::vecto
     }
 }
 
+void Text2D::set_text(const std::string &new_text)
+{
+    text = new_text;
+    set_edges_dirty();
+    set_size_dirty();
+}
+
+void Text2D::set_font(const std::shared_ptr<FontTTF> new_font)
+{
+    font = new_font;
+    set_edges_dirty();
+    set_size_dirty();
+}
+
+void Text2D::set_font_size(const double new_font_size)
+{
+    font_size = new_font_size;
+    set_edges_dirty();
+    set_size_dirty();
+}
+
+void Text2D::set_alignment(const TextAlignment new_alignment)
+{
+    alignment = new_alignment;
+    set_size_dirty();
+}
+
+Text2D::TextAlignment Text2D::get_alignment() const
+{
+    return alignment;
+}
+
+void Text2D::set_smoothing_radius(const double radius)
+{
+    smoothing_radius = radius;
+}
+
+double Text2D::get_smoothing_radius() const
+{
+    return smoothing_radius;
+}
+
+void Text2D::set_line_height_multiplier(const double multiplier)
+{
+    line_height_multiplier = multiplier;
+    set_size_dirty();
+}
+
+double Text2D::get_line_height_multiplier() const
+{
+    return line_height_multiplier;
+}
+
+void Text2D::set_edges_dirty()
+{
+    edges_dirty = true;
+}
+
+void Text2D::set_size_dirty()
+{
+    size_dirty = true;
+}
+
 
 }

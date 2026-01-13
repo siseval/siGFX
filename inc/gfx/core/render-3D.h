@@ -18,150 +18,50 @@ class Render3D
 
 public:
 
-    Render3D(std::shared_ptr<RenderSurface> surface) : 
-        surface(surface), 
-        scene_graph(std::make_shared<SceneGraph3D>())
-    {
-    }
 
-    void draw_frame();
-    void clear_frame()
-    {
-        surface->clear_frame_buffer();
-        surface->clear();
-    }
+Render3D(std::shared_ptr<RenderSurface> surface);
 
-    void present_frame()
-    {
-        surface->present();
-    }
+void draw_frame();
+void clear_frame();
+void present_frame();
 
-    std::shared_ptr<SceneGraph3D> get_scene_graph() const { return scene_graph; };
-    std::shared_ptr<RenderSurface> get_render_surface() const { return surface; };
+void add_item(const std::shared_ptr<Primitive3D>& item);
+void remove_item(const std::shared_ptr<Primitive3D>& item);
+void clear_items();
 
-    std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
-    std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16, const Shader3D shader = DefaultShader3D()) const;
-    std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
+std::shared_ptr<SceneGraph3D> get_scene_graph() const;
+std::shared_ptr<RenderSurface> get_render_surface() const;
 
-    void add_item(const std::shared_ptr<Primitive3D>& item)
-    {
-        scene_graph->add_item(item);
-    }
+void set_camera(const Camera& cam);
+void set_camera_position(const Vec3d pos);
+void set_camera_rotation(const Vec3d rot);
+void set_camera_rotation_degrees(const Vec3d rot_deg);
+void set_camera_fov(const double fov);
+void set_camera_fov_degrees(const double fov_degrees);
+void set_camera_z_near(const double z_near);
+void set_camera_z_far(const double z_far);
 
-    void remove_item(const std::shared_ptr<Primitive3D>& item)
-    {
-        scene_graph->remove_item(item);
-    }
+void set_light_direction(const Vec3d dir);
+void set_ambient_light(const double intensity);
 
-    void clear_items()
-    {
-        scene_graph->clear();
-    }
+void set_render_surface(const std::shared_ptr<RenderSurface> new_surface);
 
-    int num_items() const
-    {
-        return scene_graph->num_items();
-    }
+int num_items() const;
+Vec2i get_resolution() const;
 
-    Vec2i get_resolution() const 
-    { 
-        return surface->get_resolution();
-    };
+const Camera& get_camera() const;
+double get_camera_aspect_ratio() const;
+Vec3d get_camera_position() const;
+Vec3d get_camera_rotation() const;
+double get_camera_fov() const;
+Vec3d get_camera_forward() const;
 
-    double get_aspect_ratio() const
-    {
-        return static_cast<double>(get_resolution().x) / static_cast<double>(get_resolution().y);
-    }
+Vec3d get_light_direction() const;
+double get_ambient_light() const;
 
-    void set_camera(const Camera& cam)
-    {
-        camera = cam;
-    }
-
-    const Camera& get_camera() const
-    {
-        return camera;
-    }
-
-    void set_camera_position(const Vec3d pos)
-    {
-        camera.set_position(pos);
-    }
-
-    Vec3d get_camera_position() const
-    {
-        return camera.get_position();
-    }
-
-    void set_camera_rotation(const Vec3d rot)
-    {
-        camera.set_rotation(rot);
-    }
-
-    void set_camera_rotation_degrees(const Vec3d rot_deg)
-    {
-        camera.set_rotation_degrees(rot_deg);
-    }
-
-    Vec3d get_camera_rotation() const
-    {
-        return camera.get_rotation();
-    }
-
-    void set_camera_fov(const double fov)
-    {
-        camera.set_fov(fov);
-    }
-
-    void set_camera_fov_degrees(const double fov_degrees)
-    {
-        camera.set_fov_degrees(fov_degrees);
-    }
-
-    void set_camera_z_near(const double z_near)
-    {
-        camera.set_z_near(z_near);
-    }
-
-    void set_camera_z_far(const double z_far)
-    {
-        camera.set_z_far(z_far);
-    }
-
-    double get_camera_fov() const
-    {
-        return camera.get_fov();
-    }
-
-    Vec3d get_camera_forward() const
-    {
-        return camera.get_forward();
-    }
-
-    void set_light_direction(const Vec3d dir)
-    {
-        light_dir = dir.normalize();
-    }
-
-    Vec3d get_light_direction() const
-    {
-        return light_dir;
-    }
-
-    void set_ambient_light(const double intensity)
-    {
-        ambient_light = intensity;
-    }
-
-    double get_ambient_light() const
-    {
-        return ambient_light;
-    }
-
-    void set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
-    {
-        surface = new_surface;
-    }
+std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
+std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16, const Shader3D shader = DefaultShader3D()) const;
+std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
 
 private:
 

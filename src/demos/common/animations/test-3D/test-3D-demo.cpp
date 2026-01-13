@@ -32,44 +32,55 @@ void Test3DDemo::init()
 
     double max_range = 16.0;
 
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     auto box = renderer->create_cuboid(
-    //         Vec3d {
-    //             random_double(-max_range, max_range),
-    //             random_double(-max_range, max_range),
-    //             random_double(-max_range, max_range)
-    //         },
-    //         Vec3d {
-    //             random_double(1.0, 3.0),
-    //             random_double(1.0, 3.0),
-    //             random_double(1.0, 3.0)
-    //         },
-    //         Color4::white()
-    //     );
-    //     renderer->add_primitive(box);
-    // }
-
     for (int i = 0; i < 100; i++)
     {
-        auto box = renderer->create_sphere(
+        auto box = renderer->create_cuboid(
             Vec3d {
                 random_double(-max_range, max_range),
                 random_double(-max_range, max_range),
                 random_double(-max_range, max_range)
             },
-            random_double(1.0, 3.0),
+            Vec3d {
+                random_double(1.0, 3.0),
+                random_double(1.0, 3.0),
+                random_double(1.0, 3.0)
+            },
             Color4::white(),
-            16,
             shader
         );
+        scene_items.push_back(box);
         renderer->add_primitive(box);
     }
+
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     auto box = renderer->create_sphere(
+    //         Vec3d {
+    //             random_double(-max_range, max_range),
+    //             random_double(-max_range, max_range),
+    //             random_double(-max_range, max_range)
+    //         },
+    //         random_double(1.0, 3.0),
+    //         Color4::white(),
+    //         16,
+    //         shader
+    //     );
+    //     renderer->add_primitive(box);
+    // }
 }
 
 void Test3DDemo::render_frame(const double dt)
 {
     double t_sec { time_sec() };
+
+    for (auto primitive : scene_items)
+    {
+        primitive->set_rotation_degrees(
+            primitive->get_rotation_degrees().x + dt * 15.0,
+            primitive->get_rotation_degrees().y + dt * 30.0,
+            primitive->get_rotation_degrees().z + dt * 45.0
+        );
+    }
 
     cube->set_rotation_degrees(
         cube->get_rotation_degrees().x + dt * 30.0,

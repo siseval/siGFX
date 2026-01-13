@@ -21,51 +21,73 @@ class Render2D
 
 public:
 
-    Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling = Vec2d { 1, 1 }) : 
-        surface(surface), 
-        scene_graph(std::make_shared<SceneGraph2D>()), 
-        font_manager(std::make_shared<FontManagerTTF>()),
-        debug_viewer(std::make_shared<DebugViewer>()),
-        viewport_scaling(viewport_scaling) 
-    {
-    }
+    Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling = Vec2d { 1, 1 });
 
     void draw_frame() const;
-    void clear_frame() const
-    {
-        surface->clear_frame_buffer();
-        surface->clear();
-    }
-    void present_frame() const
-    {
-        surface->present();
-    }
+    void clear_frame() const;
+    void present_frame() const;
 
+    void add_item(const std::shared_ptr<Primitive2D> item);
+    void add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent);
+    void remove_item(const std::shared_ptr<Primitive2D> item);
+    void clear_items();
+
+    int num_items() const;
+    bool contains_item(const std::shared_ptr<Primitive2D> item) const;
+
+    void set_resolution(const Vec2i new_resolution);
+    void set_resolution(const int width, const int height);
+    void set_viewport_scaling(const Vec2d scaling);
+    void set_viewport_scaling(const double x, const double y);
+    void set_clear_color(const Color4 color);
+    Color4 get_clear_color() const;
+    void set_blend_mode(const RenderSurface::BlendMode mode);
     Matrix3x3d get_global_transform() const;
 
-    std::shared_ptr<Circle2D> create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness = 1.0) const;
-    std::shared_ptr<Circle2D> create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness = 1.0) const 
-    {
-        return create_circle(Vec2d { x, y }, radius, color, line_thickness);
-    };
+    void set_font_directory(const std::filesystem::path &path);
+    void load_font_directory(const std::filesystem::path &path = "");
 
+    void set_enable_debug_viewer(const bool enable);
+    void set_debug_viewer_show_aabb(const bool show);
+    void set_debug_viewer_show_obb(const bool show);
+    void set_debug_viewer_show_anchor(const bool show);
+    void set_debug_font(const std::shared_ptr<FontTTF> font);
+
+    void set_render_surface(const std::shared_ptr<RenderSurface> new_surface);
+
+    Vec2i get_resolution() const;
+    Vec2d center() const;
+    Vec2d get_aspect_ratio() const;
+    Vec2d get_viewport_scaling() const;
+    RenderSurface::BlendMode get_blend_mode() const;
+
+    std::filesystem::path get_font_directory() const;
+    bool is_font_loaded(const std::string &name) const;
+    bool fonts_empty() const;
+    std::shared_ptr<FontTTF> get_font(const std::string &name) const;
+
+    bool get_enable_debug_viewer() const;
+    bool get_debug_viewer_show_aabb() const;
+    bool get_debug_viewer_show_obb() const;
+    bool get_debug_viewer_show_anchor() const;
+
+    std::shared_ptr<SceneGraph2D> get_scene_graph() const;
+    std::shared_ptr<RenderSurface> get_render_surface() const;
+    std::shared_ptr<FontManagerTTF> get_font_manager() const;
+
+    int get_transform_recalculation_count();
+
+    std::shared_ptr<Circle2D> create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness = 1.0) const;
+    std::shared_ptr<Circle2D> create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness = 1.0) const;
+    
     std::shared_ptr<Ellipse2D> create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness = 1.0) const;
-    std::shared_ptr<Ellipse2D> create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness = 1.0) const 
-    {
-        return create_ellipse(Vec2d { x, y }, Vec2d { radius_x, radius_y }, color, line_thickness);
-    };
+    std::shared_ptr<Ellipse2D> create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness = 1.0) const;
 
     std::shared_ptr<Polyline2D> create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness = 1.0) const;
-    std::shared_ptr<Polyline2D> create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness = 1.0) const 
-    {
-        return create_polyline(Vec2d { x, y }, points, color, line_thickness);
-    };
+    std::shared_ptr<Polyline2D> create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness = 1.0) const;
 
     std::shared_ptr<Polygon2D> create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 fill_color) const;
-    std::shared_ptr<Polygon2D> create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color) const 
-    {
-        return create_polygon(Vec2d { x, y }, points, fill_color);
-    };
+    std::shared_ptr<Polygon2D> create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color) const;
 
     // std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Bitmap &bm) const;
     // std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Bitmap &bm) const 
@@ -80,74 +102,7 @@ public:
     // };
 
     std::shared_ptr<Text2D> create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const;
-    std::shared_ptr<Text2D> create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const 
-    {
-        return create_text(Vec2d { x, y }, text, font, font_size, color);
-    };
-
-    bool collides(const Vec2d point, const std::shared_ptr<Primitive2D>) const;
-    bool collides(const double x, const double y, const std::shared_ptr<Primitive2D> primitive) const
-    {
-        return collides(Vec2d { x, y }, primitive);
-    };
-
-    inline void set_resolution(const Vec2i new_resolution) { surface->resize(new_resolution); }
-    inline void set_resolution(const int width, const int height) { surface->resize(Vec2i { width, height }); }
-    inline Vec2i get_resolution() const { return surface->get_resolution() / get_viewport_scaling(); }
-    inline Vec2d center() const { return get_resolution() / 2; };
-    inline Vec2d get_aspect_ratio() const { return Vec2d { static_cast<double>(get_resolution().x) / get_resolution().y, 1.0 }; }
-
-    inline std::shared_ptr<SceneGraph2D> get_scene_graph() const { return scene_graph; };
-    inline std::shared_ptr<RenderSurface> get_render_surface() const { return surface; };
-    inline std::shared_ptr<FontManagerTTF> get_font_manager() const { return font_manager; };
-
-    inline void set_enable_debug_viewer(const bool enable) { debug_viewer->set_enabled(enable); }
-    inline bool get_enable_debug_viewer() const { return debug_viewer->is_enabled(); }
-
-    inline void set_debug_viewer_show_aabb(const bool show) { debug_viewer->set_show_aabb(show); }
-    inline bool get_debug_viewer_show_aabb() const { return debug_viewer->get_show_aabb(); }
-
-    inline void set_debug_viewer_show_obb(const bool show) { debug_viewer->set_show_obb(show); }
-    inline bool get_debug_viewer_show_obb() const { return debug_viewer->get_show_obb(); }
-
-    inline void set_debug_viewer_show_anchor(const bool show) { debug_viewer->set_show_anchor(show); }
-    inline bool get_debug_viewer_show_anchor() const { return debug_viewer->get_show_anchor(); }
-
-    inline void set_debug_font(const std::shared_ptr<FontTTF> font) { debug_viewer->set_font(font); }
-
-    void add_debug_items() const;
-
-    inline void add_item(const std::shared_ptr<Primitive2D> item) { scene_graph->add_item(item); }
-    inline void add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent) { scene_graph->add_item(item, parent); }
-    inline void remove_item(const std::shared_ptr<Primitive2D> item) { scene_graph->remove_item(item); }
-    inline void clear_items() { scene_graph->clear(); }
-
-    inline int num_items() const { return scene_graph->num_items(); }
-    inline bool contains_item(const std::shared_ptr<Primitive2D> item) const { return scene_graph->contains_item(item); }
-
-    inline Vec2d get_viewport_scaling() const { return viewport_scaling; }
-    inline void set_viewport_scaling(const Vec2d scaling) { viewport_scaling = scaling; }
-    inline void set_viewport_scaling(const double x, const double y) { viewport_scaling = Vec2d { x, y }; }
-
-    inline void set_clear_color(const Color4 color) { surface->set_clear_color(color); }
-    inline Color4 get_clear_color() const { return surface->get_clear_color(); }
-
-    inline int get_transform_recalculation_count() { return scene_graph->get_transform_recalculation_count(); }
-
-    inline void set_font_directory(const std::filesystem::path &path) { font_manager->set_font_directory_path(path); }
-    inline std::filesystem::path get_font_directory() const { return font_manager->get_font_directory_path(); }
-
-    inline bool is_font_loaded(const std::string &name) const { return font_manager->is_font_loaded(name); }
-    inline bool fonts_empty() const { return font_manager->get_loaded_fonts().empty(); }
-
-    inline void load_font_directory(const std::filesystem::path &path = "") { font_manager->load_font_directory(path); }
-
-    inline void set_blend_mode(const RenderSurface::BlendMode mode) { blend_mode = mode; }
-    inline RenderSurface::BlendMode get_blend_mode() const { return blend_mode; }
-
-    inline std::shared_ptr<FontTTF> get_font(const std::string &name) const { return font_manager->get_font(name); }
-
-    inline void set_render_surface(const std::shared_ptr<RenderSurface> new_surface) { surface = new_surface; }
+    std::shared_ptr<Text2D> create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const;
 
 private:
 

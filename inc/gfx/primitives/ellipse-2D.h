@@ -8,6 +8,7 @@
 namespace gfx
 {
 
+
 class Ellipse2D : public Primitive2D
 {
 
@@ -18,18 +19,16 @@ public:
     Box2d get_geometry_size() const override;
     Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const override;
 
-    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override;
+    Vec2d get_radius() const;
+    void set_radius(const Vec2d r);
+    void set_radius(const double rx, const double ry);
 
-    inline Vec2d get_radius() const { return radius; }
-    inline void set_radius(const Vec2d r) { radius = r; set_obb_dirty(); }
-    inline void set_radius(const double rx, const double ry) { radius = Vec2d { rx, ry }; set_obb_dirty(); }
+    double get_line_thickness() const;
+    void set_line_thickness(const double t);
 
-    inline double get_line_thickness() const { return line_thickness; }
-    inline void set_line_thickness(const double t) { line_thickness = t; set_obb_dirty(); }
+    bool get_filled() const;
+    void set_filled(const bool f);
 
-    inline bool get_filled() const { return filled; }
-    inline void set_filled(const bool f) { filled = f; }
-    
 private:
 
     Vec2d radius;

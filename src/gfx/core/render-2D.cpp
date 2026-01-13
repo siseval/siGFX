@@ -4,6 +4,14 @@
 namespace gfx
 {
 
+Render2D::Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling) : 
+    surface(surface), 
+    scene_graph(std::make_shared<SceneGraph2D>()), 
+    font_manager(std::make_shared<FontManagerTTF>()),
+    debug_viewer(std::make_shared<DebugViewer>()),
+    viewport_scaling(viewport_scaling) {}
+
+
 void Render2D::draw_frame() const
 {
     double t { std::chrono::duration<double, std::micro>(
@@ -55,6 +63,205 @@ void Render2D::draw_frame() const
     }
 }
 
+void Render2D::clear_frame() const
+{
+    surface->clear_frame_buffer();
+    surface->clear();
+}
+void Render2D::present_frame() const
+{
+    surface->present();
+}
+
+void Render2D::add_item(const std::shared_ptr<Primitive2D> item)
+{
+    scene_graph->add_item(item);
+}
+
+void Render2D::add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent)
+{
+    scene_graph->add_item(item, parent);
+}
+
+void Render2D::remove_item(const std::shared_ptr<Primitive2D> item)
+{
+    scene_graph->remove_item(item);
+}
+
+void Render2D::clear_items()
+{
+    scene_graph->clear();
+}
+
+int Render2D::num_items() const
+{
+    return scene_graph->num_items();
+}
+
+bool Render2D::contains_item(const std::shared_ptr<Primitive2D> item) const
+{
+    return scene_graph->contains_item(item);
+}
+
+void Render2D::set_resolution(const Vec2i new_resolution)
+{
+    surface->resize(new_resolution);
+}
+
+void Render2D::set_resolution(const int width, const int height)
+{
+    surface->resize(Vec2i { width, height });
+}
+
+void Render2D::set_viewport_scaling(const Vec2d scaling)
+{
+    viewport_scaling = scaling;
+}
+
+void Render2D::set_viewport_scaling(const double x, const double y)
+{
+    viewport_scaling = Vec2d { x, y };
+}
+
+void Render2D::set_clear_color(const Color4 color)
+{
+    surface->set_clear_color(color);
+}
+
+Color4 Render2D::get_clear_color() const
+{
+    return surface->get_clear_color();
+}
+
+void Render2D::set_blend_mode(const RenderSurface::BlendMode mode)
+{
+    blend_mode = mode;
+}
+
+void Render2D::set_font_directory(const std::filesystem::path &path)
+{
+    font_manager->set_font_directory_path(path);
+}
+
+void Render2D::load_font_directory(const std::filesystem::path &path)
+{
+    font_manager->load_font_directory(path);
+}
+
+void Render2D::set_enable_debug_viewer(const bool enable)
+{
+    debug_viewer->set_enabled(enable);
+}
+
+void Render2D::set_debug_viewer_show_aabb(const bool show)
+{
+    debug_viewer->set_show_aabb(show);
+}
+
+void Render2D::set_debug_viewer_show_obb(const bool show)
+{
+    debug_viewer->set_show_obb(show);
+}
+
+void Render2D::set_debug_viewer_show_anchor(const bool show)
+{
+    debug_viewer->set_show_anchor(show);
+}
+
+void Render2D::set_debug_font(const std::shared_ptr<FontTTF> font)
+{
+    debug_viewer->set_font(font);
+}
+
+void Render2D::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
+{
+    surface = new_surface;
+}
+
+Vec2i Render2D::get_resolution() const
+{
+    return surface->get_resolution() / get_viewport_scaling();
+}
+
+Vec2d Render2D::center() const
+{
+    return get_resolution() / 2;
+}
+
+Vec2d Render2D::get_aspect_ratio() const
+{
+    return Vec2d { static_cast<double>(get_resolution().x) / get_resolution().y, 1.0 };
+}
+
+Vec2d Render2D::get_viewport_scaling() const
+{
+    return viewport_scaling;
+}
+
+RenderSurface::BlendMode Render2D::get_blend_mode() const
+{
+    return blend_mode;
+}
+
+std::filesystem::path Render2D::get_font_directory() const
+{
+    return font_manager->get_font_directory_path();
+}
+
+bool Render2D::is_font_loaded(const std::string &name) const
+{
+    return font_manager->is_font_loaded(name);
+}
+
+bool Render2D::fonts_empty() const
+{
+    return font_manager->get_loaded_fonts().empty();
+}
+
+std::shared_ptr<FontTTF> Render2D::get_font(const std::string &name) const
+{
+    return font_manager->get_font(name);
+}
+
+bool Render2D::get_enable_debug_viewer() const
+{
+    return debug_viewer->is_enabled();
+}
+
+bool Render2D::get_debug_viewer_show_aabb() const
+{
+    return debug_viewer->get_show_aabb();
+}
+
+bool Render2D::get_debug_viewer_show_obb() const
+{
+    return debug_viewer->get_show_obb();
+}
+
+bool Render2D::get_debug_viewer_show_anchor() const
+{
+    return debug_viewer->get_show_anchor();
+}
+
+std::shared_ptr<SceneGraph2D> Render2D::get_scene_graph() const
+{
+    return scene_graph;
+}
+
+std::shared_ptr<RenderSurface> Render2D::get_render_surface() const
+{
+    return surface;
+}
+
+std::shared_ptr<FontManagerTTF> Render2D::get_font_manager() const
+{
+    return font_manager;
+}
+
+int Render2D::get_transform_recalculation_count()
+{
+    return scene_graph->get_transform_recalculation_count();
+}
 
 std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_draw_queue() const
 {
@@ -79,9 +286,6 @@ Matrix3x3d Render2D::get_global_transform() const
     return scale;
 }
 
-void Render2D::add_debug_items() const
-{
-}
 
 std::shared_ptr<Circle2D> Render2D::create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness) const
 {
@@ -95,6 +299,12 @@ std::shared_ptr<Circle2D> Render2D::create_circle(const Vec2d position, const do
     return circle;
 }
 
+std::shared_ptr<Circle2D> Render2D::create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness) const 
+{
+    return create_circle(Vec2d { x, y }, radius, color, line_thickness);
+}
+
+
 std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness) const
 {
     auto ellipse { std::make_shared<Ellipse2D>() };
@@ -105,6 +315,11 @@ std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const Vec2d position, const 
     ellipse->set_color(color);
 
     return ellipse;
+}
+
+std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness) const 
+{
+    return create_ellipse(Vec2d { x, y }, Vec2d { radius_x, radius_y }, color, line_thickness);
 }
 
 std::shared_ptr<Polyline2D> Render2D::create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const
@@ -119,6 +334,12 @@ std::shared_ptr<Polyline2D> Render2D::create_polyline(const Vec2d position, cons
     return polyline;
 }
 
+std::shared_ptr<Polyline2D> Render2D::create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const 
+{
+    return create_polyline(Vec2d { x, y }, points, color, line_thickness);
+}
+
+
 std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color) const
 {
     auto polygon { std::make_shared<Polygon2D>() };
@@ -129,6 +350,12 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const 
 
     return polygon;
 }
+
+std::shared_ptr<Polygon2D> Render2D::create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color) const 
+{
+    return create_polygon(Vec2d { x, y }, points, fill_color);
+}
+
 
 // std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Bitmap &bm) const
 // {
@@ -163,10 +390,9 @@ std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::s
     return text_primitive;
 }
 
-bool Render2D::collides(const Vec2d point, const std::shared_ptr<Primitive2D> primitive) const
+std::shared_ptr<Text2D> Render2D::create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const 
 {
-    Matrix3x3d global_transform { get_global_transform() * primitive->get_transform() };
-    return primitive->point_collides(point, global_transform);
+    return create_text(Vec2d { x, y }, text, font, font_size, color);
 }
 
 

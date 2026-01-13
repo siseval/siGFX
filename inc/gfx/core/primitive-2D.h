@@ -1,7 +1,5 @@
 #pragma once
 
-#include <algorithm>
-
 #include "gfx/core/types/color4.h"
 #include "gfx/core/types/obb-2D.h"
 #include "gfx/core/shader-2D.h"
@@ -18,144 +16,62 @@ class Primitive2D
 
 public:
 
-    Primitive2D() : id(UUID::generate()) {}
+    Primitive2D();
 
     virtual std::vector<Vec2i> rasterize(const Matrix3x3d& transform) const = 0;
 
-    OBB2D get_oriented_bounding_box(const Matrix3x3d &transform) const;
     virtual Box2d get_geometry_size() const = 0;
     virtual Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const;
 
+    OBB2D get_oriented_bounding_box(const Matrix3x3d &transform) const;
+
+    void set_position(const Vec2d pos);
+    void set_position(const double x, const double y);
+    void set_scale(const Vec2d s);
+    void set_scale(const double sx, const double sy);
+    void set_scale(const double s);
+    void set_rotation(const double r);
+    void set_rotation_degrees(const double r);
+    void set_color(const Color4 col);
+    void set_color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255);
+    void set_color(const double r, const double g, const double b, const double a = 1.0);
+    void set_anchor(const Vec2d pos);
+    void set_anchor(const double x, const double y);
+    void set_depth(const int d);
+    void set_visible(const bool v);
+    void set_shader(const std::shared_ptr<Shader2D> &shd);
+
+    Vec2d get_position() const;
+    Vec2f get_scale() const;
+    double get_rotation() const;
+    double get_rotation_degrees() const;
+    Color4 get_color() const;
+    Vec2d get_anchor() const;
+    int get_depth() const;
+    bool is_visible() const;
+    std::shared_ptr<Shader2D> get_shader() const;
+
+    UUID get_id() const;
     Vec2d get_uv(const Vec2d point) const;
-
-    inline bool is_obb_dirty() const { return obb_dirty; }
-    inline void set_obb_dirty() { obb_dirty = true; }
-
-    inline void set_shader(const std::shared_ptr<Shader2D> &shd) { shader = shd; }
-    inline std::shared_ptr<Shader2D> get_shader() const { return shader; }
-
-    virtual bool point_collides(const Vec2d point, const Matrix3x3d &transform) const = 0;
-    inline bool point_collides(const double x, const double y, const Matrix3x3d &transform) const
-    {
-        return point_collides(Vec2d { x, y }, transform);
-    }
-
     Matrix3x3d get_transform() const;
 
-    inline UUID get_id() const { return id; }
-
-    inline Color4 get_color() const { return color; }
-    inline void set_color(const Color4 col) { color = col; }
-    inline void set_color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255) { color = Color4 { r, g, b, a }; }
-    inline void set_color(const double r, const double g, const double b, const double a = 1.0) 
-    { 
-        color = Color4 { 
-            static_cast<uint8_t>(std::clamp(r * 255.0, 0.0, 255.0)), 
-            static_cast<uint8_t>(std::clamp(g * 255.0, 0.0, 255.0)), 
-            static_cast<uint8_t>(std::clamp(b * 255.0, 0.0, 255.0)), 
-            static_cast<uint8_t>(std::clamp(a * 255.0, 0.0, 255.0)) 
-        }; 
-    }
-
-    inline Box2d get_bounds() const { return bounds; }
-    inline Vec2d get_bounds_size() const { return bounds.size(); }
-
-    inline Vec2d get_anchor() const { return anchor; }
-    inline void set_anchor(const Vec2d pos) 
-    { 
-        anchor = pos; 
-        increment_transform_version(); 
-        set_obb_dirty();
-        set_transform_dirty();
-    }
-    inline void set_anchor(const double x, const double y) 
-    { 
-        anchor = Vec2d { x, y }; 
-        increment_transform_version(); 
-        set_obb_dirty();
-        set_transform_dirty();
-    }
-
-    inline int get_depth() const { return depth; }
-    inline void set_depth(const int d) { depth = d; }
-
-    inline Vec2d get_position() const { return position; }
-    inline void set_position(const Vec2d pos) 
-    { 
-        position = pos; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-    inline void set_position(const double x, const double y) 
-    { 
-        position = Vec2d { x, y }; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-    
-    inline Vec2f get_scale() const { return scale; }
-    inline void set_scale(const Vec2d s) 
-    { 
-        scale = s; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-    inline void set_scale(const double sx, const double sy) 
-    { 
-        scale = Vec2d { sx, sy }; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-    inline void set_scale(const double s) 
-    { 
-        scale = Vec2d { s, s }; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-
-    inline double get_rotation() const { return rotation; }
-    inline void set_rotation(const double r) 
-    { 
-        rotation = r; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-
-    inline double get_rotation_degrees() const { return rotation * 180 / std::numbers::pi; }
-    inline void set_rotation_degrees(const double r) 
-    { 
-        rotation = r * std::numbers::pi / 180; 
-        increment_transform_version(); 
-        set_obb_dirty(); 
-        set_transform_dirty();
-    }
-
-    inline bool is_visible() const { return visible; }
-    inline void set_visible(const bool v) { visible = v; }
-
-    inline int64_t get_transform_version() const { return transform_version; }
-    inline void increment_transform_version() { transform_version++; }
-
-    inline bool is_transform_dirty() const { return transform_dirty; }
-    inline void set_transform_dirty() { transform_dirty = true; }
-
-    static int count;
+    int64_t get_transform_version() const; 
+    void increment_transform_version();
 
 protected:
+
+    void set_obb_dirty();
+    void set_transform_dirty();
+
+    bool is_transform_dirty() const;
+    bool is_obb_dirty() const;
 
     UUID id;
     std::shared_ptr<Shader2D> shader = std::make_shared<DefaultShader2D>();
 
-    Color4 color;
+    Color4 color { Color4::white() };
 
-    Box2d bounds;
-    Vec2d position;
+    Vec2d position { 0.0, 0.0 };
     Vec2d anchor { 0.0, 0.0 };
     Vec2d scale { 1.0, 1.0 };
 

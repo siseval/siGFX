@@ -88,11 +88,6 @@ Box2d Polyline2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) con
     return bounds;
 }
 
-bool Polyline2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
-{
-    return false;
-}
-
 bool Polyline2D::cache_clockwise()
 {
     double sum = 0.0;
@@ -180,9 +175,139 @@ void Polyline2D::rasterize_edge(const Vec2d start, const Vec2d end, const Matrix
     Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, pixels);
 }
 
+void Polyline2D::add_point(const Vec2d point)
+{
+    points.push_back(point);
+    cache_clockwise();
+    set_obb_dirty();
+}
 
+void Polyline2D::add_point(const double x, const double y)
+{
+    points.push_back(Vec2d { x, y });
+    cache_clockwise();
+    set_obb_dirty();
+}
 
+void Polyline2D::add_points(const std::vector<Vec2d> &new_points)
+{
+    points.insert(points.end(), new_points.begin(), new_points.end());
+    cache_clockwise();
+    set_obb_dirty();
+}
 
+void Polyline2D::set_point(const size_t index, const Vec2d point)
+{
+    if (index < points.size())
+    {
+        points[index] = point;
+        cache_clockwise();
+        set_obb_dirty();
+    }
+}
 
+void Polyline2D::set_point(const size_t index, const double x, const double y)
+{
+    if (index < points.size())
+    {
+        points[index] = Vec2d { x, y };
+        cache_clockwise();
+        set_obb_dirty();
+    }
+}
+
+void Polyline2D::set_points(const std::vector<Vec2d> &new_points)
+{
+    points = new_points;
+    cache_clockwise();
+    set_obb_dirty();
+}
+
+void Polyline2D::clear_points()
+{
+    points.clear();
+}
+
+void Polyline2D::set_segment_visible(const size_t index, const bool visible)
+{
+    if (segments_visible.size() < points.size())
+    {
+        segments_visible.resize(points.size(), true);
+    }
+    if (index < points.size())
+    {
+        segments_visible[index] = visible;
+    }
+}
+
+bool Polyline2D::get_segment_visible(const size_t index) const
+{
+    if (index < points.size())
+    {
+        return segments_visible[index];
+    }
+    return false;
+}
+
+const std::vector<Vec2d> Polyline2D::get_points() const
+{
+    return points;
+}
+
+Vec2d Polyline2D::get_point(const size_t index) const
+{
+    if (index < points.size())
+    {
+        return points[index];
+    }
+    return Vec2d::zero();
+}
+
+size_t Polyline2D::get_num_points() const
+{
+    return points.size();
+}
+
+void Polyline2D::set_close(const bool close)
+{
+    do_close = close;
+}
+
+bool Polyline2D::get_close() const
+{
+    return do_close;
+}
+
+void Polyline2D::set_rounded_corners(const bool rounded)
+{
+    do_rounded_corners = rounded;
+    set_obb_dirty();
+}
+
+bool Polyline2D::get_rounded_corners() const
+{
+    return do_rounded_corners;
+}
+
+void Polyline2D::set_line_thickness(const double t)
+{
+    line_thickness = t;
+    set_obb_dirty();
+}
+
+double Polyline2D::get_line_thickness() const
+{
+    return line_thickness;
+}
+
+void Polyline2D::set_fill(const bool f)
+{
+    do_fill = f;
+}
+
+bool Polyline2D::get_fill() const
+{
+    return do_fill;
+}
 
 }

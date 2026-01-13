@@ -1,4 +1,0 @@
-
-BarycentricTriangle
-BarycentricTriangle
-BarycentricTriangle

@@ -28,17 +28,16 @@ struct SceneNode3D
     std::vector<std::shared_ptr<SceneNode3D>> children;
 };
 
+
 class SceneGraph3D
 {
 
 public:
 
-    SceneGraph3D() : 
-        root(std::make_shared<SceneNode3D>(nullptr)),
-        nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode3D>>()) {}
+    SceneGraph3D();
 
-    inline std::shared_ptr<SceneNode3D> get_root() const { return root; }
-    inline void set_root_transform(const Matrix4x4d& transform) { root->global_transform = transform; }
+    std::shared_ptr<SceneNode3D> get_root() const;
+    void set_root_transform(const Matrix4x4d& transform);
 
     bool transforms_dirty() const;
     Matrix4x4d get_global_transform(const std::shared_ptr<Primitive3D> primitive);
@@ -47,24 +46,16 @@ public:
     std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_global_transforms();
 
     void add_item(const std::shared_ptr<Primitive3D> item, const std::shared_ptr<Primitive3D> parent);
-
-    inline void add_item(const std::shared_ptr<Primitive3D> item)
-    {
-        add_item(item, nullptr);
-    }
+    void add_item(const std::shared_ptr<Primitive3D> item);
 
     void remove_item(const std::shared_ptr<Primitive3D> item);
 
-    inline void clear()
-    {
-        root->children.clear();
-        nodes.clear();
-    }
+    void clear();
 
     std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_draw_queue();
 
-    inline int num_items() const { return nodes.size(); }
-    inline bool contains_item(const std::shared_ptr<Primitive3D> item) const { return nodes.contains(item->get_id()); }
+    int num_items() const;
+    bool contains_item(const std::shared_ptr<Primitive3D> item) const;
 
 private:
 

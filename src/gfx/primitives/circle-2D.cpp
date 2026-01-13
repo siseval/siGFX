@@ -73,12 +73,36 @@ Box2d Circle2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
     return bounds;
 }
 
-bool Circle2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
+double Circle2D::get_radius() const
 {
-    Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
-    Vec2d local_point { Transform2D::transform_point(point, inverse_transform) - Vec2d(radius) };
+    return radius;
+}
 
-    return local_point.x * local_point.x + local_point.y * local_point.y <= radius * radius;
+void Circle2D::set_radius(const double r)
+{
+    radius = r;
+    set_obb_dirty();
+}
+
+double Circle2D::get_line_thickness() const
+{
+    return line_thickness;
+}
+
+void Circle2D::set_line_thickness(const double t)
+{
+    line_thickness = t;
+    set_obb_dirty();
+}
+
+bool Circle2D::get_filled() const
+{
+    return filled;
+}
+
+void Circle2D::set_filled(const bool f)
+{
+    filled = f;
 }
 
 

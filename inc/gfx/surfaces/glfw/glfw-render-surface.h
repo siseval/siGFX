@@ -33,9 +33,9 @@ public:
 
     void print_frame_buffer();
 
-    inline GLFWwindow* get_window() const { return window; }
+    GLFWwindow* get_window() const { return window; }
 
-    inline void set_window_title(const std::string title)
+    void set_window_title(const std::string title)
     {
         window_title = title;
         if (window)
@@ -44,7 +44,7 @@ public:
         }
     }
 
-    inline void set_clear_color(const Color4 color) override
+    void set_clear_color(const Color4 color) override
     {
         clear_color = color;
         glClearColor(

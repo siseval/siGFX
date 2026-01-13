@@ -8,6 +8,22 @@
 namespace gfx
 {
 
+SceneGraph3D::SceneGraph3D() :
+    root(std::make_shared<SceneNode3D>(nullptr)),
+    nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode3D>>())
+{
+}
+
+std::shared_ptr<SceneNode3D> SceneGraph3D::get_root() const
+{
+    return root;
+}
+
+void SceneGraph3D::set_root_transform(const Matrix4x4d& transform)
+{
+    root->global_transform = transform;
+}
+
 bool SceneGraph3D::transforms_dirty() const
 {
     for (const auto& [id, node] : nodes)
@@ -129,6 +145,11 @@ void SceneGraph3D::add_item(const std::shared_ptr<Primitive3D> item, const std::
     root->children.push_back(new_node);
 } 
 
+void SceneGraph3D::add_item(const std::shared_ptr<Primitive3D> item)
+{
+    add_item(item, nullptr);
+}
+
 void SceneGraph3D::remove_item(const std::shared_ptr<Primitive3D> item)
 {
     if (!nodes.contains(item->get_id()))
@@ -156,6 +177,22 @@ void SceneGraph3D::remove_item(const std::shared_ptr<Primitive3D> item)
 
         nodes.erase(node->get_id());
     }
+}
+
+void SceneGraph3D::clear()
+{
+    root->children.clear();
+    nodes.clear();
+}
+
+int SceneGraph3D::num_items() const
+{
+    return nodes.size();
+}
+
+bool SceneGraph3D::contains_item(const std::shared_ptr<Primitive3D> item) const
+{
+    return nodes.contains(item->get_id());
 }
 
 }

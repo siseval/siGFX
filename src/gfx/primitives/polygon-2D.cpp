@@ -43,11 +43,6 @@ Box2d Polygon2D::get_geometry_size() const
     return bounds;
 }
 
-bool Polygon2D::point_collides(const Vec2d point, const Matrix3x3d &transform) const
-{
-    return false;
-}
-
 bool Polygon2D::cache_clockwise(const int component)
 {
     Polygon::Contour &contour = components[component].contour;

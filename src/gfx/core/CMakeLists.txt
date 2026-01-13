@@ -12,6 +12,12 @@ set(GFX_CORE_SOURCES
 
 add_library(gfx_core STATIC ${GFX_CORE_SOURCES})
 
+add_subdirectory(types)
+
+target_link_libraries(gfx_core PUBLIC
+    gfx_core_types
+)
+
 target_include_directories(gfx_core PUBLIC
     ${INCLUDE_DIR}
 )

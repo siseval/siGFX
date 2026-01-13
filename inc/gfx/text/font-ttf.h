@@ -40,55 +40,34 @@ public:
         int left_side_bearing;
     };
 
-
-    FontTTF(int units_per_em, double ascent, double descent, double line_gap, int num_glyphs)
-        : units_per_em(units_per_em), ascent(ascent), descent(descent), line_gap(line_gap), num_glyphs(num_glyphs) {}
+    FontTTF(int units_per_em, double ascent, double descent, double line_gap, int num_glyphs);
 
     std::shared_ptr<GlyphTTF> get_glyph(const uint32_t codepoint) const;
-
     std::vector<ContourEdge> get_glyph_edges(const uint32_t codepoint) const;
 
-    void set_kerning(const char left, const char right, const int offset)
-    {
-        kerning_table[{static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}] = offset;
-    }
-    int get_kerning(const char left, const char right) const
-    {
-        return kerning_table.count({static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}) ?
-            kerning_table.at({static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}) : 0;
-    }
+    void set_kerning(const char left, const char right, int offset);
+    int get_kerning(const char left, const char right) const;
 
-    void set_metrics(const uint32_t codepoint, const GlyphMetrics &metrics)
-    {
-        glyph_metrics[codepoint] = metrics;
-    }
+    void set_metrics(const uint32_t codepoint, const GlyphMetrics &metrics);
+    int get_glyph_advance(const uint32_t codepoint) const;
+    int get_glyph_left_side_bearing(const uint32_t codepoint) const;
 
-    int get_glyph_advance(const uint32_t codepoint) const
-    {
-        return glyph_metrics.count(codepoint) ? glyph_metrics.at(codepoint).advance_width : 0;
-    }
-    int get_glyph_left_side_bearing(const uint32_t codepoint) const
-    {
-        return glyph_metrics.count(codepoint) ? glyph_metrics.at(codepoint).left_side_bearing : 0;
-    }
+    double get_ascent() const;
+    double get_descent() const;
+    double get_line_gap() const;
+    double get_line_height() const;
+    double get_units_per_em() const;
 
-    double get_ascent() const { return ascent; }
-    double get_descent() const { return descent; }
-    double get_line_gap() const { return line_gap; }
-    double get_line_height() const { return ascent - descent + line_gap; }
-    double get_units_per_em() const { return units_per_em; }
+    void set_name(const std::string &n);
+    std::string get_name() const;
 
-    inline void set_name(const std::string &n) { name = n; }
-    inline std::string get_name() const { return name; }
-
-    void set_glyphs(const std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> &g) { glyphs = g; }
-    std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> get_glyphs() const { return glyphs; }
+    void set_glyphs(const std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> &g);
+    std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> get_glyphs() const;
 
 private:
 
     std::vector<ContourEdge> flatten_glyph(const std::shared_ptr<GlyphTTF> glyph) const;
     bool decode_utf8(const std::string &s, size_t pos, uint32_t &out_codepoint, size_t &bytes) const;
-
     std::string name;
 
     int units_per_em;

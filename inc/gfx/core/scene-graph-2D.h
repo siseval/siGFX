@@ -33,12 +33,10 @@ class SceneGraph2D
 
 public:
 
-    SceneGraph2D() : 
-        root(std::make_shared<SceneNode2D>(nullptr)),
-        nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode2D>>()) {}
+    SceneGraph2D();
 
-    inline std::shared_ptr<SceneNode2D> get_root() const { return root; }
-    inline void set_root_transform(const Matrix3x3d& transform) { root->global_transform = transform; }
+    std::shared_ptr<SceneNode2D> get_root() const;
+    void set_root_transform(const Matrix3x3d& transform);
 
     bool transforms_dirty() const;
     Matrix3x3d get_global_transform(const std::shared_ptr<Primitive2D> primitive);
@@ -47,31 +45,24 @@ public:
     std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> get_global_transforms();
 
     void add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent);
-
-    inline void add_item(const std::shared_ptr<Primitive2D> item)
-    {
-        add_item(item, nullptr);
-    }
+    void add_item(const std::shared_ptr<Primitive2D> item);
 
     void remove_item(const std::shared_ptr<Primitive2D> item);
 
-    inline void clear()
-    {
-        root->children.clear();
-        nodes.clear();
-    }
+    void clear();
 
     std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> get_draw_queue();
 
-    inline int num_items() const { return nodes.size(); }
-    inline bool contains_item(const std::shared_ptr<Primitive2D> item) const { return nodes.contains(item->get_id()); }
+    int num_items() const;
+    bool contains_item(const std::shared_ptr<Primitive2D> item) const;
 
-    inline int get_transform_recalculation_count() const { return transform_recalculation_count; }
+    int get_transform_recalculation_count() const;
 
-    double longest_recalc_time = 0;
-    double previous_recalc_time = 0;
+    double longest_recalc_time;
+    double previous_recalc_time;
 
 private:
+
     std::shared_ptr<SceneNode2D> root;
     std::unordered_map<UUID, std::shared_ptr<SceneNode2D>> nodes;
 

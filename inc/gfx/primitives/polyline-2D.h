@@ -18,78 +18,36 @@ public:
     Box2d get_geometry_size() const override;
     Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const override;
 
-    bool point_collides(const Vec2d point, const Matrix3x3d &transform) const override;
-
     bool cache_clockwise();
 
-    inline void add_point(const Vec2d point) { points.push_back(point); cache_clockwise(); set_obb_dirty(); }
-    inline void add_point(const double x, const double y) { points.push_back(Vec2d { x, y }); cache_clockwise(); set_obb_dirty(); }
-    inline void add_points(const std::vector<Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); set_obb_dirty(); }
+    void add_point(const Vec2d point);
+    void add_point(const double x, const double y);
+    void add_points(const std::vector<Vec2d> &new_points);
 
-    inline void set_point(const size_t index, const Vec2d point) 
-    { 
-        if (index < points.size()) 
-        { 
-            points[index] = point; 
-            cache_clockwise();
-            set_obb_dirty();
-        } 
-    }
-    inline void set_point(const size_t index, const double x, const double y) 
-    { 
-        if (index < points.size()) 
-        { 
-            points[index] = Vec2d { x, y }; 
-            cache_clockwise();
-            set_obb_dirty();
-        } 
-    }
-    inline void set_points(const std::vector<Vec2d> &new_points) { points = new_points; cache_clockwise(); set_obb_dirty(); }
-    inline void clear_points() { points.clear(); }
+    void set_point(const size_t index, const Vec2d point);
+    void set_point(const size_t index, const double x, const double y);
+    void set_points(const std::vector<Vec2d> &new_points);
+    void clear_points();
 
-    inline void set_segment_visible(const size_t index, const bool visible) 
-    { 
-        if (segments_visible.size() < points.size()) 
-        { 
-            segments_visible.resize(points.size(), true); 
-        }
-        if (index < points.size()) 
-        { 
-            segments_visible[index] = visible; 
-        } 
-    }
-    inline bool get_segment_visible(const size_t index) const 
-    { 
-        if (index < points.size()) 
-        { 
-            return segments_visible[index]; 
-        } 
-        return false; 
-    }
+    void set_segment_visible(const size_t index, const bool visible);
+    bool get_segment_visible(const size_t index) const;
 
-    inline const std::vector<Vec2d> get_points() const { return points; }
-    inline Vec2d get_point(const size_t index) const 
-    { 
-        if (index < points.size()) 
-        { 
-            return points[index]; 
-        } 
-        return Vec2d::zero(); 
-    }
+    const std::vector<Vec2d> get_points() const;
+    Vec2d get_point(const size_t index) const;
 
-    inline size_t get_num_points() const { return points.size(); }
+    size_t get_num_points() const;
 
-    inline void set_close(const bool close) { do_close = close; }
-    inline bool get_close() const { return do_close; }
+    void set_close(const bool close);
+    bool get_close() const;
 
-    inline void set_rounded_corners(const bool rounded) { do_rounded_corners = rounded; set_obb_dirty(); }
-    inline bool get_rounded_corners() const { return do_rounded_corners; }
+    void set_rounded_corners(const bool rounded);
+    bool get_rounded_corners() const;
 
-    inline void set_line_thickness(const double t) { line_thickness = t; set_obb_dirty(); }
-    inline double get_line_thickness() const { return line_thickness; }
+    void set_line_thickness(const double t);
+    double get_line_thickness() const;
 
-    inline void set_fill(const bool f) { do_fill = f; }
-    inline bool get_fill() const { return do_fill; }
+    void set_fill(const bool f);
+    bool get_fill() const;
 
     void rasterize_rounded_corner(const Vec2d pos, const double angle0, const double angle1, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
     void rasterize_rounded_corners(const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
@@ -105,4 +63,4 @@ public:
     static constexpr int CORNER_SEGMENTS = 8;
 };
 
-};
+}
