@@ -1,8 +1,10 @@
+#include "gfx/text/font-manager-ttf.h"
+
+#include "gfx/text/font-ttf.h"
+
 #include <map>
 #include <fstream>
-
-#include "gfx/text/font-manager-ttf.h"
-#include "gfx/text/font-ttf.h"
+#include <iostream>
 
 namespace gfx
 {
@@ -85,7 +87,7 @@ void FontManagerTTF::load_font_directory(const std::filesystem::path &path)
 
     if (!std::filesystem::exists(dir_path) || !std::filesystem::is_directory(dir_path))
     {
-        throw std::runtime_error("Font directory does not exist: " + dir_path.string());
+        std::cerr << "Font directory does not exist: " + dir_path.string();
         return;
     }
 
@@ -96,13 +98,7 @@ void FontManagerTTF::load_font_directory(const std::filesystem::path &path)
             std::string extension { entry.path().extension().string() };
             if (extension == ".ttf" || extension == ".TTF")
             {
-                try
-                {
-                    load_from_file(entry.path().string(), entry.path().stem().string());
-                }
-                catch (const std::exception &e)
-                {
-                }
+                load_from_file(entry.path().string(), entry.path().stem().string());
             }
         }
     }
@@ -113,21 +109,21 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_file(const std::string &path,
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file.is_open())
     {
-        throw std::runtime_error("Failed to open file: " + path);
+        std::cerr << "Failed to open file: " + path;
         return nullptr;
     }
 
     std::streamsize size { file.tellg() };
     if (size <= 0)
     {
-        throw std::runtime_error("File is empty: " + path);
+        std::cerr << "File is empty: " + path;
         return nullptr;
     }
     file.seekg(0, std::ios::beg);
     uint8_t* buffer { new uint8_t[size] };
     if (!file.read(reinterpret_cast<char*>(buffer), size))
     {
-        throw std::runtime_error("Failed to read file: " + path);
+        std::cerr << "Failed to read file: " + path;
         return nullptr;
     }
 
@@ -138,7 +134,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 {
     if (size < 12)
     {
-        throw std::runtime_error("Data size is too small to be a valid TTF font.");
+        std::cerr << "Data size is too small to be a valid TTF font.";
         return nullptr;
     }
 
@@ -152,7 +148,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
     if (scalerType != 0x00010000 && scalerType != 0x74727565)
     {
-        throw std::runtime_error("Unsupported TTF scaler type.");
+        std:: cerr << "Unsupported TTF scaler type.";
         return nullptr;
     }
 
@@ -168,7 +164,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     {
         if (ptr + 16 > data + size)
         {
-            throw std::runtime_error("Unexpected end of data while reading table entries.");
+            std::cerr << "Unexpected end of data while reading table entries.";
             return nullptr;
         }
         std::string tag { reinterpret_cast<const char*>(ptr), 4 };
@@ -184,7 +180,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     {
         if (tables.find(tag) == tables.end())
         {
-            throw std::runtime_error("Missing required table: " + tag);
+            std::cerr << "Missing required table: " + tag;
             return nullptr;
         }
     }
@@ -192,7 +188,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     auto it_head { tables.find("head") };
     if (it_head == tables.end())
     {
-        throw std::runtime_error("Missing 'head' table.");
+        std::cerr << "Missing 'head' table.";
         return nullptr;
     }
     const std::uint8_t* head_table { data + it_head->second.offset };
@@ -205,7 +201,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     auto it_maxp { tables.find("maxp") };
     if (it_maxp == tables.end())
     {
-        throw std::runtime_error("Missing 'maxp' table.");
+        std::cerr << "Missing 'maxp' table.";
         return nullptr;
     }
     const std::uint8_t* maxp_table { data + it_maxp->second.offset };
@@ -214,11 +210,10 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     auto it_loca { tables.find("loca") };
     const std::uint8_t* loca_table { data + it_loca->second.offset };
 
-
     auto it_cmap { tables.find("cmap") };
     if (it_cmap == tables.end())
     {
-        throw std::runtime_error("Missing 'cmap' table.");
+        std::cerr << "Missing 'cmap' table.";
         return nullptr;
     }
 
@@ -251,7 +246,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
     if (!cmap_format_4)
     {
-        throw std::runtime_error("No supported cmap subtable found (format 4).");
+        std::cerr << "No supported cmap subtable found (format 4).";
         return nullptr;
     }
 
@@ -262,7 +257,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     auto it_glyf { tables.find("glyf") };
     if (it_glyf == tables.end())
     {
-        throw std::runtime_error("Missing 'glyf' table.");
+        std::cerr << "Missing 'glyf' table.";
         return nullptr;
     }
     const std::uint8_t* glyf_table { data + it_glyf->second.offset };
@@ -282,7 +277,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
     if (glyph_offsets.size() != num_glyphs + 1)
     {
-        throw std::runtime_error("Invalid number of glyph offsets.");
+        std::cerr << "Invalid number of glyph offsets.";
         return nullptr;
     }
 
@@ -301,7 +296,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
         if (offset_start + glyph_length > glyf_table_length)
         {
-            throw std::runtime_error("Glyph offset out of bounds.");
+            std::cerr << "Glyph offset out of bounds.";
             return nullptr;
         }
 
@@ -364,14 +359,14 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
     auto it_hmtx { tables.find("hmtx") };
     if (it_hmtx == tables.end())
     {
-        throw std::runtime_error("Missing 'hmtx' table.");
+        std::cerr << "Missing 'hmtx' table.";
         return nullptr;
     }
 
     auto it_hhea { tables.find("hhea") };
     if (it_hhea == tables.end())
     {
-        throw std::runtime_error("Missing 'hhea' table.");
+        std::cerr << "Missing 'hhea' table.";
         return nullptr;
     }
 
@@ -383,7 +378,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
 
     if (hmtx_length < number_of_h_metrics * 4)
     {
-        throw std::runtime_error("Invalid 'hmtx' table length.");
+        std::cerr << "Invalid 'hmtx' table length.";
         return nullptr;
     }
 

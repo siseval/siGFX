@@ -3,6 +3,12 @@
 namespace gfx
 {
 
+RenderEngine::RenderEngine(std::shared_ptr<RenderSurface> surface) : surface(surface)
+{
+    render2D = std::make_shared<Render2D>(surface);
+    render3D = std::make_shared<Render3D>(surface);
+}
+
 void RenderEngine::render_frame()
 {
     render3D->draw_frame();

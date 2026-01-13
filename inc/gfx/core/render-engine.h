@@ -16,12 +16,7 @@ class RenderEngine
 
 public:
 
-    RenderEngine(std::shared_ptr<RenderSurface> surface)
-        : surface(surface)
-    {
-        render2D = std::make_shared<Render2D>(surface);
-        render3D = std::make_shared<Render3D>(surface);
-    }
+    RenderEngine(std::shared_ptr<RenderSurface> surface);
 
     void render_frame();
     void present_frame();

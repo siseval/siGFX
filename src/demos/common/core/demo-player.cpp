@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "demos/common/core/demo-player.h"
 #include "demos/common/animations/test-3D/test-3D-demo.h"
 #include "demos/common/animations/star/star-demo.h"
@@ -19,15 +17,8 @@ using namespace gfx;
 
 void DemoPlayer::init()
 {
-    try 
-    {
-        renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
-        renderer->debug_viewer_set_font(renderer->get_font("gohu-regular"));
-    } 
-    catch (std::runtime_error &e) 
-    {
-        std::cerr << "Warning: Could not load font directory: " << e.what() << std::endl;
-    }
+    renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
+    renderer->debug_viewer_set_font(renderer->get_font("gohu-regular"));
 
     demos.emplace_back(std::make_shared<Test3DDemo>(renderer));
     demos.emplace_back(std::make_shared<StarDemo>(renderer));
