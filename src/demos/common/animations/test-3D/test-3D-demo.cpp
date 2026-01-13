@@ -1,6 +1,7 @@
 #include "demos/common/animations/test-3D/test-3D-demo.h"
 
 #include "demos/common/core/demo-utils.h"
+#include "gfx/shaders/diffuse-frag-shader.h"
 
 using namespace gfx;
 
@@ -18,14 +19,52 @@ void Test3DDemo::init()
     renderer->set_light_direction(-1.0, 1.0, -1.0);
     renderer->set_ambient_light(0.5);
 
-    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4::white());
+    Shader3D shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
+
+    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4::white(), 16, shader);
     renderer->add_primitive(sphere);
     
-    floor_item = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4::white());
+    floor_item = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4::white(), shader);
     renderer->add_primitive(floor_item);
 
-    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4::red());
+    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4::red(), shader);
     renderer->add_primitive(cube);
+
+    double max_range = 16.0;
+
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     auto box = renderer->create_cuboid(
+    //         Vec3d {
+    //             random_double(-max_range, max_range),
+    //             random_double(-max_range, max_range),
+    //             random_double(-max_range, max_range)
+    //         },
+    //         Vec3d {
+    //             random_double(1.0, 3.0),
+    //             random_double(1.0, 3.0),
+    //             random_double(1.0, 3.0)
+    //         },
+    //         Color4::white()
+    //     );
+    //     renderer->add_primitive(box);
+    // }
+
+    for (int i = 0; i < 100; i++)
+    {
+        auto box = renderer->create_sphere(
+            Vec3d {
+                random_double(-max_range, max_range),
+                random_double(-max_range, max_range),
+                random_double(-max_range, max_range)
+            },
+            random_double(1.0, 3.0),
+            Color4::white(),
+            16,
+            shader
+        );
+        renderer->add_primitive(box);
+    }
 }
 
 void Test3DDemo::render_frame(const double dt)

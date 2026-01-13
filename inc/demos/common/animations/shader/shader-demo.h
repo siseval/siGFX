@@ -25,7 +25,7 @@ public:
 
     mutable gfx::Color4 prev_color;
 
-    gfx::Color4 frag(const gfx::ShaderInput2D &input) const override;
+    std::vector<gfx::Color4> frag(const gfx::ShaderInput2D &input) const override;
 };
 
 

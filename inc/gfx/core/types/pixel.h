@@ -9,6 +9,7 @@ namespace gfx
 struct Pixel
 {
     Vec2i position;
+    double depth;
     Color4 color;
 };
 

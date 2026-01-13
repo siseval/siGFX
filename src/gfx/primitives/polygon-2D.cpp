@@ -1,8 +1,25 @@
 #include "gfx/primitives/polygon-2D.h"
 
+#include "gfx/geometry/transform-2D.h"
+#include "gfx/geometry/triangulate.h"
+#include "gfx/geometry/rasterize.h"
+#include "gfx/geometry/types/barycentric-triangle.h"
+
 
 namespace gfx
 {
+
+std::vector<Vec2i> Polygon2D::rasterize(const Matrix3x3d &transform) const 
+{
+    std::vector<Vec2i> pixels;
+
+    for (const auto &component : components)
+    {
+        rasterize_component(component, transform, pixels);
+    }
+
+    return pixels;
+}
 
 Box2d Polygon2D::get_geometry_size() const
 {
@@ -213,6 +230,33 @@ std::vector<Vec2d> Polygon2D::get_hole_vertices(const int component, const int h
         return {};
     }
     return components[component].holes[hole].vertices;
+}
+
+void Polygon2D::rasterize_component(const Polygon::Component &component, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const
+{
+    std::vector<Polygon::Contour> transformed_holes;
+    for (const auto &hole : component.holes)
+    {
+        transformed_holes.push_back(Polygon::Contour { 
+            Transform2D::transform_points(hole.vertices, transform),
+            hole.clockwise 
+        });
+    }
+
+    Polygon::Component transformed_component { 
+        Transform2D::transform_points(component.contour.vertices, transform),
+        component.contour.clockwise,
+        transformed_holes
+    };
+
+    std::vector<BarycentricTriangle> triangles { 
+        Triangulate::triangulate_polygon(transformed_component)
+    };
+
+    for (auto triangle : triangles)
+    {
+        Rasterize::rasterize_filled_triangle(triangle, pixels);
+    }
 }
 
 

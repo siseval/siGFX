@@ -5,7 +5,7 @@
 #include "gfx/math/matrix.h"
 #include "gfx/math/box3.h"
 #include "gfx/geometry/polygon-mesh.h"
-#include "gfx/shaders/basic-shader-3D.h"
+#include "gfx/shaders/default-shader-3D.h"
 
 namespace gfx
 {
@@ -15,7 +15,7 @@ class Primitive3D
 
 public:
 
-    Primitive3D() : id(UUID::generate()) {}
+    Primitive3D() : id(UUID::generate()), shader(DefaultShader3D()) {}
 
     UUID get_id() const
     {
@@ -115,12 +115,12 @@ public:
         return anchor;
     } 
 
-    std::shared_ptr<Shader3D> get_shader() const
+    Shader3D get_shader() const
     {
         return shader;
     }
 
-    void set_shader(const std::shared_ptr<Shader3D> &shd)
+    void set_shader(const Shader3D shd)
     {
         shader = shd;
     }
@@ -168,8 +168,8 @@ protected:
     }
 
     UUID id;
-    std::shared_ptr<Shader3D> shader = std::make_shared<BasicShader3D>();
-    Color4 color = Color4::white();
+    Shader3D shader;
+    Color4 color;
 
     Vec3d position;
     Vec3d rotation;

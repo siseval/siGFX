@@ -1,7 +1,8 @@
 #include "gfx/core/render-3D.h"
 
 #include "gfx/geometry/rasterize.h"
-#include "gfx/geometry/transform-3D.h"
+
+#include <chrono>
 
 namespace gfx
 {
@@ -9,81 +10,63 @@ namespace gfx
 void Render3D::draw_frame()
 {
     Vec2i resolution { surface->get_resolution() };
+
+    double aspect_ratio { 
+        static_cast<double>(resolution.x) / 
+        static_cast<double>(resolution.y) 
+    };
+
     double t { std::chrono::duration<double, std::milli>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count() / 1000.0 };
 
+    const Camera& camera { get_camera() };
+    Matrix4x4d view_matrix { camera.get_view_matrix() };
+    Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
+
     for (const auto& [primitive, transform] : scene_graph->get_draw_queue())
     {
         PolygonMesh mesh { primitive->get_mesh() };
+        size_t num_vertices { mesh.get_vertices().size() };
 
-        std::shared_ptr<Shader3D> shader { primitive->get_shader() };
-        shader->get_vertex_shader()->set_matrices(
-            transform,
-            camera.get_view_matrix(),
-            camera.get_projection_matrix(get_aspect_ratio())
-        );
-        shader->get_fragment_shader()->set_light_direction(light_dir);
-        shader->get_fragment_shader()->set_ambient_intensity(ambient_light);
+        Shader3D shader { primitive->get_shader() };
 
-        for (const auto& tri : mesh.get_triangles())
+        Shader3D::VertInput vert_in {
+            .positions = mesh.get_vertices(),
+            .normals = mesh.get_normals(),
+            .model_matrix = transform,
+            .view_matrix = view_matrix,
+            .projection_matrix = projection_matrix,
+            .mvp_matrix = projection_matrix * view_matrix * transform
+        };
+
+        Shader3D::VertOutput vert_out { shader.vert(vert_in) };
+
+        struct ScreenVertex
         {
-            bool skip_triangle { false };
+            Vec2d screen_pos;
+            double z_over_w;
+            double inv_w;
+        };
 
-            std::array<PolygonMesh::Vertex, 3> triangle_vertices {
-                mesh.get_vertices().at(tri.v0),
-                mesh.get_vertices().at(tri.v1),
-                mesh.get_vertices().at(tri.v2)
-            };
+        for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
+        {
+            size_t idx0 { mesh.get_indices()[i] };
+            size_t idx1 { mesh.get_indices()[i + 1] };
+            size_t idx2 { mesh.get_indices()[i + 2] };
 
-            Vec3d world_v0 { Transform3D::transform_point(triangle_vertices[0].pos, transform) };
-            Vec3d world_v1 { Transform3D::transform_point(triangle_vertices[1].pos, transform) };
-            Vec3d world_v2 { Transform3D::transform_point(triangle_vertices[2].pos, transform) };
-
-            Vec3d face_normal = Vec3d::cross(
-                world_v1 - world_v0,
-                world_v2 - world_v0
-            ).normalize();
-
-            Vec3d to_camera = (camera.get_position() - world_v0).normalize();
-
-            if (Vec3d::dot(face_normal, to_camera) <= 0.0)
+            if (vert_out.w[idx0] <= 0.0 ||
+                vert_out.w[idx1] <= 0.0 ||
+                vert_out.w[idx2] <= 0.0)
             {
                 continue;
             }
 
-            std::array<Shader3D::VertOutput, 3> verts;
-
-            for (size_t i = 0; i < 3; i++)
-            {
-                const auto& vertex { triangle_vertices[i] };
-                Shader3D::VertInput vert_input { 
-                    .pos = vertex.pos,
-                    .normal = vertex.normal
-                };
-                verts[i] = primitive->get_shader()->vert(vert_input);
-            }
-
-            struct ScreenVertex
-            {
-                Vec2d screen_pos;
-                double z_over_w;
-                double inv_w;
-            };
-
             std::array<ScreenVertex, 3> screen_vertices;
+            auto clip_to_screen { [&](const int source_index, const int dest_index) {
+                const auto& clip { vert_out.xyz[source_index] };
 
-            for (int i = 0; i < 3 && !skip_triangle; ++i)
-            {
-                if (verts[i].w <= 0.0)
-                {
-                    skip_triangle = true;
-                    break;
-                }
-
-                const auto& clip { verts[i].xyz };
-
-                double inv_w { 1.0 / verts[i].w };
+                double inv_w { 1.0 / vert_out.w[source_index] };
 
                 Vec3d ndc {
                     clip.x * inv_w,
@@ -91,18 +74,18 @@ void Render3D::draw_frame()
                     clip.z * inv_w
                 };
 
-                screen_vertices[i].screen_pos = {
+                screen_vertices[dest_index].screen_pos = {
                     (ndc.x * 0.5 + 0.5) * resolution.x,
                     (1.0 - (ndc.y * 0.5 + 0.5)) * resolution.y
                 };
 
-                screen_vertices[i].z_over_w = ndc.z;
-                screen_vertices[i].inv_w = inv_w;
-            }
-            if (skip_triangle)
-            {
-                continue;
-            }
+                screen_vertices[dest_index].z_over_w = ndc.z;
+                screen_vertices[dest_index].inv_w = inv_w;
+            }};
+
+            clip_to_screen(idx0, 0);
+            clip_to_screen(idx1, 1);
+            clip_to_screen(idx2, 2);
 
             BarycentricTriangle triangle {
                 screen_vertices[0].screen_pos,
@@ -110,74 +93,102 @@ void Render3D::draw_frame()
                 screen_vertices[2].screen_pos
             };
 
-            double z_over_w[3] = {
-                screen_vertices[0].z_over_w,
-                screen_vertices[1].z_over_w,
-                screen_vertices[2].z_over_w
+            if (triangle.get_area() <= 0.0)
+            {
+                continue;
+            }
+
+            std::vector<Vec2i> pixels;
+            Rasterize::rasterize_filled_triangle(triangle, pixels, resolution);
+
+            Shader3D::FragInput frag_in {
+                .t = t,
+                .light_dir = light_dir,
+                .ambient_intensity = ambient_light
             };
 
-            double one_over_w[3] = {
-                screen_vertices[0].inv_w,
-                screen_vertices[1].inv_w,
-                screen_vertices[2].inv_w
-            };
+            frag_in.uvw.reserve(pixels.size());
+            frag_in.depths.reserve(pixels.size());
+            frag_in.normals.reserve(pixels.size());
+            frag_in.colors.reserve(pixels.size());
 
-            Rasterize::rasterize_filled_triangle(triangle, primitive->get_color(), [&](const Pixel &pixel) {
-                Vec3d w = triangle.barycentric_weights(pixel.position + Vec2d { 0.5, 0.5 });
+            auto vertex_colors { mesh.get_colors() };
+
+            for (const auto& pixel : pixels)
+            {
+                Vec3d w = triangle.barycentric_weights(pixel + Vec2d { 0.5, 0.5 });
 
                 // double inv_w_p = 
                 //     w.x * one_over_w[0] +
                 //     w.y * one_over_w[1] +
                 //     w.z * one_over_w[2];
 
-                double depth = 
-                    w.x * z_over_w[0] +
-                    w.y * z_over_w[1] +
-                    w.z * z_over_w[2];
+                double depth {
+                    w.x * screen_vertices[0].z_over_w +
+                    w.y * screen_vertices[1].z_over_w +
+                    w.z * screen_vertices[2].z_over_w
+                };
 
-                double depth_normalized { depth };
+                Vec3d normal_interp {(
+                    vert_out.normals[idx0] * w.x + 
+                    vert_out.normals[idx1] * w.y + 
+                    vert_out.normals[idx2] * w.z).normalize() 
+                };
 
-                Vec3d normal_p = (
-                    verts[0].normal * w.x + 
-                    verts[1].normal * w.y + 
-                    verts[2].normal * w.z).normalize();
+                Color4 color_interp {
+                    vertex_colors[idx0] == vertex_colors[idx1] &&
+                    vertex_colors[idx1] == vertex_colors[idx2] ?
 
-                Shader3D::FragInput frag_input;
-                frag_input.depth = depth_normalized;
-                frag_input.t = t;
-                frag_input.normal = normal_p;
+                    vertex_colors[idx0] :
 
-                Color4 color = primitive->get_shader()->frag(frag_input);
+                    Color4::trilinear_interp(
+                        vertex_colors[idx0],
+                        vertex_colors[idx1],
+                        vertex_colors[idx2],
+                        w.x, w.y, w.z
+                    )
+                };
 
-                surface->write_pixel(pixel.position, color, depth);
-            }, resolution);
+                frag_in.uvw.emplace_back(0.0, 0.0, 0.0);
+                frag_in.depths.push_back(depth);
+                frag_in.normals.push_back(normal_interp);
+                frag_in.colors.push_back(color_interp);
+            }
+
+            auto pixel_colors { shader.frag(frag_in) };
+            for (size_t i = 0; i < pixel_colors.size(); ++i)
+            {
+                surface->write_pixel(pixels[i], pixel_colors[i], frag_in.depths[i]);
+            }
         }
     }
 }
 
-std::shared_ptr<Cuboid3D> Render3D::create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const
+std::shared_ptr<Cuboid3D> Render3D::create_cuboid(const Vec3d position, const Vec3d size, const Color4 color, const Shader3D shader) const
 {
     auto cuboid { std::make_shared<Cuboid3D>() };
 
     cuboid->set_position(position);
     cuboid->set_size(size);
     cuboid->set_color(color);
+    cuboid->set_shader(shader);
 
     return cuboid;
 }
 
-std::shared_ptr<Plane3D> Render3D::create_plane(const Vec3d position, const Vec2d size, const Color4 color) const
+std::shared_ptr<Plane3D> Render3D::create_plane(const Vec3d position, const Vec2d size, const Color4 color, const Shader3D shader) const
 {
     auto plane { std::make_shared<Plane3D>() };
 
     plane->set_position(position);
     plane->set_size(size);
     plane->set_color(color);
+    plane->set_shader(shader);
 
     return plane;
 }
 
-std::shared_ptr<Sphere3D> Render3D::create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments) const
+std::shared_ptr<Sphere3D> Render3D::create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments, const Shader3D shader) const
 {
     auto sphere { std::make_shared<Sphere3D>() };
 
@@ -185,6 +196,7 @@ std::shared_ptr<Sphere3D> Render3D::create_sphere(const Vec3d position, const do
     sphere->set_radius(radius);
     sphere->set_color(color);
     sphere->set_num_segments(segments);
+    sphere->set_shader(shader);
 
     return sphere;
 }

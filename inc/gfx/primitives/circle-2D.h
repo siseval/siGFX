@@ -3,12 +3,11 @@
 #include "gfx/core/primitive-2D.h"
 #include "gfx/math/box2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
 
-class Circle2D : public PrimitiveTemplate<Circle2D>
+class Circle2D : public Primitive2D
 {
 
 public:
@@ -27,43 +26,8 @@ public:
     inline bool get_filled() const { return filled; }
     inline void set_filled(const bool f) { filled = f; }
 
-    template<typename EmitPixel>
-    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        if (radius <= 0)
-        {
-            return;
-        }
-
-        double line_extent { line_thickness / 2.0 };
-        Box2d AABB { get_axis_aligned_bounding_box(transform) };
-        Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
-        for (int y = AABB.min.y; y <= AABB.max.y; y++)
-        {
-            for (int x = AABB.min.x; x <= AABB.max.x; x++)
-            {
-                Vec2d pos { 
-                    Transform2D::transform_point(
-                        Vec2d { 
-                            static_cast<double>(x) , 
-                            static_cast<double>(y) 
-                        }, inverse_transform) - Vec2d(radius) 
-                };
-
-                double r_outer { radius + line_extent };
-                double r_inner { radius - line_extent };
-
-                double distance { std::sqrt(pos.x * pos.x + pos.y * pos.y) };
-
-                if (distance <= r_outer && (get_filled() || distance >= r_inner))
-                {
-                    emit_pixel(Pixel { { x, y }, get_color() });
-                    continue;
-                }
-            }
-        }
-    }
-
+    std::vector<Vec2i> rasterize(const Matrix3x3d &transform) const override;
+    
 private:
 
     double radius;

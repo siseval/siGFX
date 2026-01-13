@@ -2,29 +2,16 @@
 
 #include <algorithm>
 
-#include "gfx/core/types/pixel.h"
 #include "gfx/core/types/color4.h"
 #include "gfx/core/types/obb-2D.h"
 #include "gfx/core/shader-2D.h"
+#include "gfx/shaders/default-shader-2D.h"
 #include "gfx/core/types/uuid.h"
 #include "gfx/math/box2.h"
 #include "gfx/math/matrix.h"
 
 namespace gfx
 {
-
-struct EmitterBase 
-{
-    virtual void emit(const Pixel&) = 0;
-};
-
-template<class F>
-struct Emitter : EmitterBase 
-{
-    F func;
-    explicit Emitter(F f) : func(f) {}
-    void emit(const Pixel& p) override { func(p); }
-};
 
 class Primitive2D
 {
@@ -33,12 +20,7 @@ public:
 
     Primitive2D() : id(UUID::generate()) {}
 
-    template<class Emit>
-    void rasterize(const Matrix3x3d& M, Emit&& emit) const 
-    {
-        Emitter<std::decay_t<Emit>> wrapper(std::forward<Emit>(emit));
-        rasterize_erased(M, wrapper);
-    }
+    virtual std::vector<Vec2i> rasterize(const Matrix3x3d& transform) const = 0;
 
     OBB2D get_oriented_bounding_box(const Matrix3x3d &transform) const;
     virtual Box2d get_geometry_size() const = 0;
@@ -51,9 +33,6 @@ public:
 
     inline void set_shader(const std::shared_ptr<Shader2D> &shd) { shader = shd; }
     inline std::shared_ptr<Shader2D> get_shader() const { return shader; }
-
-    inline void set_use_shader(const bool use) { use_shader = use; }
-    inline bool get_use_shader() const { return use_shader; }
 
     virtual bool point_collides(const Vec2d point, const Matrix3x3d &transform) const = 0;
     inline bool point_collides(const double x, const double y, const Matrix3x3d &transform) const
@@ -171,8 +150,7 @@ public:
 protected:
 
     UUID id;
-    std::shared_ptr<Shader2D> shader;
-    bool use_shader = false;
+    std::shared_ptr<Shader2D> shader = std::make_shared<DefaultShader2D>();
 
     Color4 color;
 
@@ -192,24 +170,6 @@ protected:
     mutable Matrix3x3d cached_transform;
     mutable bool transform_dirty = true;
     int64_t transform_version = -1;
-
-private:
-
-    virtual void rasterize_erased(const Matrix3x3d&, EmitterBase&) const = 0;
-};
-
-
-template<class Derived>
-class PrimitiveTemplate : public Primitive2D
-{
-
-private:
-
-    void rasterize_erased(const Matrix3x3d& transform, EmitterBase& emit_pixel) const override 
-    {
-        static_cast<const Derived*>(this)
-            ->rasterize(transform, [&](const Pixel& pixel) { emit_pixel.emit(pixel); });
-    }
 };
 
 };

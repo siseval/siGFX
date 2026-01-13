@@ -7,7 +7,7 @@
 #include "demos/common/animations/fireworks/fireworks-demo.h"
 #include "demos/common/animations/space/space-demo.h"
 // #include "demos/common/animations/video/video-demo.h"
-#include "demos/common/animations/fractal/fractal-demo.h"
+// #include "demos/common/animations/fractal/fractal-demo.h"
 #include "demos/common/animations/boids/boids-demo.h"
 #include "demos/common/animations/shader/shader-demo.h"
 #include "demos/common/animations/text/text-demo.h"
@@ -35,7 +35,7 @@ void DemoPlayer::init()
     // demos.emplace_back(std::make_shared<VideoDemo>(renderer));
     demos.emplace_back(std::make_shared<SnakeDemo>(renderer));
     demos.emplace_back(std::make_shared<BoidsDemo>(renderer));
-    demos.emplace_back(std::make_shared<FractalDemo>(renderer));
+    // demos.emplace_back(std::make_shared<FractalDemo>(renderer));
     demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
     demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
     demos.emplace_back(std::make_shared<SpaceDemo>(renderer));

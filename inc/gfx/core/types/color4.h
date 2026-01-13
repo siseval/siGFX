@@ -111,6 +111,16 @@ public:
         );
     }
 
+    inline static Color4 trilinear_interp(const Color4 &c1, const Color4 &c2, const Color4 &c3, const double w1, const double w2, const double w3)
+    {
+        return Color4(
+            static_cast<uint8_t>(c1.r * w1 + c2.r * w2 + c3.r * w3),
+            static_cast<uint8_t>(c1.g * w1 + c2.g * w2 + c3.g * w3),
+            static_cast<uint8_t>(c1.b * w1 + c2.b * w2 + c3.b * w3),
+            static_cast<uint8_t>(c1.a * w1 + c2.a * w2 + c3.a * w3)
+        );
+    }
+
     inline const static Color4 black() { return Color4(0, 0, 0, 255); }
     inline const static Color4 white() { return Color4(255, 255, 255, 255); }
     inline const static Color4 red()   { return Color4(255, 0, 0, 255); }

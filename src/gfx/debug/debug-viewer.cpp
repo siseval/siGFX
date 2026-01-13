@@ -126,7 +126,7 @@ void DebugViewer::populate(const DebugInfo &info)
             fps_text_item = std::make_shared<Text2D>();
             fps_text_item->set_font(font);
             fps_text_item->set_font_size(font_size);
-            fps_text_item->set_smoothing_radius(0.6);
+            // fps_text_item->set_smoothing_radius(0.6);
             fps_text_item->set_color(text_color);
             fps_text_item->set_scale(text_scale);
             fps_text_item->set_position(5.0, 5.0);
@@ -141,7 +141,7 @@ void DebugViewer::populate(const DebugInfo &info)
             num_items_text_item = std::make_shared<Text2D>();
             num_items_text_item->set_font(font);
             num_items_text_item->set_font_size(font_size);
-            num_items_text_item->set_smoothing_radius(0.6);
+            // num_items_text_item->set_smoothing_radius(0.6);
             num_items_text_item->set_color(text_color);
             num_items_text_item->set_scale(text_scale);
             num_items_text_item->set_position(5.0, font_size * text_scale + 5.0);

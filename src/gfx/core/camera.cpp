@@ -30,7 +30,7 @@ Matrix4x4d Camera::get_projection_matrix(const double aspect_ratio) const
     return projection;
 }
 
-Vec3d Camera::get_forward_vector() const
+Vec3d Camera::get_forward() const
 {
     double pitch_rad { rotation.x };
     double yaw_rad { rotation.y };

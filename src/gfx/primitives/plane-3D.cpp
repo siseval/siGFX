@@ -3,6 +3,7 @@
 namespace gfx
 {
 
+
 const PolygonMesh& Plane3D::get_mesh() const
 {
     if (!is_mesh_dirty())
@@ -12,28 +13,41 @@ const PolygonMesh& Plane3D::get_mesh() const
 
     mesh_data.clear();
 
-    double w { size.x / 2 };
-    double d { size.y / 2 };
+    double w { size.x * 0.5 };
+    double d { size.y * 0.5 };
 
-    mesh_data.set_vertices({
-        { Vec3d { -w, 0,  d }, Vec3d { 0, 1, 0 } },
-        { Vec3d {  w, 0,  d }, Vec3d { 0, 1, 0 } },
-        { Vec3d {  w, 0, -d }, Vec3d { 0, 1, 0 } },
-        { Vec3d { -w, 0, -d }, Vec3d { 0, 1, 0 } }
-    });
+    std::vector<Vec3d> vertices = {
+        { -w, 0,  d },
+        {  w, 0,  d },
+        {  w, 0, -d },
+        { -w, 0, -d }
+    };
 
-    mesh_data.set_triangles({
-        { 0, 1, 2 }, 
-        { 0, 2, 3 },
+    std::vector<Vec3d> normals = {
+        { 0, 1, 0 },
+        { 0, 1, 0 },
+        { 0, 1, 0 },
+        { 0, 1, 0 }
+    };
 
-        { 0, 2, 1 }, 
-        { 0, 3, 2 }
-    });
+    std::vector<size_t> indices = {
+        0, 1, 2,
+        0, 2, 3,
+
+        0, 2, 1,
+        0, 3, 2
+    };
+
+    mesh_data.set_vertices(std::move(vertices));
+    mesh_data.set_normals(std::move(normals));
+    mesh_data.set_indices(std::move(indices));
+    mesh_data.set_colors(std::vector<Color4>(4, get_color()));
 
     set_mesh_dirty(false);
 
     return mesh_data;
 }
+
 
 void Plane3D::set_size(const Vec2d new_size)
 {

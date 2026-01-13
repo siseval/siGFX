@@ -1,6 +1,5 @@
-#include <gfx/shaders/test-shader.h>
-
 #include "demos/common/animations/shader/shader-demo.h"
+
 #include "demos/common/core/demo-utils.h"
 
 namespace demos
@@ -8,8 +7,10 @@ namespace demos
 
 using namespace gfx;
 
-gfx::Color4 WaterSurfaceShader::frag(const gfx::ShaderInput2D &input) const
+std::vector<gfx::Color4> WaterSurfaceShader::frag(const gfx::ShaderInput2D &input) const
 {
+    std::vector<gfx::Color4> out;
+
     constexpr double wave_freq = 20.0;
     constexpr double wave_speed = 3.0;
     constexpr double dist_falloff = 4.0;
@@ -17,30 +18,34 @@ gfx::Color4 WaterSurfaceShader::frag(const gfx::ShaderInput2D &input) const
     constexpr double fade_decay = 7.0;
     constexpr double base_brightness = 2.0;
 
-    double global_time_sec { time_ms() / 1000.0 };
-    Vec2d uv { input.uv };
-    Vec2d center { 0.5, 0.5 };
-
-    double ripple_amount = base_brightness;
-    for (const auto &ripple : ripples)
+    for (const auto &uv : input.uv)
     {
-        double distance = Vec2d::distance(uv, ripple->center);
+        double global_time_sec { time_ms() / 1000.0 };
+        Vec2d center { 0.5, 0.5 };
 
-        double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
-        double t { ripple_time_sec / ripple_lifetime_sec };
+        double ripple_amount = base_brightness;
+        for (const auto &ripple : ripples)
+        {
+            double distance = Vec2d::distance(uv, ripple->center);
 
-        double fade_in { smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
+            double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
+            double t { ripple_time_sec / ripple_lifetime_sec };
 
-        double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
-        double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
+            double fade_in { smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
 
-        ripple_amount += wave * falloff * amp_scale * fade_in;
+            double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
+            double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
+
+            ripple_amount += wave * falloff * amp_scale * fade_in;
+        }
+
+        ripple_amount = inv_lerp(-0.05, 0.05, ripple_amount);
+        ripple_amount = fmod(ripple_amount, 1.0);
+
+        out.emplace_back(base_color + Color4(std::fmod(ripple_amount, 1.0)));
     }
 
-    ripple_amount = inv_lerp(-0.05, 0.05, ripple_amount);
-    ripple_amount = fmod(ripple_amount, 1.0);
-
-    return base_color + Color4(std::fmod(ripple_amount, 1.0));
+    return out;
 }
 
 
@@ -60,7 +65,6 @@ void ShaderDemo::init()
 
     quad->set_anchor(0.5, 0.5);
     quad->set_shader(shader);
-    quad->set_use_shader(true);
 
     render2D->clear_items();
     render2D->add_item(quad);

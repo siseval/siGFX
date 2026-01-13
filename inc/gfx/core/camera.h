@@ -14,7 +14,7 @@ public:
     Matrix4x4d get_view_matrix() const;
     Matrix4x4d get_projection_matrix(const double aspect_ratio) const;
 
-    Vec3d get_forward_vector() const; 
+    Vec3d get_forward() const; 
 
     inline void set_position(const Vec3d pos)
     {

@@ -33,21 +33,25 @@ void Render2D::draw_frame() const
             continue;
         }
 
-        if (!primitive->get_use_shader())
+        std::vector<Vec2i> pixels { primitive->rasterize(transform) };
+
+        ShaderInput2D input {
+            .uv = std::vector<Vec2d>(),
+            .t = t / 1000000.0,
+            .color = primitive->get_color()
+        };
+
+        for (const auto &pixel_pos : pixels)
         {
-            primitive->rasterize(transform, ([&](const Pixel &pixel) {
-                    surface->write_pixel(pixel.position, pixel.color, primitive->get_depth(), blend_mode);
-                }));
-            continue;
+            input.uv.push_back(primitive->get_uv(pixel_pos));
         }
 
-        primitive->rasterize(transform, ([&](const Pixel &pixel) {
-            Vec2d uv { primitive->get_uv(pixel.position) };
-            ShaderInput2D input { uv, t / 1000000.0 };
-            Color4 shaded_color { primitive->get_shader()->frag(input) };
-            shaded_color = shaded_color.set_alpha(shaded_color.a_double() * (pixel.color.a_double()));
-            surface->write_pixel(pixel.position, shaded_color, primitive->get_depth(), blend_mode);
-            }));
+        std::vector<Color4> colors { primitive->get_shader()->frag(input) };
+
+        for (size_t i = 0; i < pixels.size(); ++i)
+        {
+            surface->write_pixel(pixels[i], colors[i], primitive->get_depth());
+        }
     }
 }
 
@@ -126,25 +130,25 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const 
     return polygon;
 }
 
-std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Bitmap &bm) const
-{
-    auto bitmap { std::make_shared<Bitmap2D>() };
-
-    bitmap->set_position(position);
-    bitmap->load_bitmap(bm);
-
-    return bitmap;
-}
-
-std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Vec2i resolution) const
-{
-    auto bitmap { std::make_shared<Bitmap2D>() };
-
-    bitmap->set_position(position);
-    bitmap->set_resolution(resolution);
-
-    return bitmap;
-}
+// std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Bitmap &bm) const
+// {
+//     auto bitmap { std::make_shared<Bitmap2D>() };
+//
+//     bitmap->set_position(position);
+//     bitmap->load_bitmap(bm);
+//
+//     return bitmap;
+// }
+//
+// std::shared_ptr<Bitmap2D> Render2D::create_bitmap(const Vec2d position, const Vec2i resolution) const
+// {
+//     auto bitmap { std::make_shared<Bitmap2D>() };
+//
+//     bitmap->set_position(position);
+//     bitmap->set_resolution(resolution);
+//
+//     return bitmap;
+// }
 
 std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const
 {

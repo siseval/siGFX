@@ -11,19 +11,26 @@ using namespace gfx;
 
 class TextShader : public gfx::Shader2D
 {
-    Color4 frag(const ShaderInput2D &input) const override
+    std::vector<Color4> frag(const ShaderInput2D &input) const override
     {
-        double t { input.t };
-        Vec2d uv { input.uv };
+        std::vector<Color4> out;
+        out.reserve(input.uv.size());
 
-        double diagonal { uv.x + uv.y + t };
-        diagonal = std::fmod(diagonal, std::numbers::pi);
-        
-        double r { std::sin(diagonal) };
-        double g { 1 - std::sin(diagonal) };
-        double b = 0.5;
+        for (const auto &uv : input.uv)
+        {
+            double t { input.t };
 
-        return Color4(r, g, b);
+            double diagonal { uv.x + uv.y + t };
+            diagonal = std::fmod(diagonal, std::numbers::pi);
+
+            double r { std::sin(diagonal) };
+            double g { 1 - std::sin(diagonal) };
+            double b = 0.5;
+
+            out.emplace_back(r, g, b);
+        }
+
+        return out;
     }
 };
 
@@ -83,7 +90,6 @@ void TextDemo::init()
     );
 
     text_item->set_shader(std::make_shared<TextShader>());
-    text_item->set_use_shader(true);
     text_item->set_anchor(0.5, 0.5);
     text_item->set_alignment(Text2D::TextAlignment::CENTER);
 

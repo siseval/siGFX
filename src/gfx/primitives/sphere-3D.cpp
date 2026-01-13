@@ -3,6 +3,7 @@
 namespace gfx
 {
 
+
 const PolygonMesh& Sphere3D::get_mesh() const
 {
     if (!is_mesh_dirty())
@@ -10,18 +11,23 @@ const PolygonMesh& Sphere3D::get_mesh() const
         return mesh_data;
     }
 
-    std::vector<PolygonMesh::Vertex> sphere_vertices;
+    mesh_data.clear();
 
-    for (int r = 0; r < lat_segments; ++r) 
+    std::vector<Vec3d> vertices;
+    std::vector<Vec3d> normals;
+    std::vector<size_t> indices;
+
+    for (int r = 0; r < lat_segments; ++r)
     {
-        for (int s = 0; s < lon_segments; ++s) 
+        for (int s = 0; s < lon_segments; ++s)
         {
-            double phi0 = std::numbers::pi * r / lat_segments;
-            double phi1 = std::numbers::pi * (r + 1) / lat_segments;
+            double phi0   = std::numbers::pi * r / lat_segments;
+            double phi1   = std::numbers::pi * (r + 1) / lat_segments;
             double theta0 = 2.0 * std::numbers::pi * s / lon_segments;
-            double theta1 = 2.0 * std::numbers::pi * (s + 1) /lon_segments;
+            double theta1 = 2.0 * std::numbers::pi * (s + 1) / lon_segments;
 
-            auto get_pos = [&](const double phi, const double theta) {
+            auto get_pos = [&](double phi, double theta)
+            {
                 double x = radius * std::sin(phi) * std::cos(theta);
                 double y = radius * std::cos(phi);
                 double z = radius * std::sin(phi) * std::sin(theta);
@@ -36,47 +42,49 @@ const PolygonMesh& Sphere3D::get_mesh() const
             auto v2 = get_pos(phi1, theta1);
             auto v3 = get_pos(phi1, theta0);
 
-            if (r == 0) 
+            auto emit = [&](const auto& a, const auto& b, const auto& c)
             {
-                sphere_vertices.push_back({ v0.first, v0.second });
-                sphere_vertices.push_back({ v2.first, v2.second });
-                sphere_vertices.push_back({ v3.first, v3.second });
-            }
+                size_t base = vertices.size();
 
+                vertices.push_back(a.first);
+                vertices.push_back(b.first);
+                vertices.push_back(c.first);
+
+                normals.push_back(a.second);
+                normals.push_back(b.second);
+                normals.push_back(c.second);
+
+                indices.push_back(base + 0);
+                indices.push_back(base + 1);
+                indices.push_back(base + 2);
+            };
+
+            if (r == 0)
+            {
+                emit(v0, v2, v3);
+            }
             else if (r == lat_segments - 1)
             {
-                sphere_vertices.push_back({ v0.first, v0.second });
-                sphere_vertices.push_back({ v1.first, v1.second });
-                sphere_vertices.push_back({ v2.first, v2.second });
+                emit(v0, v1, v2);
             }
-
             else
             {
-                sphere_vertices.push_back({ v0.first, v0.second });
-                sphere_vertices.push_back({ v1.first, v1.second });
-                sphere_vertices.push_back({ v2.first, v2.second });
-
-                sphere_vertices.push_back({ v0.first, v0.second });
-                sphere_vertices.push_back({ v2.first, v2.second });
-                sphere_vertices.push_back({ v3.first, v3.second });
+                emit(v0, v1, v2);
+                emit(v0, v2, v3);
             }
         }
     }
 
-    mesh_data.set_vertices(sphere_vertices);
-
-    std::vector<PolygonMesh::Triangle> sphere_triangles;
-    for (uint32_t i = 0; i < sphere_vertices.size(); i += 3)
-    {
-        sphere_triangles.push_back({ i, i + 1, i + 2 });
-    }
-
-    mesh_data.set_triangles(sphere_triangles);
+    mesh_data.set_vertices(std::move(vertices));
+    mesh_data.set_normals(std::move(normals));
+    mesh_data.set_indices(std::move(indices));
+    mesh_data.set_colors(std::vector<Color4>(mesh_data.num_vertices(), get_color()));
 
     set_mesh_dirty(false);
 
     return mesh_data;
 }
+
 
 void Sphere3D::set_radius(const double r)
 {

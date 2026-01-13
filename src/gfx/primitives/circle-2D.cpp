@@ -1,8 +1,51 @@
 #include "gfx/primitives/circle-2D.h"
+
 #include "gfx/geometry/transform-2D.h"
 
 namespace gfx
 {
+
+std::vector<Vec2i> Circle2D::rasterize(const Matrix3x3d &transform) const
+{
+    std::vector<Vec2i> pixels;
+
+    if (radius <= 0)
+    {
+        return pixels;
+    }
+
+    double line_extent { line_thickness / 2.0 };
+    Box2d AABB { get_axis_aligned_bounding_box(transform) };
+    Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
+
+    for (int y = AABB.min.y; y <= AABB.max.y; y++)
+    {
+        for (int x = AABB.min.x; x <= AABB.max.x; x++)
+        {
+            Vec2d pos { 
+                Transform2D::transform_point(
+                    Vec2d { 
+                        static_cast<double>(x) , 
+                        static_cast<double>(y) 
+                    }, inverse_transform) - Vec2d(radius) 
+            };
+
+            double r_outer { radius + line_extent };
+            double r_inner { radius - line_extent };
+
+            double distance { std::sqrt(pos.x * pos.x + pos.y * pos.y) };
+
+            if (distance <= r_outer && (get_filled() || distance >= r_inner))
+            {
+                pixels.push_back(Vec2i { x, y });
+                continue;
+            }
+        }
+    }
+
+    return pixels;
+}
+
 
 Box2d Circle2D::get_geometry_size() const
 {

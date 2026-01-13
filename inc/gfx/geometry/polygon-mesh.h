@@ -2,9 +2,9 @@
 
 #include "gfx/math/vec3.h"
 #include "gfx/math/box3.h"
+#include "gfx/core/types/color4.h"
 
 #include <vector>
-#include <cstdint>
 
 namespace gfx
 {
@@ -14,69 +14,75 @@ class PolygonMesh
 
 public:
 
-    struct Vertex
-    {
-        gfx::Vec3d pos;
-        Vec3d normal;
-    };
-
-    struct Triangle
-    {
-        uint32_t v0;
-        uint32_t v1;
-        uint32_t v2;
-    };
-
     PolygonMesh() = default;
 
-    PolygonMesh(const std::vector<Vertex>& verts, const std::vector<Triangle>& tris)
-        : vertices(verts), indices(tris) {}
+    PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices) : 
+        vertices(vertices), 
+        normals(normals), 
+        indices(indices), 
+        colors(std::vector<Color4>(vertices.size(), Color4::white())) {}
 
     Box3d get_extent() const; 
 
-    void set_vertices(const std::vector<Vertex>& verts)
+    void set_vertices(const std::vector<Vec3d> verts)
     {
         vertices = verts;
     }
 
-    void set_triangles(const std::vector<Triangle>& tris)
+    void set_normals(const std::vector<Vec3d> norms)
     {
-        indices = tris;
+        normals = norms;
     }
 
-    void add_vertex(const Vertex& vertex)
+    void set_indices(const std::vector<size_t> inds)
     {
-        vertices.push_back(vertex);
+        indices = inds;
     }
 
-    void set_normal(const uint32_t vertex_index, const Vec3d& normal)
+    void set_colors(const std::vector<Color4> cols)
     {
-        if (vertex_index < vertices.size())
-        {
-            vertices[vertex_index].normal = normal;
-        }
+        colors = cols;
     }
 
-    std::vector<Vertex>& get_vertices()
+    const std::vector<Vec3d>& get_vertices() const
     {
         return vertices;
     }
 
-    std::vector<Triangle>& get_triangles()
+    const std::vector<Vec3d>& get_normals() const
+    {
+        return normals;
+    }
+
+    const std::vector<size_t>& get_indices() const
     {
         return indices;
+    }
+
+    const std::vector<Color4>& get_colors() const
+    {
+        return colors;
+    }
+
+    const size_t num_vertices() const
+    {
+        return vertices.size();
     }
 
     void clear()
     {
         vertices.clear();
+        normals.clear();
         indices.clear();
+        colors.clear();
     }
 
 private:
 
-    std::vector<Vertex> vertices;
-    std::vector<Triangle> indices;
+    std::vector<Vec3d> vertices;
+    std::vector<Vec3d> normals;
+    std::vector<size_t> indices;
+    std::vector<Color4> colors;
 
 };
 

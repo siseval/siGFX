@@ -3,7 +3,7 @@
 #include "gfx/core/scene-graph-2D.h"
 #include "gfx/core/render-surface.h"
 #include "gfx/core/types/color4.h"
-#include "gfx/core/types/bitmap.h"
+// #include "gfx/core/types/bitmap.h"
 #include "gfx/primitives/circle-2D.h"
 #include "gfx/primitives/ellipse-2D.h"
 #include "gfx/primitives/polyline-2D.h"
@@ -67,17 +67,17 @@ public:
         return create_polygon(Vec2d { x, y }, points, fill_color);
     };
 
-    std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Bitmap &bm) const;
-    std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Bitmap &bm) const 
-    {
-        return create_bitmap(Vec2d { x, y }, bm);
-    };
-
-    std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Vec2i resolution) const;
-    std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Vec2i resolution) const 
-    {
-        return create_bitmap(Vec2d { x, y }, resolution);
-    };
+    // std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Bitmap &bm) const;
+    // std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Bitmap &bm) const 
+    // {
+    //     return create_bitmap(Vec2d { x, y }, bm);
+    // };
+    //
+    // std::shared_ptr<Bitmap2D> create_bitmap(const Vec2d position, const Vec2i resolution) const;
+    // std::shared_ptr<Bitmap2D> create_bitmap(const double x, const double y, const Vec2i resolution) const 
+    // {
+    //     return create_bitmap(Vec2d { x, y }, resolution);
+    // };
 
     std::shared_ptr<Text2D> create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const;
     std::shared_ptr<Text2D> create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const 

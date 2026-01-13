@@ -7,7 +7,6 @@ set(GFX_PRIMITIVES_SOURCES
     polygon-2D.cpp
     polygon-3D.cpp
     plane-3D.cpp
-    bitmap-2D.cpp
     text-2D.cpp
 )
 

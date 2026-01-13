@@ -39,9 +39,9 @@ public:
     std::shared_ptr<SceneGraph3D> get_scene_graph() const { return scene_graph; };
     std::shared_ptr<RenderSurface> get_render_surface() const { return surface; };
 
-    std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color) const;
-    std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16) const;
-    std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color) const;
+    std::shared_ptr<Cuboid3D> create_cuboid(const Vec3d position, const Vec3d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
+    std::shared_ptr<Sphere3D> create_sphere(const Vec3d position, const double radius, const Color4 color, const int segments = 16, const Shader3D shader = DefaultShader3D()) const;
+    std::shared_ptr<Plane3D> create_plane(const Vec3d position, const Vec2d size, const Color4 color, const Shader3D shader = DefaultShader3D()) const;
 
     void add_item(const std::shared_ptr<Primitive3D>& item)
     {
@@ -135,7 +135,7 @@ public:
 
     Vec3d get_camera_forward() const
     {
-        return camera.get_forward_vector();
+        return camera.get_forward();
     }
 
     void set_light_direction(const Vec3d dir)

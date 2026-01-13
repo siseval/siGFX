@@ -75,7 +75,7 @@ private:
     bool show_num_items = true;
 
     std::shared_ptr<FontTTF> font;
-    double font_size = 8.0;
+    double font_size = 16.0;
     Color4 text_color { 255, 255, 255 };
 
     Color4 bounds_color { 255, 255, 255 };

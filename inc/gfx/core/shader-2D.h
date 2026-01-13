@@ -8,9 +8,9 @@ namespace gfx
 
 struct ShaderInput2D
 {
-    Vec2d uv;
+    std::vector<Vec2d> uv;
     double t;
-    double w = 0;
+    Color4 color;
 };
 
 class Shader2D
@@ -18,7 +18,8 @@ class Shader2D
 
 public:
 
-    virtual Color4 frag(const ShaderInput2D &input) const = 0;
+    virtual std::vector<Color4> frag(const ShaderInput2D &input) const = 0;
+
     static inline Color4 mix(const Color4 &a, const Color4 &b, const double factor)
     {
         double clamped_factor = std::clamp(factor, 0.0, 1.0);

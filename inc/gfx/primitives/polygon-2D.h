@@ -4,16 +4,12 @@
 #include "gfx/math/box2.h"
 #include "gfx/math/vec2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/types/barycentric-triangle.h"
 #include "gfx/geometry/types/polygon.h"
-#include "gfx/geometry/triangulate.h"
-#include "gfx/geometry/transform-2D.h"
-#include "gfx/geometry/rasterize.h"
 
 namespace gfx
 {
 
-class Polygon2D : public PrimitiveTemplate<Polygon2D>
+class Polygon2D : public Primitive2D
 {
 
 public:
@@ -42,47 +38,15 @@ public:
 
     std::vector<Vec2d> get_hole_vertices(const int component = 0, const int hole = 0) const;
 
-    template<typename EmitPixel>
-    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        for (const auto &component : components)
-        {
-            rasterize_component(component, transform, emit_pixel);
-        }
-    }
+    std::vector<Vec2i> rasterize(const Matrix3x3d &transform) const override;
 
 private:
 
     bool cache_clockwise(const int component);
     bool cache_clockwise_hole(const int component, const int hole);
 
-    template<typename EmitPixel>
-    void rasterize_component(const Polygon::Component &component, const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        std::vector<Polygon::Contour> transformed_holes;
-        for (const auto &hole : component.holes)
-        {
-            transformed_holes.push_back(Polygon::Contour { 
-                Transform2D::transform_points(hole.vertices, transform),
-                hole.clockwise 
-            });
-        }
+    void rasterize_component(const Polygon::Component &component, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
 
-        Polygon::Component transformed_component { 
-            Transform2D::transform_points(component.contour.vertices, transform),
-            component.contour.clockwise,
-            transformed_holes
-        };
-
-        std::vector<BarycentricTriangle> triangles { 
-            Triangulate::triangulate_polygon(transformed_component)
-        };
-
-        for (auto triangle : triangles)
-        {
-            Rasterize::rasterize_filled_triangle(triangle, color, emit_pixel);
-        }
-    }
     std::vector<Polygon::Component> components;
     static constexpr int CORNER_SEGMENTS = 8;
 };

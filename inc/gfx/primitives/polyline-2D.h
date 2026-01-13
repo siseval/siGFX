@@ -4,19 +4,16 @@
 #include "gfx/math/box2.h"
 #include "gfx/math/vec2.h"
 #include "gfx/math/matrix.h"
-#include "gfx/geometry/types/barycentric-triangle.h"
-#include "gfx/geometry/transform-2D.h"
-#include "gfx/geometry/triangulate.h"
-#include "gfx/geometry/types/polygon.h"
-#include "gfx/geometry/rasterize.h"
 
 namespace gfx
 {
 
-class Polyline2D : public PrimitiveTemplate<Polyline2D>
+class Polyline2D : public Primitive2D
 {
 
 public:
+
+    std::vector<Vec2i> rasterize(const Matrix3x3d &transform) const override;
 
     Box2d get_geometry_size() const override;
     Box2d get_axis_aligned_bounding_box(const Matrix3x3d &transform) const override;
@@ -94,124 +91,10 @@ public:
     inline void set_fill(const bool f) { do_fill = f; }
     inline bool get_fill() const { return do_fill; }
 
-    template<typename EmitPixel>
-    void rasterize(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        if (points.size() < 2)
-        {
-            return;
-        }
-
-        for (int i = 0; i < points.size() - 1; ++i)
-        {
-            if (segments_visible.size() > i && !segments_visible[i])
-            {
-                continue;
-            }
-            rasterize_edge(points[i], points[i + 1], transform, emit_pixel);
-        }
-
-        if (do_close)
-        {
-            rasterize_edge(points.back(), points.front(), transform, emit_pixel);
-        }
-
-        if (do_rounded_corners)
-        {
-            rasterize_rounded_corners(transform, emit_pixel);
-        }
-
-        if (do_fill)
-        {
-            std::vector<Vec2d> transformed_points { Transform2D::transform_points(points, transform) };
-
-            Polygon::Component polygon(transformed_points, clockwise);
-            std::vector<BarycentricTriangle> triangles { Triangulate::triangulate_polygon(polygon) };
-
-            for (const auto& triangle : triangles)
-            {
-                Rasterize::rasterize_filled_triangle(triangle, color, emit_pixel);
-            }
-        }
-    }
-
-    template<typename EmitPixel>
-    void rasterize_rounded_corner(const Vec2d pos, const double angle0, const double angle1, const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        std::vector<Vec2d> vertices;
-
-        for (int i = 0; i <= CORNER_SEGMENTS; ++i)
-        {
-            double progress { static_cast<double>(i) / static_cast<double>(CORNER_SEGMENTS) };
-            double theta { angle0 + (angle1 - angle0) * progress };
-
-            Vec2d vertex {
-                pos.x + (line_thickness / 2.0) * std::cos(theta),
-                pos.y + (line_thickness / 2.0) * std::sin(theta)
-            };
-
-            vertices.push_back(Transform2D::transform_point(vertex, transform));
-        }
-        Vec2d transformed_pos = Transform2D::transform_point(pos, transform);
-
-        for (int i = 0; i < vertices.size() - 1; ++i)
-        {
-            Rasterize::rasterize_filled_triangle({ transformed_pos, vertices[i], vertices[i + 1] }, color, emit_pixel);
-        }
-    }
-
-    template<typename EmitPixel>
-    void rasterize_rounded_corners(const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        for (int i = 0; i < points.size(); ++i)
-        {
-            Vec2d p0 { points[(i - 1 + points.size()) % points.size()] };
-            Vec2d p1 { points[i] };
-            Vec2d p2 { points[(i + 1) % points.size()] };
-
-            Vec2d normal0 { (p0 - p1).normal().normalize() };
-            Vec2d normal1 { (p1 - p2).normal().normalize() };
-
-            Vec2d between { ((p1 - p0) + (p1 - p2)).normalize() };
-
-            double angle0 { std::atan2(normal0.y, normal0.x) };
-            double angle1 { std::atan2(normal1.y, normal1.x) };
-
-            double angle_diff { angle1 - angle0 };
-            if (angle_diff <= 0) 
-            {
-                angle_diff += 2 * std::numbers::pi;
-            }
-
-            double angle_overlap = 0.1;
-            double pos_overlap = 0.2;
-
-            rasterize_rounded_corner(p1 - between * pos_overlap, angle0 - angle_overlap, angle0 + angle_diff + angle_overlap, transform, emit_pixel);
-        }
-    }
-
-    template<typename EmitPixel>
-    void rasterize_edge(const Vec2d start, const Vec2d end, const Matrix3x3d &transform, EmitPixel &&emit_pixel) const
-    {
-        double line_extent { line_thickness / 2.0 };
-        Vec2d normal { (end - start).normal().normalize() };
-
-        Vec2d offset { normal * line_extent };
-
-        Vec2d v0 { start + offset };
-        Vec2d v1 { start - offset };
-        Vec2d v2 { end + offset };
-        Vec2d v3 { end - offset };
-
-        v0 = Transform2D::transform_point(v0, transform);
-        v1 = Transform2D::transform_point(v1, transform);
-        v2 = Transform2D::transform_point(v2, transform);
-        v3 = Transform2D::transform_point(v3, transform);
-
-        Rasterize::rasterize_filled_triangle({ v0, v1, v2 }, color, emit_pixel);
-        Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, color, emit_pixel);
-    }
-
+    void rasterize_rounded_corner(const Vec2d pos, const double angle0, const double angle1, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
+    void rasterize_rounded_corners(const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
+    void rasterize_edge(const Vec2d start, const Vec2d end, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const;
+    
     std::vector<Vec2d> points;
     std::vector<bool> segments_visible;
     bool do_close = false;

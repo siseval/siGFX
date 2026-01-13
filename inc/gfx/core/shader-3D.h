@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/math/vec3.h"
 #include "gfx/core/types/color4.h"
+#include "gfx/math/vec3.h"
 #include "gfx/math/matrix.h"
 
 namespace gfx
@@ -14,23 +14,32 @@ public:
 
     struct VertInput
     {
-        Vec3d pos;
-        Vec3d normal;
+        std::vector<Vec3d> positions;
+        std::vector<Vec3d> normals;
+
+        Matrix4x4d model_matrix;
+        Matrix4x4d view_matrix;
+        Matrix4x4d projection_matrix;
+        Matrix4x4d mvp_matrix;
     };
 
     struct VertOutput
     {
-        Vec3d xyz;
-        double w;
-        Vec3d normal;
+        std::vector<Vec3d> xyz;
+        std::vector<double> w;
+        std::vector<Vec3d> normals;
     };
 
     struct FragInput
     {
-        Vec3d uvw;
-        double depth;
+        std::vector<Vec3d> uvw;
+        std::vector<double> depths;
+        std::vector<Vec3d> normals;
+        std::vector<Color4> colors;
+
         double t;
-        Vec3d normal;
+        Vec3d light_dir;
+        double ambient_intensity;
     };
 
     class VertShader
@@ -40,23 +49,6 @@ public:
 
         virtual VertOutput vert(const VertInput &input) const = 0;
 
-        void set_matrices(
-            const Matrix4x4d& model,
-            const Matrix4x4d& view,
-            const Matrix4x4d& projection)
-        {
-            model_matrix = model;
-            view_matrix = view;
-            projection_matrix = projection;
-            mvp_matrix = projection_matrix * view_matrix * model_matrix;
-        }
-
-    protected:
-
-        Matrix4x4d model_matrix;
-        Matrix4x4d view_matrix;
-        Matrix4x4d projection_matrix;
-        Matrix4x4d mvp_matrix;
     };
 
     class FragShader
@@ -64,31 +56,21 @@ public:
 
     public:
 
-        virtual Color4 frag(const FragInput &input) const = 0;
-
-        void set_light_direction(const Vec3d& dir)
-        {
-            light_dir = dir.normalize();
-        }
-
-        void set_ambient_intensity(const double intensity)
-        {
-            ambient_intensity = intensity;
-        }
-
-    protected:
-
-        Vec3d light_dir;
-        double ambient_intensity;
+        virtual std::vector<Color4> frag(const FragInput &input) const = 0;
 
     };
+
+    Shader3D(
+        std::shared_ptr<VertShader> vertex_shader,
+        std::shared_ptr<FragShader> fragment_shader
+    ) : vertex_shader(vertex_shader), fragment_shader(fragment_shader) {}
 
     VertOutput vert(const VertInput &input) const
     {
         return vertex_shader->vert(input);
     }
 
-    Color4 frag(const FragInput &input) const
+    std::vector<Color4> frag(const FragInput &input) const
     {
         return fragment_shader->frag(input);
     }

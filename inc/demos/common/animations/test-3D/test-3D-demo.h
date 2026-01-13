@@ -41,6 +41,8 @@ private:
     std::shared_ptr<gfx::Sphere3D> sphere;
     std::shared_ptr<gfx::Plane3D> floor_item;
 
+    std::vector<std::shared_ptr<gfx::Primitive3D>> scene_items;
+
     gfx::Vec2d prev_mouse_pos { 0.0, 0.0 };
 
     gfx::Vec3d camera_velocity { 0.0, 0.0, 0.0 };
