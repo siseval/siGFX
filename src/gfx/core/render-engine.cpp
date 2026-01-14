@@ -35,6 +35,26 @@ void RenderEngine::add_primitive(const std::shared_ptr<Primitive3D> primitive)
     render3D->add_item(primitive);
 }
 
+void RenderEngine::remove_primitive(const std::shared_ptr<Primitive2D> primitive)
+{
+    render2D->remove_item(primitive);
+}
+
+void RenderEngine::remove_primitive(const std::shared_ptr<Primitive3D> primitive)
+{
+    render3D->remove_item(primitive);
+}
+
+bool RenderEngine::contains_primitive(const std::shared_ptr<Primitive2D> primitive) const
+{
+    return render2D->contains_item(primitive);
+}
+
+bool RenderEngine::contains_primitive(const std::shared_ptr<Primitive3D> primitive) const
+{
+    return render3D->contains_item(primitive);
+}
+
 void RenderEngine::clear_scene()
 {
     render2D->clear_items();
@@ -201,51 +221,6 @@ bool RenderEngine::is_font_loaded(const std::string &name) const
     return render2D->is_font_loaded(name);
 }
 
-void RenderEngine::debug_viewer_enable(const bool enable)
-{
-    render2D->set_enable_debug_viewer(enable);
-}
-
-void RenderEngine::debug_viewer_show_aabb(const bool show)
-{
-    render2D->set_debug_viewer_show_aabb(show);
-}
-
-void RenderEngine::debug_viewer_show_obb(const bool show)
-{
-    render2D->set_debug_viewer_show_obb(show);
-}
-
-void RenderEngine::debug_viewer_show_anchor(const bool show)
-{
-    render2D->set_debug_viewer_show_anchor(show);
-}
-
-void RenderEngine::debug_viewer_set_font(const std::shared_ptr<FontTTF> font)
-{
-    render2D->set_debug_font(font);
-}
-
-bool RenderEngine::is_debug_viewer_enabled() const
-{
-    return render2D->get_enable_debug_viewer();
-}
-
-bool RenderEngine::is_debug_viewer_showing_aabb() const
-{
-    return render2D->get_debug_viewer_show_aabb();
-}
-
-bool RenderEngine::is_debug_viewer_showing_obb() const
-{
-    return render2D->get_debug_viewer_show_obb();
-}
-
-bool RenderEngine::is_debug_viewer_showing_anchor() const
-{
-    return render2D->get_debug_viewer_show_anchor();
-}
-
 void RenderEngine::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
 {
     surface = new_surface;
@@ -277,7 +252,6 @@ Color4 RenderEngine::get_clear_color() const
 {
     return surface->get_clear_color();
 }
-
 
 std::shared_ptr<Circle2D> RenderEngine::create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness) const
 {

@@ -27,6 +27,7 @@ void present_frame();
 
 void add_item(const std::shared_ptr<Primitive3D>& item);
 void remove_item(const std::shared_ptr<Primitive3D>& item);
+bool contains_item(const std::shared_ptr<Primitive3D>& item) const;
 void clear_items();
 
 std::shared_ptr<SceneGraph3D> get_scene_graph() const;

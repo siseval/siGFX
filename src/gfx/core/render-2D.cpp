@@ -8,7 +8,6 @@ Render2D::Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scalin
     surface(surface), 
     scene_graph(std::make_shared<SceneGraph2D>()), 
     font_manager(std::make_shared<FontManagerTTF>()),
-    debug_viewer(std::make_shared<DebugViewer>()),
     viewport_scaling(viewport_scaling) {}
 
 
@@ -17,16 +16,6 @@ void Render2D::draw_frame() const
     double t { std::chrono::duration<double, std::micro>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count() };
-
-    if (debug_viewer->is_enabled())
-    {
-        debug_viewer->populate({
-            scene_graph->get_global_transforms(),
-            1000000 / (t - last_frame_time_us),
-            scene_graph->num_items(),
-            get_resolution()
-        });
-    }
 
     last_frame_time_us = t;
 
@@ -148,31 +137,6 @@ void Render2D::load_font_directory(const std::filesystem::path &path)
     font_manager->load_font_directory(path);
 }
 
-void Render2D::set_enable_debug_viewer(const bool enable)
-{
-    debug_viewer->set_enabled(enable);
-}
-
-void Render2D::set_debug_viewer_show_aabb(const bool show)
-{
-    debug_viewer->set_show_aabb(show);
-}
-
-void Render2D::set_debug_viewer_show_obb(const bool show)
-{
-    debug_viewer->set_show_obb(show);
-}
-
-void Render2D::set_debug_viewer_show_anchor(const bool show)
-{
-    debug_viewer->set_show_anchor(show);
-}
-
-void Render2D::set_debug_font(const std::shared_ptr<FontTTF> font)
-{
-    debug_viewer->set_font(font);
-}
-
 void Render2D::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
 {
     surface = new_surface;
@@ -223,26 +187,6 @@ std::shared_ptr<FontTTF> Render2D::get_font(const std::string &name) const
     return font_manager->get_font(name);
 }
 
-bool Render2D::get_enable_debug_viewer() const
-{
-    return debug_viewer->is_enabled();
-}
-
-bool Render2D::get_debug_viewer_show_aabb() const
-{
-    return debug_viewer->get_show_aabb();
-}
-
-bool Render2D::get_debug_viewer_show_obb() const
-{
-    return debug_viewer->get_show_obb();
-}
-
-bool Render2D::get_debug_viewer_show_anchor() const
-{
-    return debug_viewer->get_show_anchor();
-}
-
 std::shared_ptr<SceneGraph2D> Render2D::get_scene_graph() const
 {
     return scene_graph;
@@ -258,24 +202,10 @@ std::shared_ptr<FontManagerTTF> Render2D::get_font_manager() const
     return font_manager;
 }
 
-int Render2D::get_transform_recalculation_count()
-{
-    return scene_graph->get_transform_recalculation_count();
-}
-
 std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_draw_queue() const
 {
     scene_graph->set_root_transform(get_global_transform());
     auto queue { scene_graph->get_draw_queue() };
-
-    if (debug_viewer->is_enabled())
-    {
-        auto debug_items { debug_viewer->get_debug_items() };
-        for (const auto &item : debug_items)
-        {
-            queue.emplace_back(std::make_pair(item, item->get_transform()));
-        }
-    }
 
     return queue;
 }

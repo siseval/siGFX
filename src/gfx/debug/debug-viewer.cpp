@@ -1,153 +1,173 @@
 #include "gfx/debug/debug-viewer.h"
 
+#include <numeric>
+
 namespace gfx
 {
 
-void DebugViewer::clear()
+void DebugViewer::update(std::shared_ptr<RenderEngine> render_engine)
 {
-    aabb_items.clear();
-    obb_items.clear();
-    anchor_items.clear();
+    clear(render_engine);
+    if (!enabled)
+    {
+        return;
+    }
+    populate(render_engine);
 }
 
-std::vector<std::shared_ptr<Primitive2D>> DebugViewer::get_debug_items() const
+void DebugViewer::populate(std::shared_ptr<RenderEngine> render_engine)
 {
-    std::vector<std::shared_ptr<Primitive2D>> items;
+    RendererInfo info { gather_renderer_info(render_engine) };
 
-    for (const auto& [id, item] : aabb_items)
+    if (font)
     {
-        items.push_back(item);
+        update_text(render_engine, info);
     }
-    
-    for (const auto& [id, item] : obb_items)
-    {
-        items.push_back(item);
-    }
-
-    for (const auto& [id, item] : anchor_items)
-    {
-        items.push_back(item);
-    }
-
-    if (fps_text_item)
-    {
-        items.push_back(fps_text_item);
-    }
-
-    if (num_items_text_item)
-    {
-        items.push_back(num_items_text_item);
-    }
-
-    return items; 
 }
 
-void DebugViewer::populate(const DebugInfo &info)
+DebugViewer::RendererInfo DebugViewer::gather_renderer_info(const std::shared_ptr<RenderEngine> render_engine)
 {
-    clear(); 
+    double current_time_ms { std::chrono::duration<double, std::milli>(
+        std::chrono::high_resolution_clock::now().time_since_epoch()
+    ).count() };
 
-    for (const auto& [primitive, transform] : info.items)
+    fps_history.push_back(current_time_ms - last_frame_timestamp_ms);
+    if (fps_history.size() > fps_history_max_size)
     {
-        if (!primitive->is_visible())
-        {
-            continue;
-        }
-
-        if (show_aabb)
-        {
-            Box2d aabb { primitive->get_axis_aligned_bounding_box(transform) };
-            if (aabb_items.find(primitive->get_id()) == aabb_items.end())
-            {
-                auto box_primitive { std::make_shared<Polyline2D>() };
-                box_primitive->set_color(bounds_color);
-                box_primitive->set_line_thickness(1.0);
-                box_primitive->set_close(true);
-                box_primitive->set_points(aabb.get_corners());
-                aabb_items[primitive->get_id()] = box_primitive;
-            }
-            else
-            {
-                auto box_primitive = aabb_items[primitive->get_id()];
-                box_primitive->set_points(aabb.get_corners());
-            }
-        }
-
-        if (show_obb)
-        {
-            OBB2D obb { primitive->get_oriented_bounding_box(transform) };
-            if (obb_items.find(primitive->get_id()) == obb_items.end())
-            {
-                auto box_primitive { std::make_shared<Polyline2D>() };
-                box_primitive->set_color(bounds_color);
-                box_primitive->set_line_thickness(1.0);
-                box_primitive->set_close(true);
-                box_primitive->set_points(obb.get_corners());
-                obb_items[primitive->get_id()] = box_primitive;
-            }
-            else
-            {
-                auto box_primitive = obb_items[primitive->get_id()];
-                box_primitive->set_points(obb.get_corners());
-            }
-        }
-
-        if (show_anchor)
-        {
-            Vec2d anchor_world = primitive->get_position();
-            if (anchor_items.find(primitive->get_id()) == anchor_items.end())
-            {
-                auto anchor_primitive { std::make_shared<Circle2D>() };
-                anchor_primitive->set_color(anchor_color);
-                anchor_primitive->set_radius(1.0);
-                anchor_primitive->set_filled(true);
-                anchor_primitive->set_anchor(0.5, 0.5);
-                anchor_primitive->set_position(anchor_world);
-                anchor_items[primitive->get_id()] = anchor_primitive;
-            }
-            else
-            {
-                auto anchor_primitive = anchor_items[primitive->get_id()];
-                anchor_primitive->set_position(anchor_world);
-            }
-        }
-
-        if (!font)
-        {
-            return;
-        }
+        fps_history.pop_front();
     }
+    double acc { std::accumulate(fps_history.begin(), fps_history.end(), 0.0) };
+    double fps { acc == 0.0 ? 0.0 : fps_history.size() / (acc / 1000.0) };
 
-    double text_scale = 1.0; //(info.resolution.y / font_size) * 0.05;
+    RendererInfo info {
+        .fps = fps,
+        .num_items = render_engine->num_primitives()
+    };
+
+    last_frame_timestamp_ms = current_time_ms;
+    return info;
+}
+
+void DebugViewer::update_text(std::shared_ptr<RenderEngine> render_engine, const RendererInfo& info)
+{
+    std::string debug_text;
 
     if (show_fps)
     {
-        if (!fps_text_item)
-        {
-            fps_text_item = std::make_shared<Text2D>();
-            fps_text_item->set_font(font);
-            fps_text_item->set_font_size(font_size);
-            // fps_text_item->set_smoothing_radius(0.6);
-            fps_text_item->set_color(text_color);
-            fps_text_item->set_scale(text_scale);
-            fps_text_item->set_position(5.0, 5.0);
-        }
-        fps_text_item->set_text("FPS: " + std::to_string(static_cast<int>(info.fps)));
+        debug_text += "fps: " + std::to_string(static_cast<int>(info.fps)) + "\n";
     }
 
     if (show_num_items)
     {
-        if (!num_items_text_item)
-        {
-            num_items_text_item = std::make_shared<Text2D>();
-            num_items_text_item->set_font(font);
-            num_items_text_item->set_font_size(font_size);
-            // num_items_text_item->set_smoothing_radius(0.6);
-            num_items_text_item->set_color(text_color);
-            num_items_text_item->set_scale(text_scale);
-            num_items_text_item->set_position(5.0, font_size * text_scale + 5.0);
-        }
-        num_items_text_item->set_text("Items: " + std::to_string(info.num_items));
+        debug_text += "items: " + std::to_string(info.num_items) + "\n";
     }
+
+    if (!text)
+    {
+        text = render_engine->create_text(
+            10.0,
+            10.0,
+            debug_text,
+            font,
+            font_size,
+            text_color
+        );
+    }
+    else
+    {
+        text->set_text(debug_text);
+        text->set_font(font);
+        text->set_font_size(font_size);
+        text->set_color(text_color);
+    }
+
+    if (!render_engine->contains_primitive(text))
+    {
+        render_engine->add_primitive(text);
+    }
+}
+
+int DebugViewer::num_debug_items()
+{
+    return show_fps || show_num_items;
+}
+
+void DebugViewer::clear(std::shared_ptr<RenderEngine> render_engine)
+{
+    if (text && render_engine->contains_primitive(text))
+    {
+        render_engine->remove_primitive(text);
+    }
+}
+
+void DebugViewer::set_enabled(const bool enable)
+{
+    enabled = enable;
+}
+
+void DebugViewer::set_font(const std::shared_ptr<FontTTF> fnt)
+{
+    font = fnt;
+}
+
+void DebugViewer::set_font_size(const double size)
+{
+    font_size = size;
+}
+
+void DebugViewer::set_text_color(const Color4 color)
+{
+    text_color = color;
+}
+
+void DebugViewer::set_show_fps(const bool show)
+{
+    show_fps = show;
+}
+
+void DebugViewer::set_show_num_items(const bool show)
+{
+    show_num_items = show;
+}
+
+void DebugViewer::set_text_position(const Vec2d position)
+{
+    text_position = position;
+}
+
+bool DebugViewer::get_enabled() const
+{
+    return enabled;
+}
+
+std::shared_ptr<FontTTF> DebugViewer::get_font() const
+{
+    return font;
+}
+
+double DebugViewer::get_font_size() const
+{
+    return font_size;
+}
+
+Color4 DebugViewer::get_text_color() const
+{
+    return text_color;
+}
+
+bool DebugViewer::get_show_fps() const
+{
+    return show_fps;
+}
+
+bool DebugViewer::get_show_num_items() const
+{
+    return show_num_items;
+}
+
+Vec2d DebugViewer::get_text_position() const
+{
+    return text_position;
 }
 
 

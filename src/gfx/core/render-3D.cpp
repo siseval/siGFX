@@ -7,6 +7,11 @@
 namespace gfx
 {
 
+Render3D::Render3D(std::shared_ptr<RenderSurface> surface) :
+    surface(surface),
+    scene_graph(std::make_shared<SceneGraph3D>()) {}
+
+
 void Render3D::draw_frame()
 {
     Vec2i resolution { surface->get_resolution() };
@@ -164,12 +169,6 @@ void Render3D::draw_frame()
     }
 }
 
-Render3D::Render3D(std::shared_ptr<RenderSurface> surface) :
-    surface(surface),
-    scene_graph(std::make_shared<SceneGraph3D>())
-{
-}
-
 void Render3D::clear_frame()
 {
     surface->clear_frame_buffer();
@@ -236,6 +235,11 @@ void Render3D::add_item(const std::shared_ptr<Primitive3D>& item)
 void Render3D::remove_item(const std::shared_ptr<Primitive3D>& item)
 {
     scene_graph->remove_item(item);
+}
+
+bool Render3D::contains_item(const std::shared_ptr<Primitive3D>& item) const
+{
+    return scene_graph->contains_item(item);
 }
 
 void Render3D::clear_items()

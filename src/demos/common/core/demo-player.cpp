@@ -18,7 +18,6 @@ using namespace gfx;
 void DemoPlayer::init()
 {
     renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
-    renderer->debug_viewer_set_font(renderer->get_font("gohu-regular"));
 
     demos.emplace_back(std::make_shared<Test3DDemo>(renderer));
     demos.emplace_back(std::make_shared<StarDemo>(renderer));
@@ -30,6 +29,8 @@ void DemoPlayer::init()
     demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
     demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
     demos.emplace_back(std::make_shared<SpaceDemo>(renderer));
+
+    debug_viewer.set_font(renderer->get_font("gohu-regular"));
 
     cycle_demo(0);
 }
@@ -50,6 +51,8 @@ void DemoPlayer::run()
         demos[current_demo]->render_frame(dt_sec);
         demos[current_demo]->set_last_frame_us(now_us - last_frame_timestamp_us);
         last_frame_timestamp_us = now_us;
+
+        debug_viewer.update(renderer);
 
         if (show_info)
         {
@@ -82,17 +85,17 @@ void DemoPlayer::handle_input(const int input)
             show_debug = !show_debug;
             break;
         case '4':
-            renderer->debug_viewer_enable(!renderer->is_debug_viewer_enabled());
+            debug_viewer.set_enabled(!debug_viewer.get_enabled());
             break;
-        case '5':
-            renderer->debug_viewer_show_aabb(!renderer->is_debug_viewer_showing_aabb());
-            break;
-        case '6':
-            renderer->debug_viewer_show_obb(!renderer->is_debug_viewer_showing_obb());
-            break;
-        case '7':
-            renderer->debug_viewer_show_anchor(!renderer->is_debug_viewer_showing_anchor());
-            break;
+        // case '5':
+        //     renderer->debug_viewer_show_aabb(!renderer->is_debug_viewer_showing_aabb());
+        //     break;
+        // case '6':
+        //     renderer->debug_viewer_show_obb(!renderer->is_debug_viewer_showing_obb());
+        //     break;
+        // case '7':
+        //     renderer->debug_viewer_show_anchor(!renderer->is_debug_viewer_showing_anchor());
+        //     break;
         case 'N':
             cycle_demo(1);
             break;

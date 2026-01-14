@@ -3,9 +3,20 @@
 namespace gfx
 {
 
-OBB2D::OBB2D() : origin { 0, 0 }, side_x { 1, 0 }, side_y { 0, 1 } {}
-OBB2D::OBB2D(const Vec2d origin, const Vec2d side_x, const Vec2d side_y) : origin(origin), side_x(side_x), side_y(side_y) {}
-OBB2D::OBB2D(const OBB2D &other) : origin(other.origin), side_x(other.side_x), side_y(other.side_y) {}
+OBB2D::OBB2D() : 
+    origin { 0, 0 }, 
+    side_x { 0, 0 }, 
+    side_y { 0, 0 } {}
+
+OBB2D::OBB2D(const Vec2d origin, const Vec2d side_x, const Vec2d side_y) : 
+    origin(origin), 
+    side_x(side_x), 
+    side_y(side_y) {}
+
+OBB2D::OBB2D(const OBB2D &other) : 
+    origin(other.origin), 
+    side_x(other.side_x), 
+    side_y(other.side_y) {}
 
 Vec2d OBB2D::get_center() const
 {

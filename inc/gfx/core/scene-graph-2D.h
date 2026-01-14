@@ -56,17 +56,10 @@ public:
     int num_items() const;
     bool contains_item(const std::shared_ptr<Primitive2D> item) const;
 
-    int get_transform_recalculation_count() const;
-
-    double longest_recalc_time;
-    double previous_recalc_time;
-
 private:
 
     std::shared_ptr<SceneNode2D> root;
     std::unordered_map<UUID, std::shared_ptr<SceneNode2D>> nodes;
-
-    int transform_recalculation_count = 0;
 
 };
 

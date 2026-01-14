@@ -24,6 +24,10 @@ public:
 
     void add_primitive(const std::shared_ptr<Primitive2D> primitive);
     void add_primitive(const std::shared_ptr<Primitive3D> primitive);
+    void remove_primitive(const std::shared_ptr<Primitive2D> primitive);
+    void remove_primitive(const std::shared_ptr<Primitive3D> primitive);
+    bool contains_primitive(const std::shared_ptr<Primitive2D> primitive) const;
+    bool contains_primitive(const std::shared_ptr<Primitive3D> primitive) const;
     void clear_scene();
     void clear_3D_scene();
     void clear_2D_scene();
@@ -65,17 +69,6 @@ public:
     std::filesystem::path get_font_directory() const;
     std::shared_ptr<FontTTF> get_font(const std::string &name) const;
     bool is_font_loaded(const std::string &name) const;
-
-    void debug_viewer_enable(const bool enable);
-    void debug_viewer_show_aabb(const bool show);
-    void debug_viewer_show_obb(const bool show);
-    void debug_viewer_show_anchor(const bool show);
-    void debug_viewer_set_font(const std::shared_ptr<FontTTF> font);
-
-    bool is_debug_viewer_enabled() const;
-    bool is_debug_viewer_showing_aabb() const;
-    bool is_debug_viewer_showing_obb() const;
-    bool is_debug_viewer_showing_anchor() const;
 
     void set_render_surface(const std::shared_ptr<RenderSurface> new_surface);
     std::shared_ptr<RenderSurface> get_render_surface() const;

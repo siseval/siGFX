@@ -45,8 +45,6 @@ void SceneGraph2D::update_global_transforms()
 {
     double t0 { static_cast<double>(clock()) };
 
-    transform_recalculation_count++;
-
     std::stack<std::pair<std::shared_ptr<SceneNode2D>, Matrix3x3d>> stack;
 
     stack.push({ get_root(), get_root()->global_transform });
@@ -75,8 +73,6 @@ void SceneGraph2D::update_global_transforms()
         }
     }
     double time { static_cast<double>(clock()) - t0 };
-    longest_recalc_time = time > longest_recalc_time ? time : longest_recalc_time;
-    previous_recalc_time = time;
 }
 
 Matrix3x3d SceneGraph2D::get_global_transform(const std::shared_ptr<Primitive2D> primitive)
@@ -201,11 +197,6 @@ int SceneGraph2D::num_items() const
 bool SceneGraph2D::contains_item(const std::shared_ptr<Primitive2D> item) const
 {
     return nodes.contains(item->get_id());
-}
-
-int SceneGraph2D::get_transform_recalculation_count() const
-{
-    return transform_recalculation_count;
 }
 
 }

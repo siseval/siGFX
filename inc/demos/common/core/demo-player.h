@@ -1,9 +1,9 @@
 #pragma once
 
-#include <gfx/core/render-2D.h>
-#include <gfx/core/render-3D.h>
-
 #include "demos/common/core/gfx-demo.h"
+
+#include <gfx/core/render-engine.h>
+#include <gfx/debug/debug-viewer.h>
 
 namespace demos
 {
@@ -35,6 +35,8 @@ protected:
     std::shared_ptr<gfx::RenderEngine> renderer;
     std::vector<std::shared_ptr<GfxDemo>> demos;
     int current_demo = 0;
+
+    gfx::DebugViewer debug_viewer;
 
     bool show_info = true;
     bool show_debug = true;
