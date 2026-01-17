@@ -80,18 +80,18 @@ namespace gfx
 
         TextAlignment alignment = TextAlignment::LEFT;
 
-        Vec2d text_box{-1.0, -1.0};
+        Vec2d text_box { -1.0, -1.0 };
 
         std::string text;
         std::shared_ptr<FontTTF> font;
 
-        double font_size{0};
-        double line_height_multiplier{1.2};
+        double font_size { 0 };
+        double line_height_multiplier { 1.2 };
 
-        double smoothing_radius{0.0};
+        double smoothing_radius { 0.0 };
 
-        mutable bool edges_dirty{true};
-        mutable bool size_dirty{true};
+        mutable bool edges_dirty { true };
+        mutable bool size_dirty { true };
 
         mutable Box2d cached_geometry_size;
         mutable std::unordered_map<uint32_t, std::vector<FontTTF::ContourEdge>> cached_glyph_edges;

@@ -15,13 +15,13 @@ namespace demos
 
             for (const auto &uv : input.uv)
             {
-                const double t{input.t};
+                const double t { input.t };
 
-                double diagonal{uv.x + uv.y + t};
+                double diagonal { uv.x + uv.y + t };
                 diagonal = std::fmod(diagonal, std::numbers::pi);
 
-                double r{std::sin(diagonal)};
-                double g{1 - std::sin(diagonal)};
+                double r { std::sin(diagonal) };
+                double g { 1 - std::sin(diagonal) };
                 double b = 0.5;
 
                 out.emplace_back(r, g, b);
@@ -38,19 +38,19 @@ namespace demos
         render2D->set_clear_color(Color4(0.2, 0.2, 0.2, 1.0));
         // renderer->set_clear_color(Color4::black());
 
-        const Vec2d center{render2D->center()};
+        const Vec2d center { render2D->center() };
 
         if (render2D->fonts_empty())
         {
             render2D->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
         }
 
-        const auto font_1{render2D->get_font("eva-classic")};
-        auto font_2{render2D->get_font("comic-sans")};
+        const auto font_1 { render2D->get_font("eva-classic") };
+        auto font_2 { render2D->get_font("comic-sans") };
 
-        const Vec2d top_left{10.0, center.y - 50.0};
+        const Vec2d top_left { 10.0, center.y - 50.0 };
 
-        const std::string top_text{"NEON\nGENESIS"};
+        const std::string top_text { "NEON\nGENESIS" };
         const auto top_item = render2D->create_text(
             top_left,
             top_text,
@@ -63,11 +63,11 @@ namespace demos
         top_item->set_anchor(0.0, 0.5);
         top_item->set_line_height_multiplier(0.9);
 
-        const double y_offset{14.0 * top_item->get_scale().y * 2.0 * 0.9};
+        const double y_offset { 14.0 * top_item->get_scale().y * 2.0 * 0.9 };
 
-        const std::string bottom_text{"EVANGELION"};
+        const std::string bottom_text { "EVANGELION" };
         const auto bottom_item = render2D->create_text(
-            top_left + Vec2d{0.0, y_offset},
+            top_left + Vec2d { 0.0, y_offset },
             bottom_text,
             font_1,
             14.0,
@@ -101,8 +101,8 @@ namespace demos
         double sum = 0.0;
         for (int i = 0; i < vertices.size(); ++i)
         {
-            const Vec2d p0{vertices[i]};
-            const Vec2d p1{vertices[(i + 1) % vertices.size()]};
+            const Vec2d p0 { vertices[i] };
+            const Vec2d p1 { vertices[(i + 1) % vertices.size()] };
             sum += (p1.x - p0.x) * (p1.y + p0.y);
         }
         return sum < 0.0;
@@ -110,9 +110,9 @@ namespace demos
 
     void TextDemo::render_frame(const double dt)
     {
-        const double t0{time_us()};
-        const double time_ms{t0 / 1000.0};
-        const double t{time_ms / 1000.0};
+        const double t0 { time_us() };
+        const double time_ms { t0 / 1000.0 };
+        const double t { time_ms / 1000.0 };
 
         const double scale = 3.0 + 1.2 * std::sin(time_ms * 0.002);
 

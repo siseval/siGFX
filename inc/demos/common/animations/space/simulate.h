@@ -3,19 +3,19 @@
 namespace demos
 {
 
-class Body;
-class SpaceDemo;
+    class Body;
+    class SpaceDemo;
 
-class Simulate
-{
+    class Simulate
+    {
 
-public:
+    public:
 
-    static void solar_system(SpaceDemo &demo);
-    static void three_body_problem(SpaceDemo &demo);
-    static void chaos(SpaceDemo &demo);
-    static void binary_system(SpaceDemo &demo);
-};
+        static void solar_system(SpaceDemo &demo);
+        static void three_body_problem(SpaceDemo &demo);
+        static void chaos(SpaceDemo &demo);
+        static void binary_system(SpaceDemo &demo);
+    };
 
 
 }

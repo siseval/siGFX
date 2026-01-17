@@ -20,7 +20,7 @@ namespace gfx
 
         Color4 get_pixel(Vec2i pos) const;
 
-        void fill(Color4 color = Color4{0, 0, 0, 255});
+        void fill(Color4 color = Color4 { 0, 0, 0, 255 });
         void compress_colors(const std::vector<Color4> &palette);
 
         static Bitmap decode_bmp(const std::string &filename);

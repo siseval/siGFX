@@ -67,11 +67,11 @@ namespace gfx
 
         std::vector<Vec2d> points;
         std::vector<bool> segments_visible;
-        bool do_close{false};
-        bool do_fill{false};
-        double line_thickness{1.0};
-        bool do_rounded_corners{false};
-        bool clockwise{false};
-        static constexpr int CORNER_SEGMENTS{8};
+        bool do_close { false };
+        bool do_fill { false };
+        double line_thickness { 1.0 };
+        bool do_rounded_corners { false };
+        bool clockwise { false };
+        static constexpr int CORNER_SEGMENTS { 8 };
     };
 }

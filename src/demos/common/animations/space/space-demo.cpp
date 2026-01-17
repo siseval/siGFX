@@ -17,18 +17,23 @@ namespace demos
         render2D->get_render_surface()->clear_palette();
         hovered_body = nullptr;
 
-        const std::vector<Vec2d> arrow_points{{-20, -20}, {30, 0}, {-20, 20}, {0, 0}};
-        spawn_velocity_indicator_head = render2D->create_polyline({0, 0}, arrow_points, Color4{255, 255, 255}, 2.0);
+        const std::vector<Vec2d> arrow_points { { -20, -20 }, { 30, 0 }, { -20, 20 }, { 0, 0 } };
+        spawn_velocity_indicator_head = render2D->create_polyline(
+            { 0, 0 },
+            arrow_points,
+            Color4 { 255, 255, 255 },
+            2.0
+        );
         spawn_velocity_indicator_head->set_close(true);
         spawn_velocity_indicator_head->set_rounded_corners(true);
 
         spawn_velocity_indicator_line = render2D->
-            create_polyline({0, 0}, {{0, 0}, {10, 0}}, Color4{255, 255, 255}, 2.0);
+            create_polyline({ 0, 0 }, { { 0, 0 }, { 10, 0 } }, Color4 { 255, 255, 255 }, 2.0);
         spawn_velocity_indicator_line->set_rounded_corners(true);
 
-        spawn_radius_indicator = render2D->create_ellipse({0, 0}, 10.0, Color4{255, 255, 255}, 2.0);
-        spawn_radius_indicator->set_anchor({0.5, 0.5});
-        spawn_radius_indicator_inner = render2D->create_ellipse({0, 0}, 10.0, Color4{200, 200, 200}, 2.0);
+        spawn_radius_indicator = render2D->create_ellipse({ 0, 0 }, Vec2d(10.0), Color4 { 255, 255, 255 }, 2.0);
+        spawn_radius_indicator->set_anchor({ 0.5, 0.5 });
+        spawn_radius_indicator_inner = render2D->create_ellipse({ 0, 0 }, Vec2d(10.0), Color4 { 200, 200, 200 }, 2.0);
         spawn_radius_indicator_inner->set_filled(true);
 
         render2D->add_item(spawn_velocity_indicator_head);
@@ -36,12 +41,22 @@ namespace demos
         render2D->add_item(spawn_radius_indicator);
         render2D->add_item(spawn_radius_indicator_inner, spawn_radius_indicator);
 
-        const std::vector<Vec2d> bracket_points{{20, 0}, {0, 20}, {0, 90,}, {20, 110}};
-        left_bracket = render2D->create_polyline({0, 0}, bracket_points, Color4{255, 255, 255}, min_bracket_thickness);
-        right_bracket = render2D->create_polyline({0, 0}, bracket_points, Color4{255, 255, 255}, min_bracket_thickness);
+        const std::vector<Vec2d> bracket_points { { 20, 0 }, { 0, 20 }, { 0, 90, }, { 20, 110 } };
+        left_bracket = render2D->create_polyline(
+            { 0, 0 },
+            bracket_points,
+            Color4 { 255, 255, 255 },
+            min_bracket_thickness
+        );
+        right_bracket = render2D->create_polyline(
+            { 0, 0 },
+            bracket_points,
+            Color4 { 255, 255, 255 },
+            min_bracket_thickness
+        );
         right_bracket->set_rotation(std::numbers::pi);
-        left_bracket->set_anchor({0.5, 0.5});
-        right_bracket->set_anchor({0.5, 0.5});
+        left_bracket->set_anchor({ 0.5, 0.5 });
+        right_bracket->set_anchor({ 0.5, 0.5 });
         left_bracket->set_rounded_corners(true);
         right_bracket->set_rounded_corners(true);
         render2D->add_item(left_bracket);
@@ -52,13 +67,13 @@ namespace demos
 
     void SpaceDemo::render_frame(const double dt)
     {
-        const double t0{time_us()};
+        const double t0 { time_us() };
 
         t_sec += dt;
 
         physics_process(dt * time_scale);
 
-        const double time_lerp{std::min(time_accumulator / PHYSICS_TIME_STEP, 1.0)};
+        const double time_lerp { std::min(time_accumulator / PHYSICS_TIME_STEP, 1.0) };
         handle_camera(dt, time_lerp);
         update_render_items(time_lerp);
         update_trails(time_lerp);
@@ -84,7 +99,7 @@ namespace demos
 
         if (get_tracked_body())
         {
-            RenderBody render_body{body_items.at(get_tracked_body())};
+            RenderBody render_body { body_items.at(get_tracked_body()) };
             camera.end_pos = body_interpolated_pos(get_tracked_body(), time_lerp);
         }
 
@@ -99,7 +114,7 @@ namespace demos
 
     void SpaceDemo::handle_hovered_body(const double dt, const double time_lerp)
     {
-        const auto previous_render_body{hovered_body};
+        const auto previous_render_body { hovered_body };
         if (hovered_time >= hovered_poll_time)
         {
             hovered_body = get_closest_body_screenspace(mouse_pos, max_hovered_distance, 2.0, time_lerp);
@@ -173,13 +188,13 @@ namespace demos
         }
         for (const auto &[body, render] : body_items)
         {
-            const auto trail{render.trail};
-            std::vector<Vec2d> &trail_points_world{body_trails[body]};
+            const auto trail { render.trail };
+            std::vector<Vec2d> &trail_points_world { body_trails[body] };
 
-            Vec2d trail_pos_world{Vec2d::lerp(render.previous_pos, body->get_position(), time_lerp)};
+            Vec2d trail_pos_world { Vec2d::lerp(render.previous_pos, body->get_position(), time_lerp) };
 
-            const double trail_point_spacing{view_bounds.size().length() * 0.01};
-            const double dist_to_last_point{Vec2d::distance(trail_points_world.back(), trail_pos_world)};
+            const double trail_point_spacing { view_bounds.size().length() * 0.01 };
+            const double dist_to_last_point { Vec2d::distance(trail_points_world.back(), trail_pos_world) };
             if (dist_to_last_point > trail_point_spacing)
             {
                 trail_points_world.erase(trail_points_world.begin());
@@ -202,14 +217,14 @@ namespace demos
 
             for (int i = 1; i < trail_points_world.size(); ++i)
             {
-                const Vec2d trail_point_screen{
+                const Vec2d trail_point_screen {
                     units::metres_to_pixels(
                         trail_points_world[i] - view_bounds.min,
                         view_bounds.size(),
                         get_resolution()
                     )
                 };
-                const double margin{render2D->get_resolution().length() * 1.0};
+                const double margin { render2D->get_resolution().length() * 1.0 };
                 if (trail_point_screen.x < -margin || trail_point_screen.x > get_resolution().x + margin ||
                     trail_point_screen.y < -margin || trail_point_screen.y > get_resolution().y + margin)
                 {
@@ -220,8 +235,8 @@ namespace demos
             }
             for (int i = 0; i < trail->get_num_points(); ++i)
             {
-                const Vec2d point{trail->get_point(i)};
-                const double margin{render2D->get_resolution().length() * 0.1};
+                const Vec2d point { trail->get_point(i) };
+                const double margin { render2D->get_resolution().length() * 0.1 };
                 if (point.x < -margin || point.x > get_resolution().x + margin ||
                     point.y < -margin || point.y > get_resolution().y + margin)
                 {
@@ -246,11 +261,13 @@ namespace demos
     {
         for (const auto &[body, render] : body_items)
         {
-            const auto ellipse{render.ellipse};
+            const auto ellipse { render.ellipse };
 
-            Vec2d pos_lerp{Vec2d::lerp(render.previous_pos, body->get_position(), time_lerp)};
-            const Vec2d pos{units::metres_to_pixels(pos_lerp - view_bounds.min, view_bounds.size(), get_resolution())};
-            Vec2d radius{units::metres_to_pixels(body->get_radius(), view_bounds.size(), get_resolution())};
+            Vec2d pos_lerp { Vec2d::lerp(render.previous_pos, body->get_position(), time_lerp) };
+            const Vec2d pos {
+                units::metres_to_pixels(pos_lerp - view_bounds.min, view_bounds.size(), get_resolution())
+            };
+            Vec2d radius { units::metres_to_pixels(Vec2d(body->get_radius()), view_bounds.size(), get_resolution()) };
 
             if (pos.x + radius.x < 0 || pos.x - radius.x > get_resolution().round().x ||
                 pos.y + radius.y < 0 || pos.y - radius.y > get_resolution().round().y)
@@ -262,7 +279,7 @@ namespace demos
             ellipse->set_rotation(ellipse->get_rotation() + 0.005);
             ellipse->set_visible(true);
             ellipse->set_position(pos);
-            ellipse->set_radius({radius.x, radius.y * 0.985});
+            ellipse->set_radius({ radius.x, radius.y * 0.985 });
             ellipse->set_color(body->get_color());
         }
     }
@@ -285,9 +302,9 @@ namespace demos
 
             spawn_radius_indicator->set_position(spawn_screen_pos);
 
-            const double radius{Vec2d::distance(spawn_screen_pos, mouse_pos)};
-            spawn_radius_indicator->set_radius(radius);
-            spawn_radius_indicator_inner->set_radius(radius);
+            const double radius { Vec2d::distance(spawn_screen_pos, mouse_pos) };
+            spawn_radius_indicator->set_radius(Vec2d(radius));
+            spawn_radius_indicator_inner->set_radius(Vec2d(radius));
         }
         else if (spawn_workflow_state == SpawnWorkflowState::VelocitySelection)
         {
@@ -296,13 +313,13 @@ namespace demos
             spawn_radius_indicator->set_visible(true);
             spawn_radius_indicator_inner->set_visible(true);
 
-            const Vec2d mouse_screen_pos{mouse_pos};
+            const Vec2d mouse_screen_pos { mouse_pos };
 
-            const Vec2d dir{(mouse_screen_pos - spawn_screen_pos).normalize()};
-            const Vec2d line_origin{spawn_screen_pos + dir * spawn_radius_indicator->get_radius().x};
-            const double line_length{Vec2d::distance(mouse_screen_pos, line_origin)};
+            const Vec2d dir { (mouse_screen_pos - spawn_screen_pos).normalize() };
+            const Vec2d line_origin { spawn_screen_pos + dir * spawn_radius_indicator->get_radius().x };
+            const double line_length { Vec2d::distance(mouse_screen_pos, line_origin) };
 
-            const double scale_t{
+            const double scale_t {
                 std::min(line_length / spawn_radius_indicator->get_line_thickness(), 1.0)
             };
             spawn_velocity_indicator_line->set_line_thickness(
@@ -312,7 +329,7 @@ namespace demos
             spawn_velocity_indicator_line->set_position(line_origin);
             spawn_velocity_indicator_line->set_point(1, mouse_screen_pos - line_origin);
 
-            const double angle{dir.angle()};
+            const double angle { dir.angle() };
             spawn_velocity_indicator_head->set_rotation(angle);
             spawn_velocity_indicator_head->set_position(mouse_screen_pos);
             spawn_velocity_indicator_head->set_scale(
@@ -356,18 +373,18 @@ namespace demos
     {
         const auto shape = std::make_shared<Ellipse2D>();
         shape->set_filled(true);
-        shape->set_anchor({0.5, 0.5});
+        shape->set_anchor({ 0.5, 0.5 });
         render2D->add_item(shape);
 
         const auto trail = render2D->create_polyline(
-            {0, 0},
-            std::vector<Vec2d>(trail_length, {0, 0}),
+            { 0, 0 },
+            std::vector<Vec2d>(trail_length, { 0, 0 }),
             Color4(1.0, 1.0, 1.0),
             1.0
         );
         render2D->add_item(trail);
 
-        RenderBody render_body{shape, trail};
+        RenderBody render_body { shape, trail };
 
         auto body = std::make_shared<Body>(name, position, velocity, radius, mass, locked, color);
 
@@ -478,7 +495,7 @@ namespace demos
                 spawn_velocity * spawn_velocity_multiplier,
                 spawn_radius.length(),
                 spawn_radius.length() * spawn_mass_multiplier,
-                Color4{200, 200, 255}
+                Color4 { 200, 200, 255 }
             );
         }
     }
@@ -528,8 +545,8 @@ namespace demos
 
     Vec2d SpaceDemo::get_world_pos(const Vec2d screen_pos) const
     {
-        const Vec2d resolution{get_resolution()};
-        return view_bounds.min + Vec2d{
+        const Vec2d resolution { get_resolution() };
+        return view_bounds.min + Vec2d {
             screen_pos.x / resolution.x * view_bounds.size().x,
             screen_pos.y / resolution.y * view_bounds.size().y
         };
@@ -537,25 +554,25 @@ namespace demos
 
     void SpaceDemo::set_view_pos(const Vec2d pos)
     {
-        const Vec2d size{view_bounds.size()};
+        const Vec2d size { view_bounds.size() };
         view_bounds.min = pos - size * view_anchor;
         view_bounds.max = view_bounds.min + size;
     }
 
     void SpaceDemo::set_view_size(const double width)
     {
-        const Vec2d anchor_pos{view_bounds.min + view_bounds.size() * view_anchor};
-        const Vec2d resolution{get_resolution()};
-        view_bounds.min = anchor_pos - Vec2d{
+        const Vec2d anchor_pos { view_bounds.min + view_bounds.size() * view_anchor };
+        const Vec2d resolution { get_resolution() };
+        view_bounds.min = anchor_pos - Vec2d {
             width * view_anchor.x,
             width * resolution.y / resolution.x * view_anchor.y
         };
-        view_bounds.max = view_bounds.min + Vec2d{width, (width * resolution.y / resolution.x)};
+        view_bounds.max = view_bounds.min + Vec2d { width, (width * resolution.y / resolution.x) };
     }
 
     void SpaceDemo::zoom(const double factor)
     {
-        const Vec2d anchor_pos{view_bounds.min + view_bounds.size() * view_anchor};
+        const Vec2d anchor_pos { view_bounds.min + view_bounds.size() * view_anchor };
         view_bounds.min = anchor_pos - (anchor_pos - view_bounds.min) * factor;
         view_bounds.max = anchor_pos + (view_bounds.max - anchor_pos) * factor;
     }
@@ -571,23 +588,23 @@ namespace demos
         left_bracket->set_visible(true);
         right_bracket->set_visible(true);
 
-        const auto body{hovered_body};
+        const auto body { hovered_body };
 
-        const double body_screen_radius{
-            units::metres_to_pixels(body->get_radius(), view_bounds.size(), get_resolution()).x
+        const double body_screen_radius {
+            units::metres_to_pixels(Vec2d(body->get_radius()), view_bounds.size(), get_resolution()).x
         };
 
-        const Vec2d pos{get_screen_pos(body_interpolated_pos(body, time_lerp))};
+        const Vec2d pos { get_screen_pos(body_interpolated_pos(body, time_lerp)) };
 
-        const double offset{
+        const double offset {
             std::max(body_screen_radius * 3.0, min_bracket_distance) +
             1 + std::sin(t_sec * std::numbers::pi * 2.0 * bracket_frequency) * bracket_amplitude
         };
 
-        left_bracket->set_position(pos - Vec2d{offset, 0});
-        right_bracket->set_position(pos + Vec2d{offset, 0});
+        left_bracket->set_position(pos - Vec2d { offset, 0 });
+        right_bracket->set_position(pos + Vec2d { offset, 0 });
 
-        const double scale{
+        const double scale {
             std::lerp(
                 0.0,
                 std::max(body_screen_radius * 2.5, min_bracket_scale) / 100,
@@ -598,7 +615,7 @@ namespace demos
         left_bracket->set_scale(scale);
         right_bracket->set_scale(scale);
 
-        const double thickness{
+        const double thickness {
             std::clamp(body_screen_radius / 3, min_bracket_thickness, max_bracket_thickness)
         };
         left_bracket->set_line_thickness(thickness / left_bracket->get_scale().x);
@@ -616,8 +633,8 @@ namespace demos
 
     std::shared_ptr<Body> SpaceDemo::get_closest_body(const Vec2d position, const double max_distance) const
     {
-        std::shared_ptr<Body> closest_body{nullptr};
-        double closest_distance{std::numeric_limits<double>::max()};
+        std::shared_ptr<Body> closest_body { nullptr };
+        double closest_distance { std::numeric_limits<double>::max() };
 
         for (const auto body : body_list)
         {
@@ -638,19 +655,19 @@ namespace demos
         const double time_lerp
     ) const
     {
-        std::shared_ptr<Body> closest_body{nullptr};
-        double closest_distance{std::numeric_limits<double>::max()};
+        std::shared_ptr<Body> closest_body { nullptr };
+        double closest_distance { std::numeric_limits<double>::max() };
 
         for (const auto body : body_list)
         {
-            const Vec2d pos{get_screen_pos(body_interpolated_pos(body, time_lerp))};
-            const double distance{
+            const Vec2d pos { get_screen_pos(body_interpolated_pos(body, time_lerp)) };
+            const double distance {
                 Vec2d::distance(screen_pos, pos) -
-                units::metres_to_pixels(body->get_radius(), view_bounds.size(), get_resolution()).x
+                units::metres_to_pixels(Vec2d(body->get_radius()), view_bounds.size(), get_resolution()).x
             };
             if (distance < closest_distance)
             {
-                const bool equal{std::abs(distance - closest_distance) < euqality_threshold};
+                const bool equal { std::abs(distance - closest_distance) < euqality_threshold };
                 if (equal && body->get_radius() < closest_body->get_radius())
                 {
                     continue;
@@ -664,7 +681,7 @@ namespace demos
 
     Vec2d SpaceDemo::body_interpolated_pos(const std::shared_ptr<Body> body, const double time_lerp) const
     {
-        const auto [ellipse, trail, previous_pos]{body_items.at(body)};
+        const auto [ellipse, trail, previous_pos] { body_items.at(body) };
         return Vec2d::lerp(
             previous_pos,
             body->get_position(),
@@ -674,7 +691,7 @@ namespace demos
 
     void SpaceDemo::cycle_tracked_body(const int direction)
     {
-        const auto body{body_list[((tracked_body_index + direction) % body_list.size())]};
+        const auto body { body_list[((tracked_body_index + direction) % body_list.size())] };
         track_body(body);
     }
 
@@ -697,15 +714,17 @@ namespace demos
             }
         }
 
-        camera.zoom_out_size = std::max(
-            get_tracked_body()->get_radius() * tracked_body_zoom_level,
-            Vec2d::distance(camera.start_pos, get_tracked_body()->get_position()) * 4.0
+        camera.zoom_out_size = Vec2d(
+            std::max(
+                get_tracked_body()->get_radius() * tracked_body_zoom_level,
+                Vec2d::distance(camera.start_pos, get_tracked_body()->get_position()) * 4.0
+            )
         );
 
-        camera.size1 = get_tracked_body()->get_radius() * tracked_body_zoom_level;
+        camera.size1 = Vec2d(get_tracked_body()->get_radius() * tracked_body_zoom_level);
         camera.end_pos = get_tracked_body()->get_position();
         camera.state = Camera::State::Transitioning;
-        camera.velocity = {0.0, 0.0};
+        camera.velocity = { 0.0, 0.0 };
         camera.zoom_velocity = 0.0;
         camera.track_time = 0.0;
     }

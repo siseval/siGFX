@@ -6,20 +6,27 @@
 namespace demos
 {
 
-class Fractal
-{
+    class Fractal
+    {
 
-public:
+    public:
 
-    virtual int compute(const std::complex<double> c) = 0;
+        virtual int compute(std::complex<double> c) = 0;
 
-    inline void set_max_iterations(const int it) { max_iterations = it; }
-    inline int get_max_iterations() const { return max_iterations; }
+        void set_max_iterations(const int it)
+        {
+            max_iterations = it;
+        }
 
-protected:
+        int get_max_iterations() const
+        {
+            return max_iterations;
+        }
 
-    int max_iterations { 50 };
+    protected:
 
-};
+        int max_iterations { 50 };
+
+    };
 
 }

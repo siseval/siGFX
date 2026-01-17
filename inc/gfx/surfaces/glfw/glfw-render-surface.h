@@ -67,7 +67,7 @@ namespace gfx
 
         GLFWwindow* window;
 
-        Vec2i gl_window_size{800, 600};
+        Vec2i gl_window_size { 800, 600 };
         double refresh_rate_hz = 60.0;
 
         GLuint texture = 0;

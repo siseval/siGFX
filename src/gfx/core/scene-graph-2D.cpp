@@ -8,9 +8,9 @@
 namespace gfx
 {
 
-    SceneGraph2D::SceneGraph2D() :
-        root(std::make_shared<SceneNode2D>(nullptr)),
-        nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode2D>>()) {}
+    SceneGraph2D::SceneGraph2D()
+        : root(std::make_shared<SceneNode2D>(nullptr)),
+          nodes(std::unordered_map<UUID, std::shared_ptr<SceneNode2D>>()) {}
 
     std::shared_ptr<SceneNode2D> SceneGraph2D::get_root() const
     {
@@ -30,7 +30,7 @@ namespace gfx
             {
                 continue;
             }
-            const int64_t current_version{node->primitive->get_transform_version()};
+            const int64_t current_version { node->primitive->get_transform_version() };
             if (current_version != node->cached_transform_version)
             {
                 return true;
@@ -43,11 +43,11 @@ namespace gfx
     {
         std::stack<std::pair<std::shared_ptr<SceneNode2D>, Matrix3x3d>> stack;
 
-        stack.push({get_root(), get_root()->global_transform});
+        stack.push({ get_root(), get_root()->global_transform });
 
         while (!stack.empty())
         {
-            auto [node, parent_transform]{stack.top()};
+            auto [node, parent_transform] { stack.top() };
             stack.pop();
 
             if (node->primitive)
@@ -65,14 +65,14 @@ namespace gfx
 
             for (const auto &child : node->children)
             {
-                stack.push({child, node->global_transform});
+                stack.push({ child, node->global_transform });
             }
         }
     }
 
     Matrix3x3d SceneGraph2D::get_global_transform(const std::shared_ptr<Primitive2D> primitive) const
     {
-        const auto node{nodes.contains(primitive->get_id()) ? nodes.at(primitive->get_id()) : nullptr};
+        const auto node { nodes.contains(primitive->get_id()) ? nodes.at(primitive->get_id()) : nullptr };
         if (node == nullptr)
         {
             return Matrix3x3d::identity();
@@ -100,10 +100,12 @@ namespace gfx
                 draw_queue.emplace_back(node->primitive, get_global_transform(node->primitive));
             }
         }
-        std::ranges::sort(draw_queue,
-                          [](const auto &a, const auto &b) {
-                              return a.first->get_depth() > b.first->get_depth();
-                          });
+        std::ranges::sort(
+            draw_queue,
+            [](const auto &a, const auto &b) {
+                return a.first->get_depth() > b.first->get_depth();
+            }
+        );
         return draw_queue;
     }
 
@@ -119,7 +121,7 @@ namespace gfx
         {
             if (node->primitive != nullptr)
             {
-                transforms.push_back({node->primitive, get_global_transform(node->primitive)});
+                transforms.push_back({ node->primitive, get_global_transform(node->primitive) });
             }
         }
         return transforms;
@@ -127,7 +129,7 @@ namespace gfx
 
     void SceneGraph2D::add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent)
     {
-        const auto new_node{std::make_shared<SceneNode2D>(item)};
+        const auto new_node { std::make_shared<SceneNode2D>(item) };
         if (nodes.contains(new_node->get_id()))
         {
             return;
@@ -136,7 +138,7 @@ namespace gfx
 
         if (parent != nullptr && nodes.contains(parent->get_id()))
         {
-            const auto parent_node{nodes[parent->get_id()]};
+            const auto parent_node { nodes[parent->get_id()] };
             new_node->parent = parent_node;
             parent_node->children.push_back(new_node);
             return;
@@ -168,7 +170,7 @@ namespace gfx
         stack.push(nodes[item->get_id()]);
         while (!stack.empty())
         {
-            const auto node{stack.top()};
+            const auto node { stack.top() };
             stack.pop();
 
             for (const auto &child : node->children)

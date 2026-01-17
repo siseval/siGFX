@@ -65,20 +65,20 @@ namespace gfx
         void update_text(std::shared_ptr<RenderEngine> render_engine, const RendererInfo &info);
         int num_debug_items() const;
 
-        bool enabled{false};
+        bool enabled { false };
 
-        bool show_fps{true};
-        bool show_num_items{true};
+        bool show_fps { true };
+        bool show_num_items { true };
 
         std::shared_ptr<FontTTF> font;
-        double font_size{8.0};
-        Color4 text_color{Color4::white()};
-        Vec2d text_position{4.0, 4.0};
+        double font_size { 8.0 };
+        Color4 text_color { Color4::white() };
+        Vec2d text_position { 4.0, 4.0 };
 
         std::shared_ptr<Text2D> text;
 
         std::deque<double> fps_history;
-        int fps_history_max_size{20};
-        double last_frame_timestamp_ms{0.0};
+        int fps_history_max_size { 20 };
+        double last_frame_timestamp_ms { 0.0 };
     };
 }

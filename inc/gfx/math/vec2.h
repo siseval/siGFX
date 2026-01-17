@@ -23,7 +23,7 @@ namespace gfx
 
         static Vec2 zero()
         {
-            return {0, 0};
+            return { 0, 0 };
         }
 
         static T cross(Vec2 a, Vec2 b)
@@ -43,7 +43,7 @@ namespace gfx
 
         static Vec2 from_angle(const double angle, const double length = 1.0)
         {
-            return {static_cast<T>(std::cos(angle) * length), static_cast<T>(std::sin(angle) * length)};
+            return { static_cast<T>(std::cos(angle) * length), static_cast<T>(std::sin(angle) * length) };
         }
 
         static Vec2 from_angle_degrees(const double angle, const double length = 1.0)
@@ -64,24 +64,24 @@ namespace gfx
         static Vec2 lerp(const Vec2 &a, const Vec2 &b, double t)
         {
             t = t < 0 ? 0 : t > 1 ? 1 : t;
-            return {static_cast<T>(a.x + (b.x - a.x) * t), static_cast<T>(a.y + (b.y - a.y) * t)};
+            return { static_cast<T>(a.x + (b.x - a.x) * t), static_cast<T>(a.y + (b.y - a.y) * t) };
         }
 
-        inline Vec2 limit(const double max_magnitude)
+        Vec2 limit(const double max_magnitude)
         {
             double magnitude = length();
             if (magnitude > max_magnitude)
             {
                 return normalize() * max_magnitude;
             }
-            return {x, y};
+            return { x, y };
         }
 
         Vec2 rotate_towards(Vec2 &target, const double max_angle) const
         {
-            double current_angle{angle()};
-            double target_angle{target.angle()};
-            double angle_diff{target_angle - current_angle};
+            double current_angle { angle() };
+            double target_angle { target.angle() };
+            double angle_diff { target_angle - current_angle };
 
             if (angle_diff > std::numbers::pi)
             {
@@ -98,7 +98,7 @@ namespace gfx
             }
             else
             {
-                double new_angle{current_angle + (angle_diff > 0 ? max_angle : -max_angle)};
+                double new_angle { current_angle + (angle_diff > 0 ? max_angle : -max_angle) };
                 return from_angle(new_angle, length());
             }
         }
@@ -120,12 +120,12 @@ namespace gfx
 
         Vec2<double> normalize() const
         {
-            return {static_cast<T>(x / length()), static_cast<T>(y / length())};
+            return { static_cast<T>(x / length()), static_cast<T>(y / length()) };
         }
 
         Vec2<double> normal() const
         {
-            return {-y, x};
+            return { -y, x };
         }
 
         double length() const
@@ -135,57 +135,57 @@ namespace gfx
 
         Vec2<int> round() const
         {
-            return {static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y))};
+            return { static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) };
         }
 
         static Vec2<int> floor(const Vec2 &v)
         {
-            return {static_cast<int>(std::floor(v.x)), static_cast<int>(std::floor(v.y))};
+            return { static_cast<int>(std::floor(v.x)), static_cast<int>(std::floor(v.y)) };
         }
 
         static Vec2<int> ceil(const Vec2 &v)
         {
-            return {static_cast<int>(std::ceil(v.x)), static_cast<int>(std::ceil(v.y))};
+            return { static_cast<int>(std::ceil(v.x)), static_cast<int>(std::ceil(v.y)) };
         }
 
 
         template <typename U>
         Vec2 operator+(const Vec2<U> &other) const
         {
-            return {static_cast<T>(x + other.x), static_cast<T>(y + other.y)};
+            return { static_cast<T>(x + other.x), static_cast<T>(y + other.y) };
         }
 
         template <typename U>
         Vec2 operator-(const Vec2<U> &other) const
         {
-            return {static_cast<T>(x - other.x), static_cast<T>(y - other.y)};
+            return { static_cast<T>(x - other.x), static_cast<T>(y - other.y) };
         }
 
         template <typename U>
         Vec2 operator*(const Vec2<U> &other) const
         {
-            return {static_cast<T>(x * other.x), static_cast<T>(y * other.y)};
+            return { static_cast<T>(x * other.x), static_cast<T>(y * other.y) };
         }
 
         template <typename U>
         Vec2 operator/(const Vec2<U> &other) const
         {
-            return {static_cast<T>(x / other.x), static_cast<T>(y / other.y)};
+            return { static_cast<T>(x / other.x), static_cast<T>(y / other.y) };
         }
 
         Vec2 operator*(const double &factor) const
         {
-            return {static_cast<T>(x * factor), static_cast<T>(y * factor)};
+            return { static_cast<T>(x * factor), static_cast<T>(y * factor) };
         }
 
         Vec2 operator/(const double &factor) const
         {
-            return {static_cast<T>(x / factor), static_cast<T>(y / factor)};
+            return { static_cast<T>(x / factor), static_cast<T>(y / factor) };
         }
 
         Vec2 operator-() const
         {
-            return {static_cast<T>(-x), static_cast<T>(-y)};
+            return { static_cast<T>(-x), static_cast<T>(-y) };
         }
 
         template <typename U>
@@ -260,9 +260,9 @@ namespace gfx
         }
 
         template <typename U>
-        explicit operator Vec2<U>() const
+        operator Vec2<U>() const
         {
-            return {static_cast<U>(x), static_cast<U>(y)};
+            return { static_cast<U>(x), static_cast<U>(y) };
         }
     };
 

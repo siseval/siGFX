@@ -7,37 +7,38 @@
 namespace gfx
 {
 
-    Render3D::Render3D(std::shared_ptr<RenderSurface> surface) : ambient_light(0),
-                                                                 scene_graph(std::make_shared<SceneGraph3D>()),
-                                                                 surface(surface) {}
+    Render3D::Render3D(std::shared_ptr<RenderSurface> surface)
+        : ambient_light(0),
+          scene_graph(std::make_shared<SceneGraph3D>()),
+          surface(surface) {}
 
 
     void Render3D::draw_frame() const
     {
-        Vec2i resolution{surface->get_resolution()};
+        Vec2i resolution { surface->get_resolution() };
 
-        double aspect_ratio{
+        double aspect_ratio {
             static_cast<double>(resolution.x) /
             static_cast<double>(resolution.y)
         };
 
-        double t{
+        double t {
             std::chrono::duration<double, std::milli>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()
             ).count() / 1000.0
         };
 
-        const Camera &camera{get_camera()};
-        Matrix4x4d view_matrix{camera.get_view_matrix()};
-        Matrix4x4d projection_matrix{camera.get_projection_matrix(aspect_ratio)};
+        const Camera &camera { get_camera() };
+        Matrix4x4d view_matrix { camera.get_view_matrix() };
+        Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
 
         for (const auto &[primitive, transform] : scene_graph->get_draw_queue())
         {
-            PolygonMesh mesh{primitive->get_mesh()};
+            PolygonMesh mesh { primitive->get_mesh() };
 
-            Shader3D shader{primitive->get_shader()};
+            Shader3D shader { primitive->get_shader() };
 
-            Shader3D::VertInput vert_in{
+            Shader3D::VertInput vert_in {
                 .positions = mesh.get_vertices(),
                 .normals = mesh.get_normals(),
                 .model_matrix = transform,
@@ -46,7 +47,7 @@ namespace gfx
                 .mvp_matrix = projection_matrix * view_matrix * transform
             };
 
-            Shader3D::VertOutput vert_out{shader.vert(vert_in)};
+            Shader3D::VertOutput vert_out { shader.vert(vert_in) };
 
             struct ScreenVertex
             {
@@ -57,9 +58,9 @@ namespace gfx
 
             for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
             {
-                size_t idx0{mesh.get_indices()[i]};
-                size_t idx1{mesh.get_indices()[i + 1]};
-                size_t idx2{mesh.get_indices()[i + 2]};
+                size_t idx0 { mesh.get_indices()[i] };
+                size_t idx1 { mesh.get_indices()[i + 1] };
+                size_t idx2 { mesh.get_indices()[i + 2] };
 
                 if (vert_out.w[idx0] <= 0.0 ||
                     vert_out.w[idx1] <= 0.0 ||
@@ -69,13 +70,13 @@ namespace gfx
                 }
 
                 std::array<ScreenVertex, 3> screen_vertices;
-                auto clip_to_screen{
+                auto clip_to_screen {
                     [&](const int source_index, const int dest_index) {
-                        const auto &clip{vert_out.xyz[source_index]};
+                        const auto &clip { vert_out.xyz[source_index] };
 
-                        const double inv_w{1.0 / vert_out.w[source_index]};
+                        const double inv_w { 1.0 / vert_out.w[source_index] };
 
-                        const Vec3d ndc{
+                        const Vec3d ndc {
                             clip.x * inv_w,
                             clip.y * inv_w,
                             clip.z * inv_w
@@ -95,7 +96,7 @@ namespace gfx
                 clip_to_screen(idx1, 1);
                 clip_to_screen(idx2, 2);
 
-                BarycentricTriangle triangle{
+                BarycentricTriangle triangle {
                     screen_vertices[0].screen_pos,
                     screen_vertices[1].screen_pos,
                     screen_vertices[2].screen_pos
@@ -109,7 +110,7 @@ namespace gfx
                 std::vector<Vec2i> pixels;
                 Rasterize::rasterize_filled_triangle(triangle, pixels, resolution);
 
-                Shader3D::FragInput frag_in{
+                Shader3D::FragInput frag_in {
                     .t = t,
                     .light_dir = light_dir,
                     .ambient_intensity = ambient_light
@@ -120,31 +121,31 @@ namespace gfx
                 frag_in.normals.reserve(pixels.size());
                 frag_in.colors.reserve(pixels.size());
 
-                auto vertex_colors{mesh.get_colors()};
+                auto vertex_colors { mesh.get_colors() };
 
                 for (const auto &pixel : pixels)
                 {
-                    Vec3d w = triangle.barycentric_weights(pixel + Vec2d{0.5, 0.5});
+                    Vec3d w = triangle.barycentric_weights(pixel + Vec2d { 0.5, 0.5 });
 
                     // double inv_w_p =
                     //     w.x * one_over_w[0] +
                     //     w.y * one_over_w[1] +
                     //     w.z * one_over_w[2];
 
-                    double depth{
+                    double depth {
                         w.x * screen_vertices[0].z_over_w +
                         w.y * screen_vertices[1].z_over_w +
                         w.z * screen_vertices[2].z_over_w
                     };
 
-                    Vec3d normal_interp{
+                    Vec3d normal_interp {
                         (
                             vert_out.normals[idx0] * w.x +
                             vert_out.normals[idx1] * w.y +
                             vert_out.normals[idx2] * w.z).normalize()
                     };
 
-                    Color4 color_interp{
+                    Color4 color_interp {
                         vertex_colors[idx0] == vertex_colors[idx1] &&
                         vertex_colors[idx1] == vertex_colors[idx2] ?
 
@@ -166,13 +167,15 @@ namespace gfx
                     frag_in.colors.push_back(color_interp);
                 }
 
-                auto pixel_colors{shader.frag(frag_in)};
+                auto pixel_colors { shader.frag(frag_in) };
                 for (size_t p = 0; p < pixel_colors.size(); ++p)
                 {
-                    surface->write_pixel(pixels[p],
-                                         pixel_colors[p],
-                                         frag_in.depths[p],
-                                         RenderSurface::BlendMode::OPAQUE);
+                    surface->write_pixel(
+                        pixels[p],
+                        pixel_colors[p],
+                        frag_in.depths[p],
+                        RenderSurface::BlendMode::OPAQUE
+                    );
                 }
             }
         }
@@ -199,12 +202,14 @@ namespace gfx
         return surface;
     }
 
-    std::shared_ptr<Cuboid3D> Render3D::create_cuboid(const Vec3d position,
-                                                      const Vec3d size,
-                                                      const Color4 color,
-                                                      const Shader3D shader)
+    std::shared_ptr<Cuboid3D> Render3D::create_cuboid(
+        const Vec3d position,
+        const Vec3d size,
+        const Color4 color,
+        const Shader3D shader
+    )
     {
-        auto cuboid{std::make_shared<Cuboid3D>()};
+        auto cuboid { std::make_shared<Cuboid3D>() };
 
         cuboid->set_position(position);
         cuboid->set_size(size);
@@ -214,12 +219,14 @@ namespace gfx
         return cuboid;
     }
 
-    std::shared_ptr<Plane3D> Render3D::create_plane(const Vec3d position,
-                                                    const Vec2d size,
-                                                    const Color4 color,
-                                                    const Shader3D shader)
+    std::shared_ptr<Plane3D> Render3D::create_plane(
+        const Vec3d position,
+        const Vec2d size,
+        const Color4 color,
+        const Shader3D shader
+    )
     {
-        auto plane{std::make_shared<Plane3D>()};
+        auto plane { std::make_shared<Plane3D>() };
 
         plane->set_position(position);
         plane->set_size(size);
@@ -229,13 +236,15 @@ namespace gfx
         return plane;
     }
 
-    std::shared_ptr<Sphere3D> Render3D::create_sphere(const Vec3d position,
-                                                      const double radius,
-                                                      const Color4 color,
-                                                      const int segments,
-                                                      const Shader3D shader)
+    std::shared_ptr<Sphere3D> Render3D::create_sphere(
+        const Vec3d position,
+        const double radius,
+        const Color4 color,
+        const int segments,
+        const Shader3D shader
+    )
     {
-        auto sphere{std::make_shared<Sphere3D>()};
+        auto sphere { std::make_shared<Sphere3D>() };
 
         sphere->set_position(position);
         sphere->set_radius(radius);

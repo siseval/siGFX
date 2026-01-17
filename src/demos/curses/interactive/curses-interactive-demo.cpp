@@ -7,43 +7,43 @@
 namespace demos
 {
 
-using namespace gfx;
+    using namespace gfx;
 
-void run()
-{
-    init();
-    set_bold(true);
-
-    auto surface { std::make_shared<CursesRenderSurface>(get_screen_size() * 2) };
-    InteractiveDemo demo(std::make_shared<RenderEngine>(surface));
-
-    bool running = true;
-
-    while (running)
+    void run()
     {
-        clear();
-        demo.render_frame(0);
-        set_color(default_color::WHITE);
-        std::vector info { demo.info_text() };
-        for (int i = 0; i < info.size(); ++i)
-        {
-            add_str({ 0, i }, info[i]);
-        }
-        refresh();
+        init();
+        set_bold(true);
 
-        const int input { get_input() };
-        if (input == 'q')
+        auto surface { std::make_shared<CursesRenderSurface>(get_screen_size() * 2) };
+        InteractiveDemo demo(std::make_shared<RenderEngine>(surface));
+
+        bool running = true;
+
+        while (running)
         {
-            running = false;
+            clear();
+            demo.render_frame(0);
+            set_color(default_color::WHITE);
+            std::vector info { demo.info_text() };
+            for (int i = 0; i < info.size(); ++i)
+            {
+                add_str({ 0, i }, info[i]);
+            }
+            refresh();
+
+            const int input { get_input() };
+            if (input == 'q')
+            {
+                running = false;
+            }
+            else
+            {
+                demo.handle_char(input);
+            }
         }
-        else
-        {
-            demo.handle_char(input);
-        }
+
+        end();
     }
-
-    end();
-}
 
 }
 
@@ -51,4 +51,3 @@ int main()
 {
     demos::run();
 }
-

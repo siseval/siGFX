@@ -30,22 +30,22 @@ namespace demos
         {
         case 'w':
             state = State::Free;
-            smooth_pan({0, -1});
+            smooth_pan({ 0, -1 });
             break;
 
         case 's':
             state = State::Free;
-            smooth_pan({0, 1});
+            smooth_pan({ 0, 1 });
             break;
 
         case 'a':
             state = State::Free;
-            smooth_pan({-1, 0});
+            smooth_pan({ -1, 0 });
             break;
 
         case 'd':
             state = State::Free;
-            smooth_pan({1, 0});
+            smooth_pan({ 1, 0 });
             break;
 
         case 'k':
@@ -75,19 +75,19 @@ namespace demos
     void Camera::do_transition(const double dt)
     {
         track_time += dt;
-        const double t{std::clamp(track_time / track_duration, 0.0, 1.0)};
+        const double t { std::clamp(track_time / track_duration, 0.0, 1.0) };
 
         cur_pos = Vec2d::lerp(start_pos, end_pos, ease_in_out_cubic(t));
 
         if (t < 0.5)
         {
-            const double zoom_t{ease_in_out_cubic(t * 2.0)};
-            size_cur = std::lerp(size0.x, zoom_out_size.x, zoom_t);
+            const double zoom_t { ease_in_out_cubic(t * 2.0) };
+            size_cur = Vec2d(std::lerp(size0.x, zoom_out_size.x, zoom_t));
         }
         else
         {
-            const double zoom_t{ease_in_out_cubic((t - 0.5) * 2.0)};
-            size_cur = std::lerp(zoom_out_size.x, size1.x, zoom_t);
+            const double zoom_t { ease_in_out_cubic((t - 0.5) * 2.0) };
+            size_cur = Vec2d(std::lerp(zoom_out_size.x, size1.x, zoom_t));
         }
         if (t >= 1.0)
         {

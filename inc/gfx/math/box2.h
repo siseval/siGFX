@@ -15,7 +15,7 @@ namespace gfx
 
         static Box2 zero()
         {
-            return Box2{Vec2<T>::zero(), Vec2<T>::zero()};
+            return Box2 { Vec2<T>::zero(), Vec2<T>::zero() };
         }
 
         Vec2<T> size() const
@@ -77,26 +77,26 @@ namespace gfx
         std::vector<Vec2<T>> get_corners() const
         {
             return {
-                Vec2<T>{min.x, min.y},
-                Vec2<T>{max.x, min.y},
-                Vec2<T>{max.x, max.y},
-                Vec2<T>{min.x, max.y}
+                Vec2<T> { min.x, min.y },
+                Vec2<T> { max.x, min.y },
+                Vec2<T> { max.x, max.y },
+                Vec2<T> { min.x, max.y }
             };
         }
 
         static constexpr Box2 infinite()
         {
-            return Box2{
-                Vec2<T>{std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest()},
-                Vec2<T>{std::numeric_limits<T>::max(), std::numeric_limits<T>::max()}
+            return Box2 {
+                Vec2<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() },
+                Vec2<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() }
             };
         }
 
         static constexpr Box2 unexpanded()
         {
-            return Box2{
-                Vec2<T>{std::numeric_limits<T>::max(), std::numeric_limits<T>::max()},
-                Vec2<T>{std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest()}
+            return Box2 {
+                Vec2<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() },
+                Vec2<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() }
             };
         }
     };

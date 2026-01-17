@@ -41,7 +41,7 @@ namespace gfx
             return -1;
         }
 
-        gl_window_size = {mode->width, mode->height};
+        gl_window_size = { mode->width, mode->height };
         refresh_rate_hz = mode->refreshRate;
 
         window = glfwCreateWindow(resolution.x, resolution.y, window_title.c_str(), nullptr, nullptr);
@@ -167,15 +167,17 @@ namespace gfx
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA,
-                     resolution.x,
-                     resolution.y,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     frame_buffer.data());
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            resolution.x,
+            resolution.y,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            frame_buffer.data()
+        );
     }
 
     void GLFWRenderSurface::setup_quad()

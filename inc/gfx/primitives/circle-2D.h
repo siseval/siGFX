@@ -26,8 +26,8 @@ namespace gfx
 
     private:
 
-        double radius{0.0};
-        bool filled{false};
-        double line_thickness{1.0};
+        double radius { 0.0 };
+        bool filled { false };
+        double line_thickness { 1.0 };
     };
 };

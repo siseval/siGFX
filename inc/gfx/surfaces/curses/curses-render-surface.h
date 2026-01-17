@@ -41,7 +41,7 @@ namespace gfx
 
         static constexpr uint8_t DEDICATED_CURSES_COLOR_START_INDEX = 127;
 
-        static constexpr std::string_view pixel_tree[2][2][2][2]{
+        static constexpr std::string_view pixel_tree[2][2][2][2] {
             {
                 // TOP LEFT 0
                 {

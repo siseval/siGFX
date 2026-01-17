@@ -30,9 +30,9 @@ namespace gfx
     private:
 
         Vec2d radius;
-        double line_thickness{1.0};
-        bool filled{false};
+        double line_thickness { 1.0 };
+        bool filled { false };
 
-        double MIN_MULTITHREAD_PIXELS{10000 * 10000};
+        double MIN_MULTITHREAD_PIXELS { 10000 * 10000 };
     };
 }

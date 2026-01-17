@@ -28,23 +28,25 @@ namespace demos
         state = State::Exploding;
         renderer->remove_item(shape);
 
-        const int num_particles{random_int(max_particles / 2, max_particles)};
+        const int num_particles { random_int(max_particles / 2, max_particles) };
         for (int i = 0; i < num_particles; ++i)
         {
-            const double angle{random_double(0, 360)};
-            const double speed{random_double(particle_speed * 0.1, particle_speed * 1.25)};
-            Vec2d velocity{Vec2d::from_angle_degrees(angle, speed) - Vec2d{0, particle_speed / 10}};
+            const double angle { random_double(0, 360) };
+            const double speed { random_double(particle_speed * 0.1, particle_speed * 1.25) };
+            Vec2d velocity { Vec2d::from_angle_degrees(angle, speed) - Vec2d { 0, particle_speed / 10 } };
 
-            const double size{random_double(particle_size * 0.5, particle_size * 1.5)};
-            double lifespan{random_double(particle_lifespan_ms * 0.75, particle_lifespan_ms * 1.25)};
+            const double size { random_double(particle_size * 0.5, particle_size * 1.5) };
+            double lifespan { random_double(particle_lifespan_ms * 0.75, particle_lifespan_ms * 1.25) };
 
-            std::vector color{colors[rand() % colors.size()]};
-            particles.emplace_back(renderer,
-                                   position,
-                                   velocity,
-                                   Vec2d{size * particle_x_factor, size / particle_x_factor},
-                                   color,
-                                   lifespan);
+            std::vector color { colors[rand() % colors.size()] };
+            particles.emplace_back(
+                renderer,
+                position,
+                velocity,
+                Vec2d { size * particle_x_factor, size / particle_x_factor },
+                color,
+                lifespan
+            );
         }
     }
 
@@ -78,15 +80,19 @@ namespace demos
             particle.process(dt);
         }
 
-        std::erase_if(particles,
-                      [](const Particle &p) {
-                          return p.done;
-                      });
+        std::erase_if(
+            particles,
+            [](const Particle &p) {
+                return p.done;
+            }
+        );
 
-        std::erase_if(smoke_particles,
-                      [](const Particle &p) {
-                          return p.done;
-                      });
+        std::erase_if(
+            smoke_particles,
+            [](const Particle &p) {
+                return p.done;
+            }
+        );
 
         if (particles.empty() && smoke_particles.empty())
         {
@@ -100,21 +106,23 @@ namespace demos
         const double interval = lerp(smoke_trail_interval_ms, smoke_trail_interval_ms * 3, slowdown);
         if (time_ms() - last_smoke_time_ms > interval)
         {
-            const double angle{
+            const double angle {
                 velocity.angle_degrees() + random_double(-smoke_angle_variation_degrees, smoke_angle_variation_degrees)
             };
-            const double speed{random_double(smoke_speed * 0.75, smoke_speed * 1.25)};
-            Vec2d velocity{Vec2d::from_angle_degrees(angle, -speed)};
+            const double speed { random_double(smoke_speed * 0.75, smoke_speed * 1.25) };
+            Vec2d velocity { Vec2d::from_angle_degrees(angle, -speed) };
 
             const double avg_size = lerp(smoke_size, smoke_size * 0.1, slowdown);
-            double lifespan{random_double(particle_lifespan_ms, particle_lifespan_ms * 2.0)};
+            double lifespan { random_double(particle_lifespan_ms, particle_lifespan_ms * 2.0) };
 
-            smoke_particles.emplace_back(renderer,
-                                         position + Vec2d{0, avg_size},
-                                         velocity,
-                                         Vec2d{avg_size * smoke_x_factor, avg_size / smoke_x_factor},
-                                         std::vector{smoke_color},
-                                         lifespan);
+            smoke_particles.emplace_back(
+                renderer,
+                position + Vec2d { 0, avg_size },
+                velocity,
+                Vec2d { avg_size * smoke_x_factor, avg_size / smoke_x_factor },
+                std::vector { smoke_color },
+                lifespan
+            );
             last_smoke_time_ms = time_ms();
         }
     }

@@ -37,7 +37,7 @@ namespace demos
 
     void DemoPlayer::run()
     {
-        double last_frame_timestamp_us{time_us()};
+        double last_frame_timestamp_us { time_us() };
         cycle_demo(1);
         cycle_demo(-1);
 
@@ -48,8 +48,8 @@ namespace demos
                 resize(get_screen_size());
             }
 
-            const double now_us{time_us()};
-            const double dt_sec{(now_us - last_frame_timestamp_us) / 1000000.0};
+            const double now_us { time_us() };
+            const double dt_sec { (now_us - last_frame_timestamp_us) / 1000000.0 };
 
             demos[current_demo]->render_frame(dt_sec);
             demos[current_demo]->set_last_frame_us(now_us - last_frame_timestamp_us);
@@ -62,7 +62,7 @@ namespace demos
                 draw_info();
             }
 
-            const int input{get_input()};
+            const int input { get_input() };
             handle_input(input);
             demos[current_demo]->handle_char(input);
         }
@@ -112,7 +112,7 @@ namespace demos
 
     std::vector<std::string> DemoPlayer::get_info() const
     {
-        std::vector info{demos[current_demo]->info_text()};
+        std::vector info { demos[current_demo]->info_text() };
 
         if (show_debug)
         {
@@ -125,7 +125,8 @@ namespace demos
 
         info.push_back("");
         info.push_back(
-            "[p/n] to cycle (" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + ")");
+            "[p/n] to cycle (" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + ")"
+        );
         info.push_back("[q] to quit");
 
         return info;

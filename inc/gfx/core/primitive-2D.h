@@ -77,11 +77,11 @@ namespace gfx
         UUID id;
         std::shared_ptr<Shader2D> shader = std::make_shared<DefaultShader2D>();
 
-        Color4 color{Color4::white()};
+        Color4 color { Color4::white() };
 
-        Vec2d position{0.0, 0.0};
-        Vec2d anchor{0.0, 0.0};
-        Vec2d scale{1.0, 1.0};
+        Vec2d position { 0.0, 0.0 };
+        Vec2d anchor { 0.0, 0.0 };
+        Vec2d scale { 1.0, 1.0 };
 
         bool fill = false;
         bool visible = true;

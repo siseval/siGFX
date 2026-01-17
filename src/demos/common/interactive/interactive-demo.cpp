@@ -9,7 +9,7 @@ namespace demos
 
     void InteractiveDemo::render_frame(const double dt)
     {
-        const double t0{static_cast<double>(clock())};
+        const double t0 { static_cast<double>(clock()) };
         render2D->clear_frame();
         render2D->draw_frame();
         render2D->present_frame();
@@ -18,7 +18,7 @@ namespace demos
 
     void InteractiveDemo::select(const int index)
     {
-        auto selected{get_selected()};
+        auto selected { get_selected() };
         if (items.size() <= 0)
         {
             return;
@@ -34,7 +34,7 @@ namespace demos
 
     void InteractiveDemo::remove_selected()
     {
-        auto selected{get_selected()};
+        auto selected { get_selected() };
         if (selected == nullptr)
         {
             return;
@@ -61,17 +61,17 @@ namespace demos
 
     void InteractiveDemo::add_circle(const bool child)
     {
-        const Vec2d center{get_resolution() / 2.0};
-        const Color4 color{std::rand() % 255, std::rand() % 255, std::rand() % 255};
+        const Vec2d center { get_resolution() / 2.0 };
+        const Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-        const auto circle{render2D->create_circle(center, 10, color, 3)};
-        circle->set_anchor({0.5, 0.5});
+        const auto circle { render2D->create_circle(center, 10, color, 3) };
+        circle->set_anchor({ 0.5, 0.5 });
 
         items.push_back(circle);
 
         if (child && get_selected() != nullptr)
         {
-            circle->set_position({0, 0});
+            circle->set_position({ 0, 0 });
             render2D->add_item(circle, get_selected());
             return;
         }
@@ -80,17 +80,17 @@ namespace demos
 
     void InteractiveDemo::add_ellipse(const bool child)
     {
-        const Vec2d center{get_resolution() / 2.0};
-        const Color4 color{std::rand() % 255, std::rand() % 255, std::rand() % 255};
+        const Vec2d center { get_resolution() / 2.0 };
+        const Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-        const auto ellipse{render2D->create_ellipse(center, {10, 10}, color, 3)};
-        ellipse->set_anchor({0.5, 0.5});
+        const auto ellipse { render2D->create_ellipse(center, { 10, 10 }, color, 3) };
+        ellipse->set_anchor({ 0.5, 0.5 });
 
         items.push_back(ellipse);
 
         if (child && get_selected() != nullptr)
         {
-            ellipse->set_position({0, 0});
+            ellipse->set_position({ 0, 0 });
             render2D->add_item(ellipse, get_selected());
             return;
         }
@@ -99,19 +99,21 @@ namespace demos
 
     void InteractiveDemo::add_polyline(const bool child)
     {
-        const Vec2d center{get_resolution() / 2.0};
-        const Color4 color{std::rand() % 255, std::rand() % 255, std::rand() % 255};
+        const Vec2d center { get_resolution() / 2.0 };
+        const Color4 color { std::rand() % 255, std::rand() % 255, std::rand() % 255 };
 
-        const auto polyline{render2D->create_polyline(center, {{0, 0}, {20, 0}, {10, 10}, {5, 30}}, color, 3)};
+        const auto polyline {
+            render2D->create_polyline(center, { { 0, 0 }, { 20, 0 }, { 10, 10 }, { 5, 30 } }, color, 3)
+        };
         polyline->set_close(true);
         polyline->set_rounded_corners(true);
-        polyline->set_anchor({0.5, 0.5});
+        polyline->set_anchor({ 0.5, 0.5 });
 
         items.push_back(polyline);
 
         if (child && get_selected() != nullptr)
         {
-            polyline->set_position({0, 0});
+            polyline->set_position({ 0, 0 });
             render2D->add_item(polyline, get_selected());
             return;
         }
@@ -127,7 +129,7 @@ namespace demos
 
     void InteractiveDemo::handle_char(const int input)
     {
-        const auto selected{get_selected()};
+        const auto selected { get_selected() };
 
         switch (input)
         {
@@ -169,14 +171,14 @@ namespace demos
             {
                 break;
             }
-            selected->set_scale(selected->get_scale() + Vec2d{0, 0.05});
+            selected->set_scale(selected->get_scale() + Vec2d { 0, 0.05 });
             break;
         case 'j':
             if (selected == nullptr)
             {
                 break;
             }
-            selected->set_scale(selected->get_scale() - Vec2d{0, 0.05});
+            selected->set_scale(selected->get_scale() - Vec2d { 0, 0.05 });
             break;
 
         case 'l':
@@ -184,14 +186,14 @@ namespace demos
             {
                 break;
             }
-            selected->set_scale(selected->get_scale() + Vec2d{0.05, 0});
+            selected->set_scale(selected->get_scale() + Vec2d { 0.05, 0 });
             break;
         case 'h':
             if (selected == nullptr)
             {
                 break;
             }
-            selected->set_scale(selected->get_scale() - Vec2d{0.05, 0});
+            selected->set_scale(selected->get_scale() - Vec2d { 0.05, 0 });
             break;
 
         case 'w':
@@ -199,28 +201,28 @@ namespace demos
             {
                 break;
             }
-            selected->set_position(selected->get_position() + Vec2d{0, -1});
+            selected->set_position(selected->get_position() + Vec2d { 0, -1 });
             break;
         case 'a':
             if (selected == nullptr)
             {
                 break;
             }
-            selected->set_position(selected->get_position() + Vec2d{-1, 0});
+            selected->set_position(selected->get_position() + Vec2d { -1, 0 });
             break;
         case 's':
             if (selected == nullptr)
             {
                 break;
             }
-            selected->set_position(selected->get_position() + Vec2d{0, 1});
+            selected->set_position(selected->get_position() + Vec2d { 0, 1 });
             break;
         case 'd':
             if (selected == nullptr)
             {
                 break;
             }
-            selected->set_position(selected->get_position() + Vec2d{1, 0});
+            selected->set_position(selected->get_position() + Vec2d { 1, 0 });
             break;
 
         case 'L':

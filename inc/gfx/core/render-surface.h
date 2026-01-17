@@ -41,7 +41,7 @@ namespace gfx
     protected:
 
         Vec2i resolution;
-        Color4 clear_color{0.2, 0.2, 0.2, 1.0};
+        Color4 clear_color { 0.2, 0.2, 0.2, 1.0 };
         std::vector<int32_t> frame_buffer;
         std::vector<double> depth_buffer;
     };

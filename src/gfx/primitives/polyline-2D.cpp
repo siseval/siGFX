@@ -10,304 +10,321 @@
 namespace gfx
 {
 
-Primitive2D::RasterizeOutput Polyline2D::rasterize(const Matrix3x3d &transform) const
-{
-    RasterizeOutput output;
-
-    if (points.size() < 2)
+    Primitive2D::RasterizeOutput Polyline2D::rasterize(const Matrix3x3d &transform) const
     {
+        RasterizeOutput output;
+
+        if (points.size() < 2)
+        {
+            return output;
+        }
+
+        for (int i = 0; i < points.size() - 1; ++i)
+        {
+            if (segments_visible.size() > i && !segments_visible[i])
+            {
+                continue;
+            }
+            rasterize_edge(points[i], points[i + 1], transform, output.pixels);
+        }
+
+        if (do_close)
+        {
+            rasterize_edge(points.back(), points.front(), transform, output.pixels);
+        }
+
+        if (do_rounded_corners)
+        {
+            rasterize_rounded_corners(transform, output.pixels);
+        }
+
+        if (do_fill)
+        {
+            const std::vector transformed_points { Transform2D::transform_points(points, transform) };
+
+            const Polygon::Component polygon(transformed_points, clockwise);
+            const std::vector triangles { Triangulate::triangulate_polygon(polygon) };
+
+            for (const auto &triangle : triangles)
+            {
+                Rasterize::rasterize_filled_triangle(triangle, output.pixels);
+            }
+        }
+
         return output;
     }
 
-    for (int i = 0; i < points.size() - 1; ++i)
+
+    Box2d Polyline2D::get_geometry_size() const
     {
-        if (segments_visible.size() > i && !segments_visible[i])
+        Box2d bounds { Vec2d::zero(), Vec2d::zero() };
+
+        for (auto point : points)
         {
-            continue;
+            bounds.expand(point);
         }
-        rasterize_edge(points[i], points[i + 1], transform, output.pixels);
+
+        return bounds;
     }
 
-    if (do_close)
+    Box2d Polyline2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
     {
-        rasterize_edge(points.back(), points.front(), transform, output.pixels);
-    }
+        const auto [min, max] { get_geometry_size() };
+        const Vec2d line_extent { std::ceil(line_thickness / 2.0), std::ceil(line_thickness / 2.0) };
+        Vec2d top_left { min - line_extent };
+        Vec2d bot_right { max + line_extent };
 
-    if (do_rounded_corners)
-    {
-        rasterize_rounded_corners(transform, output.pixels);
-    }
-
-    if (do_fill)
-    {
-        const std::vector transformed_points { Transform2D::transform_points(points, transform) };
-
-        const Polygon::Component polygon(transformed_points, clockwise);
-        const std::vector triangles { Triangulate::triangulate_polygon(polygon) };
-
-        for (const auto& triangle : triangles)
-        {
-            Rasterize::rasterize_filled_triangle(triangle, output.pixels);
-        }
-    }
-
-    return output;
-}
-
-
-Box2d Polyline2D::get_geometry_size() const
-{
-    Box2d bounds { Vec2d::zero(), Vec2d::zero() };
-
-    for (auto point : points)
-    {
-        bounds.expand(point);
-    }
-
-    return bounds;
-}
-
-Box2d Polyline2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
-{
-    const auto [min, max] { get_geometry_size() };
-    const Vec2d line_extent { std::ceil(line_thickness / 2.0), std::ceil(line_thickness / 2.0) };
-    Vec2d top_left { min - line_extent };
-    Vec2d bot_right { max + line_extent };
-
-    const std::vector<Vec2d> corners {
-        { top_left.x, top_left.y },
-        { bot_right.x, top_left.y },
-        { top_left.x, bot_right.y },
-        { bot_right.x, bot_right.y },
-    };
-    const std::vector transformed_corners { Transform2D::transform_points(corners, transform) };
-
-    Box2d bounds { transformed_corners[0], transformed_corners[0] };
-    bounds.expand(transformed_corners);
-
-    return bounds;
-}
-
-bool Polyline2D::cache_clockwise()
-{
-    double sum = 0.0;
-    for (int i = 0; i < points.size(); ++i)
-    {
-        const Vec2d p0 { points[i] };
-        const Vec2d p1 { points[(i + 1) % points.size()] };
-        sum += (p1.x - p0.x) * (p1.y + p0.y);
-    }
-    clockwise = sum < 0.0;
-    return clockwise;
-}
-
-void Polyline2D::rasterize_rounded_corner(const Vec2d pos, const double angle0, const double angle1, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const
-{
-    std::vector<Vec2d> vertices;
-
-    for (int i = 0; i <= CORNER_SEGMENTS; ++i)
-    {
-        const double progress { static_cast<double>(i) / static_cast<double>(CORNER_SEGMENTS) };
-        const double theta { angle0 + (angle1 - angle0) * progress };
-
-        const Vec2d vertex {
-            pos.x + line_thickness / 2.0 * std::cos(theta),
-            pos.y + line_thickness / 2.0 * std::sin(theta)
+        const std::vector<Vec2d> corners {
+            { top_left.x, top_left.y },
+            { bot_right.x, top_left.y },
+            { top_left.x, bot_right.y },
+            { bot_right.x, bot_right.y },
         };
+        const std::vector transformed_corners { Transform2D::transform_points(corners, transform) };
 
-        vertices.push_back(Transform2D::transform_point(vertex, transform));
+        Box2d bounds { transformed_corners[0], transformed_corners[0] };
+        bounds.expand(transformed_corners);
+
+        return bounds;
     }
-    Vec2d transformed_pos = Transform2D::transform_point(pos, transform);
 
-    for (int i = 0; i < vertices.size() - 1; ++i)
+    bool Polyline2D::cache_clockwise()
     {
-        Rasterize::rasterize_filled_triangle({ transformed_pos, vertices[i], vertices[i + 1] }, pixels);
-    }
-}
-
-void Polyline2D::rasterize_rounded_corners(const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const
-{
-    for (int i = 0; i < points.size(); ++i)
-    {
-        Vec2d p0 { points[(i - 1 + points.size()) % points.size()] };
-        Vec2d p1 { points[i] };
-        Vec2d p2 { points[(i + 1) % points.size()] };
-
-        const Vec2d normal0 { (p0 - p1).normal().normalize() };
-        const Vec2d normal1 { (p1 - p2).normal().normalize() };
-
-        Vec2d between { (p1 - p0 + (p1 - p2)).normalize() };
-
-        const double angle0 { std::atan2(normal0.y, normal0.x) };
-        const double angle1 { std::atan2(normal1.y, normal1.x) };
-
-        double angle_diff { angle1 - angle0 };
-        if (angle_diff <= 0)
+        double sum = 0.0;
+        for (int i = 0; i < points.size(); ++i)
         {
-            angle_diff += 2 * std::numbers::pi;
+            const Vec2d p0 { points[i] };
+            const Vec2d p1 { points[(i + 1) % points.size()] };
+            sum += (p1.x - p0.x) * (p1.y + p0.y);
         }
-
-        constexpr double angle_overlap = 0.1;
-        double pos_overlap = 0.2;
-
-        rasterize_rounded_corner(p1 - between * pos_overlap, angle0 - angle_overlap, angle0 + angle_diff + angle_overlap, transform, pixels);
+        clockwise = sum < 0.0;
+        return clockwise;
     }
-}
 
-void Polyline2D::rasterize_edge(const Vec2d start, const Vec2d end, const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const
-{
-    const double line_extent { line_thickness / 2.0 };
-    const Vec2d normal { (end - start).normal().normalize() };
-
-    const Vec2d offset { normal * line_extent };
-
-    Vec2d v0 { start + offset };
-    Vec2d v1 { start - offset };
-    Vec2d v2 { end + offset };
-    Vec2d v3 { end - offset };
-
-    v0 = Transform2D::transform_point(v0, transform);
-    v1 = Transform2D::transform_point(v1, transform);
-    v2 = Transform2D::transform_point(v2, transform);
-    v3 = Transform2D::transform_point(v3, transform);
-
-    Rasterize::rasterize_filled_triangle({ v0, v1, v2 }, pixels);
-    Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, pixels);
-}
-
-void Polyline2D::add_point(const Vec2d point)
-{
-    points.push_back(point);
-    cache_clockwise();
-    set_obb_dirty();
-}
-
-void Polyline2D::add_point(const double x, const double y)
-{
-    points.push_back(Vec2d { x, y });
-    cache_clockwise();
-    set_obb_dirty();
-}
-
-void Polyline2D::add_points(const std::vector<Vec2d> &new_points)
-{
-    points.insert(points.end(), new_points.begin(), new_points.end());
-    cache_clockwise();
-    set_obb_dirty();
-}
-
-void Polyline2D::set_point(const size_t index, const Vec2d point)
-{
-    if (index < points.size())
+    void Polyline2D::rasterize_rounded_corner(
+        const Vec2d pos,
+        const double angle0,
+        const double angle1,
+        const Matrix3x3d &transform,
+        std::vector<Vec2i> &pixels
+    ) const
     {
-        points[index] = point;
+        std::vector<Vec2d> vertices;
+
+        for (int i = 0; i <= CORNER_SEGMENTS; ++i)
+        {
+            const double progress { static_cast<double>(i) / static_cast<double>(CORNER_SEGMENTS) };
+            const double theta { angle0 + (angle1 - angle0) * progress };
+
+            const Vec2d vertex {
+                pos.x + line_thickness / 2.0 * std::cos(theta),
+                pos.y + line_thickness / 2.0 * std::sin(theta)
+            };
+
+            vertices.push_back(Transform2D::transform_point(vertex, transform));
+        }
+        Vec2d transformed_pos = Transform2D::transform_point(pos, transform);
+
+        for (int i = 0; i < vertices.size() - 1; ++i)
+        {
+            Rasterize::rasterize_filled_triangle({ transformed_pos, vertices[i], vertices[i + 1] }, pixels);
+        }
+    }
+
+    void Polyline2D::rasterize_rounded_corners(const Matrix3x3d &transform, std::vector<Vec2i> &pixels) const
+    {
+        for (int i = 0; i < points.size(); ++i)
+        {
+            Vec2d p0 { points[(i - 1 + points.size()) % points.size()] };
+            Vec2d p1 { points[i] };
+            Vec2d p2 { points[(i + 1) % points.size()] };
+
+            const Vec2d normal0 { (p0 - p1).normal().normalize() };
+            const Vec2d normal1 { (p1 - p2).normal().normalize() };
+
+            Vec2d between { (p1 - p0 + (p1 - p2)).normalize() };
+
+            const double angle0 { std::atan2(normal0.y, normal0.x) };
+            const double angle1 { std::atan2(normal1.y, normal1.x) };
+
+            double angle_diff { angle1 - angle0 };
+            if (angle_diff <= 0)
+            {
+                angle_diff += 2 * std::numbers::pi;
+            }
+
+            constexpr double angle_overlap = 0.1;
+            double pos_overlap = 0.2;
+
+            rasterize_rounded_corner(
+                p1 - between * pos_overlap,
+                angle0 - angle_overlap,
+                angle0 + angle_diff + angle_overlap,
+                transform,
+                pixels
+            );
+        }
+    }
+
+    void Polyline2D::rasterize_edge(
+        const Vec2d start,
+        const Vec2d end,
+        const Matrix3x3d &transform,
+        std::vector<Vec2i> &pixels
+    ) const
+    {
+        const double line_extent { line_thickness / 2.0 };
+        const Vec2d normal { (end - start).normal().normalize() };
+
+        const Vec2d offset { normal * line_extent };
+
+        Vec2d v0 { start + offset };
+        Vec2d v1 { start - offset };
+        Vec2d v2 { end + offset };
+        Vec2d v3 { end - offset };
+
+        v0 = Transform2D::transform_point(v0, transform);
+        v1 = Transform2D::transform_point(v1, transform);
+        v2 = Transform2D::transform_point(v2, transform);
+        v3 = Transform2D::transform_point(v3, transform);
+
+        Rasterize::rasterize_filled_triangle({ v0, v1, v2 }, pixels);
+        Rasterize::rasterize_filled_triangle({ v1, v3, v2 }, pixels);
+    }
+
+    void Polyline2D::add_point(const Vec2d point)
+    {
+        points.push_back(point);
         cache_clockwise();
         set_obb_dirty();
     }
-}
 
-void Polyline2D::set_point(const size_t index, const double x, const double y)
-{
-    if (index < points.size())
+    void Polyline2D::add_point(const double x, const double y)
     {
-        points[index] = Vec2d { x, y };
+        points.push_back(Vec2d { x, y });
         cache_clockwise();
         set_obb_dirty();
     }
-}
 
-void Polyline2D::set_points(const std::vector<Vec2d> &new_points)
-{
-    points = new_points;
-    cache_clockwise();
-    set_obb_dirty();
-}
-
-void Polyline2D::clear_points()
-{
-    points.clear();
-}
-
-void Polyline2D::set_segment_visible(const size_t index, const bool visible)
-{
-    if (segments_visible.size() < points.size())
+    void Polyline2D::add_points(const std::vector<Vec2d> &new_points)
     {
-        segments_visible.resize(points.size(), true);
+        points.insert(points.end(), new_points.begin(), new_points.end());
+        cache_clockwise();
+        set_obb_dirty();
     }
-    if (index < points.size())
+
+    void Polyline2D::set_point(const size_t index, const Vec2d point)
     {
-        segments_visible[index] = visible;
+        if (index < points.size())
+        {
+            points[index] = point;
+            cache_clockwise();
+            set_obb_dirty();
+        }
     }
-}
 
-bool Polyline2D::get_segment_visible(const size_t index) const
-{
-    if (index < points.size())
+    void Polyline2D::set_point(const size_t index, const double x, const double y)
     {
-        return segments_visible[index];
+        if (index < points.size())
+        {
+            points[index] = Vec2d { x, y };
+            cache_clockwise();
+            set_obb_dirty();
+        }
     }
-    return false;
-}
 
-std::vector<Vec2d> Polyline2D::get_points() const
-{
-    return points;
-}
-
-Vec2d Polyline2D::get_point(const size_t index) const
-{
-    if (index < points.size())
+    void Polyline2D::set_points(const std::vector<Vec2d> &new_points)
     {
-        return points[index];
+        points = new_points;
+        cache_clockwise();
+        set_obb_dirty();
     }
-    return Vec2d::zero();
-}
 
-size_t Polyline2D::get_num_points() const
-{
-    return points.size();
-}
+    void Polyline2D::clear_points()
+    {
+        points.clear();
+    }
 
-void Polyline2D::set_close(const bool close)
-{
-    do_close = close;
-}
+    void Polyline2D::set_segment_visible(const size_t index, const bool visible)
+    {
+        if (segments_visible.size() < points.size())
+        {
+            segments_visible.resize(points.size(), true);
+        }
+        if (index < points.size())
+        {
+            segments_visible[index] = visible;
+        }
+    }
 
-bool Polyline2D::get_close() const
-{
-    return do_close;
-}
+    bool Polyline2D::get_segment_visible(const size_t index) const
+    {
+        if (index < points.size())
+        {
+            return segments_visible[index];
+        }
+        return false;
+    }
 
-void Polyline2D::set_rounded_corners(const bool rounded)
-{
-    do_rounded_corners = rounded;
-    set_obb_dirty();
-}
+    std::vector<Vec2d> Polyline2D::get_points() const
+    {
+        return points;
+    }
 
-bool Polyline2D::get_rounded_corners() const
-{
-    return do_rounded_corners;
-}
+    Vec2d Polyline2D::get_point(const size_t index) const
+    {
+        if (index < points.size())
+        {
+            return points[index];
+        }
+        return Vec2d::zero();
+    }
 
-void Polyline2D::set_line_thickness(const double t)
-{
-    line_thickness = t;
-    set_obb_dirty();
-}
+    size_t Polyline2D::get_num_points() const
+    {
+        return points.size();
+    }
 
-double Polyline2D::get_line_thickness() const
-{
-    return line_thickness;
-}
+    void Polyline2D::set_close(const bool close)
+    {
+        do_close = close;
+    }
 
-void Polyline2D::set_fill(const bool f)
-{
-    do_fill = f;
-}
+    bool Polyline2D::get_close() const
+    {
+        return do_close;
+    }
 
-bool Polyline2D::get_fill() const
-{
-    return do_fill;
-}
+    void Polyline2D::set_rounded_corners(const bool rounded)
+    {
+        do_rounded_corners = rounded;
+        set_obb_dirty();
+    }
+
+    bool Polyline2D::get_rounded_corners() const
+    {
+        return do_rounded_corners;
+    }
+
+    void Polyline2D::set_line_thickness(const double t)
+    {
+        line_thickness = t;
+        set_obb_dirty();
+    }
+
+    double Polyline2D::get_line_thickness() const
+    {
+        return line_thickness;
+    }
+
+    void Polyline2D::set_fill(const bool f)
+    {
+        do_fill = f;
+    }
+
+    bool Polyline2D::get_fill() const
+    {
+        return do_fill;
+    }
 
 }

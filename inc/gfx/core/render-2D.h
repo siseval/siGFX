@@ -19,7 +19,7 @@ namespace gfx
 
     public:
 
-        explicit Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling = Vec2d{1, 1});
+        explicit Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling = Vec2d { 1, 1 });
 
         void draw_frame() const;
         void clear_frame() const;

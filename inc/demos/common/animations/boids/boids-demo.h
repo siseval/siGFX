@@ -7,88 +7,104 @@
 namespace demos
 {
 
-struct Boid
-{
-    gfx::Vec2d position;
-    gfx::Vec2d velocity;
-
-    std::shared_ptr<gfx::Polyline2D> shape;
-};
-
-class BoidsDemo : public demos::GfxDemo
-{
-
-public:
-
-    BoidsDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer) 
+    struct Boid
     {
-        render2D = renderer->get_render_2D();
-    }
+        gfx::Vec2d position;
+        gfx::Vec2d velocity;
 
-    void init() override;
-    void render_frame(const double dt) override;
-    void end() override;
-    void handle_char(const int input) override;
-    void report_mouse(const demos::MouseEvent event) override;
+        std::shared_ptr<gfx::Polyline2D> shape;
+    };
 
-    std::vector<std::string> debug_text() override
+    class BoidsDemo : public demos::GfxDemo
     {
-        return { 
-            "num boids: " + std::to_string(boids.size()),
-            "pos: " + (boids.size() > 0 ? "[" + std::to_string(boids[0]->position.x) + ", " + std::to_string(boids[0]->position.y) + "]" : "N/A"),
-        };
-    }
 
-private: 
+    public:
 
-    gfx::Vec2d alignment(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
-    gfx::Vec2d cohesion(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
-    gfx::Vec2d separation(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
-    gfx::Vec2d centering(const std::shared_ptr<Boid> boid) const;
-    gfx::Vec2d mouse_avoidance(const std::shared_ptr<Boid> boid) const;
-    void apply_behaviors(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors, const double dt) const;
+        BoidsDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+            : GfxDemo(renderer)
+        {
+            render2D = renderer->get_render_2D();
+        }
 
-    void wrap_position(const std::shared_ptr<Boid> boid) const;
+        void init() override;
+        void render_frame(double dt) override;
+        void end() override;
+        void handle_char(int input) override;
+        void report_mouse(demos::MouseEvent event) override;
 
-    std::vector<std::shared_ptr<Boid>> get_neighbors(const std::shared_ptr<Boid> boid) const;
+        std::vector<std::string> debug_text() override
+        {
+            return {
+                "num boids: " + std::to_string(boids.size()),
+                "pos: " + (boids.size() > 0 ?
+                               "[" + std::to_string(boids[0]->position.x) + ", " + std::to_string(boids[0]->position.y)
+                               + "]" :
+                               "N/A"),
+            };
+        }
 
-    void process_boid(const std::shared_ptr<Boid> boid, const double dt);
-    void process_boids(const double dt);
-    void render_boids() const;
+    private:
 
-    void spawn_boid(const gfx::Vec2d position, const gfx::Vec2d velocity);
-    void spawn_boid();
-    void remove_boid(const std::shared_ptr<Boid> boid);
+        gfx::Vec2d alignment(
+            std::shared_ptr<Boid> boid,
+            const std::vector<std::shared_ptr<Boid>> &neighbors
+        ) const;
+        gfx::Vec2d cohesion(
+            std::shared_ptr<Boid> boid,
+            const std::vector<std::shared_ptr<Boid>> &neighbors
+        ) const;
+        gfx::Vec2d separation(
+            std::shared_ptr<Boid> boid,
+            const std::vector<std::shared_ptr<Boid>> &neighbors
+        ) const;
+        gfx::Vec2d centering(std::shared_ptr<Boid> boid) const;
+        gfx::Vec2d mouse_avoidance(std::shared_ptr<Boid> boid) const;
+        void apply_behaviors(
+            std::shared_ptr<Boid> boid,
+            const std::vector<std::shared_ptr<Boid>> &neighbors,
+            double dt
+        ) const;
 
-    std::shared_ptr<gfx::Render2D> render2D;
+        void wrap_position(std::shared_ptr<Boid> boid) const;
 
-    gfx::Vec2d mouse_position;
-    bool mouse_active = false;
-    double mouse_influence_radius = 100.0;
+        std::vector<std::shared_ptr<Boid>> get_neighbors(std::shared_ptr<Boid> boid) const;
 
-    int num_boids = 500;
-    std::vector<std::shared_ptr<Boid>> boids;
+        void process_boid(std::shared_ptr<Boid> boid, double dt);
+        void process_boids(double dt);
+        void render_boids() const;
 
-    double boid_scale = 0.8;
+        void spawn_boid(gfx::Vec2d position, gfx::Vec2d velocity);
+        void spawn_boid();
+        void remove_boid(std::shared_ptr<Boid> boid);
 
-    double perception_radius;
-    double max_speed;
-    double max_force;
-    double desired_separation;
+        std::shared_ptr<gfx::Render2D> render2D;
 
-    double separation_weight = 1.5;
-    double alignment_weight = 1.0;
-    double cohesion_weight = 1.0;
-    double centering_weight = 2.0;
-    double mouse_avoid_weigth = 10.0;
+        gfx::Vec2d mouse_position;
+        bool mouse_active = false;
+        double mouse_influence_radius = 100.0;
 
-    double bounds_margin_fraction = 0.2;
+        int num_boids = 500;
+        std::vector<std::shared_ptr<Boid>> boids;
 
-    gfx::Color4 slow_color { 0.5, 0.8, 1.0 };
-    gfx::Color4 fast_color { 1.0, 0.6, 0.6 };
-    std::vector<gfx::Color4> boid_palette;
-    int num_boid_colors = 120;
-};
+        double boid_scale = 0.8;
+
+        double perception_radius;
+        double max_speed;
+        double max_force;
+        double desired_separation;
+
+        double separation_weight = 1.5;
+        double alignment_weight = 1.0;
+        double cohesion_weight = 1.0;
+        double centering_weight = 2.0;
+        double mouse_avoid_weigth = 10.0;
+
+        double bounds_margin_fraction = 0.2;
+
+        gfx::Color4 slow_color { 0.5, 0.8, 1.0 };
+        gfx::Color4 fast_color { 1.0, 0.6, 0.6 };
+        std::vector<gfx::Color4> boid_palette;
+        int num_boid_colors = 120;
+    };
 
 }

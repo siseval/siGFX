@@ -15,7 +15,7 @@ namespace gfx
 
         static Box3 zero()
         {
-            return Box3{Vec3<T>::zero(), Vec3<T>::zero()};
+            return Box3 { Vec3<T>::zero(), Vec3<T>::zero() };
         }
 
         Vec3<T> size() const
@@ -87,30 +87,30 @@ namespace gfx
         std::vector<Vec3<T>> get_corners() const
         {
             return {
-                Vec3<T>{min.x, min.y, min.z},
-                Vec3<T>{max.x, min.y, min.z},
-                Vec3<T>{min.x, max.y, min.z},
-                Vec3<T>{max.x, max.y, min.z},
-                Vec3<T>{min.x, min.y, max.z},
-                Vec3<T>{max.x, min.y, max.z},
-                Vec3<T>{min.x, max.y, max.z},
-                Vec3<T>{max.x, max.y, max.z}
+                Vec3<T> { min.x, min.y, min.z },
+                Vec3<T> { max.x, min.y, min.z },
+                Vec3<T> { min.x, max.y, min.z },
+                Vec3<T> { max.x, max.y, min.z },
+                Vec3<T> { min.x, min.y, max.z },
+                Vec3<T> { max.x, min.y, max.z },
+                Vec3<T> { min.x, max.y, max.z },
+                Vec3<T> { max.x, max.y, max.z }
             };
         }
 
         static constexpr Box3 infinite()
         {
-            return Box3{
-                Vec3<T>{std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest()},
-                Vec3<T>{std::numeric_limits<T>::max(), std::numeric_limits<T>::max()}
+            return Box3 {
+                Vec3<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() },
+                Vec3<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() }
             };
         }
 
         static constexpr Box3 unexpanded()
         {
-            return Box3{
-                Vec3<T>{std::numeric_limits<T>::max(), std::numeric_limits<T>::max()},
-                Vec3<T>{std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest()}
+            return Box3 {
+                Vec3<T> { std::numeric_limits<T>::max(), std::numeric_limits<T>::max() },
+                Vec3<T> { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest() }
             };
         }
     };

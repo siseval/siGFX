@@ -56,19 +56,19 @@ namespace gfx
         void increment_transform_version();
 
         UUID id;
-        Shader3D shader{DefaultShader3D()};
-        Color4 color{Color4::white()};
+        Shader3D shader { DefaultShader3D() };
+        Color4 color { Color4::white() };
 
-        Vec3d position{1.0, 1.0, 1.0};
-        Vec3d rotation{0.0, 0.0, 0.0};
-        Vec3d scale{1.0, 1.0, 1.0};
-        Vec3d anchor{0.0, 0.0, 0.0};
+        Vec3d position { 1.0, 1.0, 1.0 };
+        Vec3d rotation { 0.0, 0.0, 0.0 };
+        Vec3d scale { 1.0, 1.0, 1.0 };
+        Vec3d anchor { 0.0, 0.0, 0.0 };
 
         mutable PolygonMesh mesh_data;
-        mutable bool mesh_dirty{true};
+        mutable bool mesh_dirty { true };
 
         mutable Matrix4x4d cached_transform;
-        mutable bool transform_dirty{true};
-        int64_t transform_version{0};
+        mutable bool transform_dirty { true };
+        int64_t transform_version { 0 };
     };
 }

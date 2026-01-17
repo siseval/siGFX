@@ -49,6 +49,6 @@ namespace gfx
         );
 
         std::vector<Polygon::Component> components;
-        static constexpr int CORNER_SEGMENTS{8};
+        static constexpr int CORNER_SEGMENTS { 8 };
     };
 }

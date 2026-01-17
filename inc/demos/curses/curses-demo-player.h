@@ -9,57 +9,58 @@
 namespace demos
 {
 
-class CursesDemoPlayer : public demos::DemoPlayer
-{
-
-public:
-
-    CursesDemoPlayer() : demos::DemoPlayer()
+    class CursesDemoPlayer : public demos::DemoPlayer
     {
-        auto surface { std::make_shared<gfx::CursesRenderSurface>(demos::get_screen_size() * 2) };
-        renderer = std::make_shared<gfx::RenderEngine>(surface);
-    }
 
-    gfx::Vec2i get_screen_size() override
-    {
-        return demos::get_screen_size() * 2;
-    }
+    public:
 
-    int get_input() override
-    {
-        int input { demos::get_input() };
-        if (input == KEY_MOUSE)
+        CursesDemoPlayer()
+            : demos::DemoPlayer()
         {
-            MEVENT e;
-            if (getmouse(&e) == OK)
+            auto surface { std::make_shared<gfx::CursesRenderSurface>(demos::get_screen_size() * 2) };
+            renderer = std::make_shared<gfx::RenderEngine>(surface);
+        }
+
+        gfx::Vec2i get_screen_size() override
+        {
+            return demos::get_screen_size() * 2;
+        }
+
+        int get_input() override
+        {
+            int input { demos::get_input() };
+            if (input == KEY_MOUSE)
             {
-                demos::MouseEvent event { curses_to_mouse_event(e) };
-                demos[current_demo]->report_mouse(event);
+                MEVENT e;
+                if (getmouse(&e) == OK)
+                {
+                    demos::MouseEvent event { curses_to_mouse_event(e) };
+                    demos[current_demo]->report_mouse(event);
+                }
+                refresh();
+                return 0;
             }
-            refresh();
-            return 0;
+            return input;
         }
-        return input;
-    }
 
-    void draw_info() override
-    {
-        demos::set_bold(true);
-        demos::set_color(demos::default_color::WHITE);
-        std::vector<std::string> info = get_info();
-        for (int i = 0; i < info.size(); ++i)
+        void draw_info() override
         {
-            add_str({ 0, i }, info[i]);
+            demos::set_bold(true);
+            demos::set_color(demos::default_color::WHITE);
+            std::vector<std::string> info = get_info();
+            for (int i = 0; i < info.size(); ++i)
+            {
+                add_str({ 0, i }, info[i]);
+            }
         }
-    }
 
-private:
+    private:
 
-    demos::MouseEvent curses_to_mouse_event(const MEVENT e)
-    {
-        demos::MouseEvent event;
-        switch (e.bstate)
+        demos::MouseEvent curses_to_mouse_event(const MEVENT e)
         {
+            demos::MouseEvent event;
+            switch (e.bstate)
+            {
             case BUTTON1_PRESSED:
                 event.type = demos::MouseEventType::LEFT_DOWN;
                 break;
@@ -82,12 +83,12 @@ private:
 
             default:
                 break;
+            }
+            gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_render_2D()->get_viewport_scaling();
+            event.position = position / renderer->get_resolution();
+            return event;
         }
-        gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_render_2D()->get_viewport_scaling();
-        event.position = position / renderer->get_resolution();
-        return event;
-    }
 
-};
+    };
 
 }

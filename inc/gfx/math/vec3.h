@@ -23,7 +23,7 @@ namespace gfx
 
         static Vec3 zero()
         {
-            return {0, 0, 0};
+            return { 0, 0, 0 };
         }
 
         static T dot(Vec3 a, Vec3 b)
@@ -81,16 +81,16 @@ namespace gfx
             {
                 return normalize() * max_magnitude;
             }
-            return {x, y, z};
+            return { x, y, z };
         }
 
         Vec3<double> normal() const
         {
             if (std::fabs(x) > 1e-6 || std::fabs(y) > 1e-6)
             {
-                return Vec3<double>{-y, x, 0}.normalize();
+                return Vec3<double> { -y, x, 0 }.normalize();
             }
-            return Vec3<double>{0, -z, y}.normalize();
+            return Vec3<double> { 0, -z, y }.normalize();
         }
 
         double length() const
@@ -100,46 +100,46 @@ namespace gfx
 
         Vec3<double> normalize() const
         {
-            return {static_cast<T>(x / length()), static_cast<T>(y / length()), static_cast<T>(z / length())};
+            return { static_cast<T>(x / length()), static_cast<T>(y / length()), static_cast<T>(z / length()) };
         }
 
         Vec3 operator-() const
         {
-            return {static_cast<T>(-x), static_cast<T>(-y), static_cast<T>(-z)};
+            return { static_cast<T>(-x), static_cast<T>(-y), static_cast<T>(-z) };
         }
 
         template <typename U>
         Vec3 operator+(const Vec3<U> &other) const
         {
-            return {static_cast<T>(x + other.x), static_cast<T>(y + other.y), static_cast<T>(z + other.z)};
+            return { static_cast<T>(x + other.x), static_cast<T>(y + other.y), static_cast<T>(z + other.z) };
         }
 
         template <typename U>
         Vec3 operator-(const Vec3<U> &other) const
         {
-            return {static_cast<T>(x - other.x), static_cast<T>(y - other.y), static_cast<T>(z - other.z)};
+            return { static_cast<T>(x - other.x), static_cast<T>(y - other.y), static_cast<T>(z - other.z) };
         }
 
         template <typename U>
         Vec3 operator*(const Vec3<U> &other) const
         {
-            return {static_cast<T>(x * other.x), static_cast<T>(y * other.y), static_cast<T>(z * other.z)};
+            return { static_cast<T>(x * other.x), static_cast<T>(y * other.y), static_cast<T>(z * other.z) };
         }
 
         template <typename U>
         Vec3 operator/(const Vec3<U> &other) const
         {
-            return {static_cast<T>(x / other.x), static_cast<T>(y / other.y), static_cast<T>(z / other.z)};
+            return { static_cast<T>(x / other.x), static_cast<T>(y / other.y), static_cast<T>(z / other.z) };
         }
 
         Vec3 operator*(const double &factor) const
         {
-            return {static_cast<T>(x * factor), static_cast<T>(y * factor), static_cast<T>(z * factor)};
+            return { static_cast<T>(x * factor), static_cast<T>(y * factor), static_cast<T>(z * factor) };
         }
 
         Vec3 operator/(const double &factor) const
         {
-            return {static_cast<T>(x / factor), static_cast<T>(y / factor), static_cast<T>(z / factor)};
+            return { static_cast<T>(x / factor), static_cast<T>(y / factor), static_cast<T>(z / factor) };
         }
 
         template <typename U>
@@ -212,9 +212,9 @@ namespace gfx
         }
 
         template <typename U>
-        explicit operator Vec3<U>() const
+        operator Vec3<U>() const
         {
-            return {static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};
+            return { static_cast<U>(x), static_cast<U>(y), static_cast<U>(z) };
         }
     };
 

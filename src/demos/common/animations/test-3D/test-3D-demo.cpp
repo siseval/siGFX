@@ -29,10 +29,15 @@ namespace demos
         floor_item = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), shader);
         renderer->add_primitive(floor_item);
 
-        cube = renderer->create_cuboid(Vec3d::zero(), Vec3d{2.0, 2.0, 2.0}, Color4(0.4, 0.4, 0.8), shader);
+        cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4(0.4, 0.4, 0.8), shader);
         renderer->add_primitive(cube);
 
-        crosshair = renderer->create_ellipse(renderer->get_resolution() / 2, {1, 1}, Color4(1.0, 1.0, 1.0, 0.75), 1.0);
+        crosshair = renderer->create_ellipse(
+            renderer->get_resolution() / 2,
+            { 1, 1 },
+            Color4(1.0, 1.0, 1.0, 0.75),
+            1.0
+        );
         crosshair->set_anchor(0.5, 0.5);
         crosshair->set_filled(true);
         renderer->add_primitive(crosshair);
@@ -52,7 +57,7 @@ namespace demos
         {
             auto box = renderer->create_cuboid(
                 rand_pos(min_range, max_range),
-                Vec3d{
+                Vec3d {
                     random_double(1.0, 3.0),
                     random_double(1.0, 3.0),
                     random_double(1.0, 3.0)
@@ -80,7 +85,7 @@ namespace demos
 
     void Test3DDemo::render_frame(const double dt)
     {
-        const double t_sec{time_sec()};
+        const double t_sec { time_sec() };
 
         for (const auto primitive : scene_items)
         {
@@ -145,7 +150,7 @@ namespace demos
 
     void Test3DDemo::camera_movement(const Key key, const double dt)
     {
-        Vec3d forward{renderer->get_camera_forward()};
+        Vec3d forward { renderer->get_camera_forward() };
         forward.y = 0.0;
 
         switch (key)
@@ -162,22 +167,22 @@ namespace demos
             }
         case Key::A:
             {
-                camera_velocity += Vec3d::cross(forward, Vec3d{0, 1, 0}).normalize() * camera_acceleration * dt;
+                camera_velocity += Vec3d::cross(forward, Vec3d { 0, 1, 0 }).normalize() * camera_acceleration * dt;
                 break;
             }
         case Key::D:
             {
-                camera_velocity -= Vec3d::cross(forward, Vec3d{0, 1, 0}).normalize() * camera_acceleration * dt;
+                camera_velocity -= Vec3d::cross(forward, Vec3d { 0, 1, 0 }).normalize() * camera_acceleration * dt;
                 break;
             }
         case Key::SPACE:
             {
-                camera_velocity += Vec3d{0, 1, 0} * camera_acceleration * dt;
+                camera_velocity += Vec3d { 0, 1, 0 } * camera_acceleration * dt;
                 break;
             }
         case Key::CTRL:
             {
-                camera_velocity -= Vec3d{0, 1, 0} * camera_acceleration * dt;
+                camera_velocity -= Vec3d { 0, 1, 0 } * camera_acceleration * dt;
                 break;
             }
         default:
@@ -229,12 +234,14 @@ namespace demos
         {
         case MouseEventType::MOVE:
             {
-                const Vec2d delta{event.position - prev_mouse_pos};
-                renderer->set_camera_rotation({
-                    renderer->get_camera_rotation().x + delta.y,
-                    renderer->get_camera_rotation().y + delta.x,
-                    renderer->get_camera_rotation().z
-                });
+                const Vec2d delta { event.position - prev_mouse_pos };
+                renderer->set_camera_rotation(
+                    {
+                        renderer->get_camera_rotation().x + delta.y,
+                        renderer->get_camera_rotation().y + delta.x,
+                        renderer->get_camera_rotation().z
+                    }
+                );
                 prev_mouse_pos = event.position;
                 break;
             }

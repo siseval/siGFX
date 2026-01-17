@@ -23,8 +23,8 @@ namespace gfx
 
     private:
 
-        double radius{0};
-        int lat_segments{12};
-        int lon_segments{12};
+        double radius { 0 };
+        int lat_segments { 12 };
+        int lon_segments { 12 };
     };
 }
