@@ -8,9 +8,9 @@ using namespace gfx;
 
 void StarDemo::init()
 {
-    Vec2d resolution { get_resolution() };
-    Vec2d center { resolution / 2 };
-    double distance_ratio = 16;
+    const Vec2d resolution { get_resolution() };
+    const Vec2d center { resolution / 2 };
+    constexpr double distance_ratio = 16;
 
     render2D->clear_items();
     render2D->get_render_surface()->clear_palette();
@@ -19,7 +19,7 @@ void StarDemo::init()
 
     for (int i = 0; i < num_colors; ++i)
     {
-        double progress { static_cast<double>(i) / num_colors };
+        const double progress { static_cast<double>(i) / num_colors };
 
         Color4 inner { 1.0, 0.8, 0.1 };
         Color4 outer { 0.9, 0.5, 1.0 };
@@ -30,10 +30,10 @@ void StarDemo::init()
 
     for (int i = 0; i < num_polylines; ++i)
     {
-        double progress { static_cast<double>(i) / num_polylines };
-        int color_index { static_cast<int>(progress * (colors.size() - 1)) };
+        const double progress { static_cast<double>(i) / num_polylines };
+        const int color_index { static_cast<int>(progress * (colors.size() - 1)) };
 
-        Color4 color { colors[color_index] };
+        const Color4 color { colors[color_index] };
 
         std::vector<Vec2d> points {
             { 0, -resolution.y / distance_ratio },
@@ -56,19 +56,17 @@ void StarDemo::init()
 
 void StarDemo::render_frame(const double dt)
 {
-    double t0 { time_us() };
-
     if (!paused)
     {
         time += dt * speed;
     }
-    double sin_t { std::sin(time) };
-    double cos_t { std::cos(time * 2) };
+    const double sin_t { std::sin(time) };
+    const double cos_t { std::cos(time * 2) };
 
     for (int i = 0; i < num_polylines; ++i)
     {
-        double progress { static_cast<double>(i) / num_polylines };
-        auto polyline { polylines[i] };
+        const double progress { static_cast<double>(i) / num_polylines };
+        const auto polyline { polylines[i] };
 
         polyline->set_scale({ 1.0 + progress * (0.8 + sin_t * 0.4), 1.0 + progress * (1 + cos_t * 0.8) });
         polyline->set_rotation(time * (1.0 + progress));

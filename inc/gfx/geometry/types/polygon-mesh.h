@@ -1,47 +1,43 @@
 #pragma once
 
-#include "gfx/math/vec3.h"
-#include "gfx/math/box3.h"
 #include "gfx/core/types/color4.h"
+#include "gfx/math/box3.h"
+#include "gfx/math/vec3.h"
 
 #include <vector>
 
 namespace gfx
 {
+    class PolygonMesh
+    {
 
+    public:
 
-class PolygonMesh
-{
+        PolygonMesh();
 
-public:
+        PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
 
-    PolygonMesh();
+        Box3d get_extent() const;
 
-    PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
+        void set_vertices(std::vector<Vec3d> verts);
+        void set_normals(std::vector<Vec3d> norms);
+        void set_indices(std::vector<size_t> inds);
+        void set_colors(std::vector<Color4> cols);
 
-    Box3d get_extent() const;
+        const std::vector<Vec3d> &get_vertices() const;
+        const std::vector<Vec3d> &get_normals() const;
+        const std::vector<size_t> &get_indices() const;
+        const std::vector<Color4> &get_colors() const;
 
-    void set_vertices(const std::vector<Vec3d> verts);
-    void set_normals(const std::vector<Vec3d> norms);
-    void set_indices(const std::vector<size_t> inds);
-    void set_colors(const std::vector<Color4> cols);
+        size_t num_vertices() const;
 
-    const std::vector<Vec3d>& get_vertices() const;
-    const std::vector<Vec3d>& get_normals() const;
-    const std::vector<size_t>& get_indices() const;
-    const std::vector<Color4>& get_colors() const;
+        void clear();
 
-    const size_t num_vertices() const;
+    private:
 
-    void clear();
-
-private:
-
-    std::vector<Vec3d> vertices;
-    std::vector<Vec3d> normals;
-    std::vector<size_t> indices;
-    std::vector<Color4> colors;
-
-};
-
+        std::vector<Vec3d> vertices;
+        std::vector<Vec3d> normals;
+        std::vector<size_t> indices;
+        std::vector<Color4> colors;
+    };
 }

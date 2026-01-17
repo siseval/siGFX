@@ -1,5 +1,7 @@
 #include "gfx/geometry/transform-3D.h"
 
+#include <iostream>
+
 namespace gfx
 {
 
@@ -69,15 +71,15 @@ Vec3d Transform3D::extract_translation(const Matrix4x4d &transform)
 
 Vec3d Transform3D::extract_scale(const Matrix4x4d &transform)
 {
-    double scale_x { std::sqrt(transform(0, 0) * transform(0, 0) + transform(1, 0) * transform(1, 0) + transform(2, 0) * transform(2, 0)) };
-    double scale_y { std::sqrt(transform(0, 1) * transform(0, 1) + transform(1, 1) * transform(1, 1) + transform(2, 1) * transform(2, 1)) };
-    double scale_z { std::sqrt(transform(0, 2) * transform(0, 2) + transform(1, 2) * transform(1, 2) + transform(2, 2) * transform(2, 2)) };
+    const double scale_x { std::sqrt(transform(0, 0) * transform(0, 0) + transform(1, 0) * transform(1, 0) + transform(2, 0) * transform(2, 0)) };
+    const double scale_y { std::sqrt(transform(0, 1) * transform(0, 1) + transform(1, 1) * transform(1, 1) + transform(2, 1) * transform(2, 1)) };
+    const double scale_z { std::sqrt(transform(0, 2) * transform(0, 2) + transform(1, 2) * transform(1, 2) + transform(2, 2) * transform(2, 2)) };
     return Vec3d { scale_x, scale_y, scale_z };
 }
 
 Vec3d Transform3D::transform_point(const Vec3d pos, const Matrix4x4d &transform)
 {
-    Matrix4x1d column_matrix {
+    const Matrix4x1d column_matrix {
         { pos.x },
         { pos.y },
         { pos.z },
@@ -90,7 +92,7 @@ Vec3d Transform3D::transform_point(const Vec3d pos, const Matrix4x4d &transform)
 
 Vec3d Transform3D::transform_vector(const Vec3d vec, const Matrix4x4d &transform)
 {
-    Matrix4x1d column_matrix {
+    const Matrix4x1d column_matrix {
         { vec.x },
         { vec.y },
         { vec.z },
@@ -104,7 +106,7 @@ Vec3d Transform3D::transform_vector(const Vec3d vec, const Matrix4x4d &transform
 std::vector<Vec3d> Transform3D::transform_points(const std::vector<Vec3d> points, const Matrix4x4d &transform)
 {
     std::vector<Vec3d> transformed_points;
-    for (auto point : points)
+    for (const auto point : points)
     {
         transformed_points.push_back(transform_point(point, transform));
     }
@@ -114,7 +116,7 @@ std::vector<Vec3d> Transform3D::transform_points(const std::vector<Vec3d> points
 std::vector<Vec3d> Transform3D::transform_vectors(const std::vector<Vec3d> vectors, const Matrix4x4d &transform)
 {
     std::vector<Vec3d> transformed_vectors;
-    for (auto vec : vectors)
+    for (const auto vec : vectors)
     {
         transformed_vectors.push_back(transform_vector(vec, transform));
     }
@@ -123,11 +125,22 @@ std::vector<Vec3d> Transform3D::transform_vectors(const std::vector<Vec3d> vecto
 
 Matrix4x4d Transform3D::invert_affine(const Matrix4x4d &m)
 {
-    double a { m(0, 0) }, b { m(0, 1) }, c { m(0, 2) }, tx { m(0, 3) };
-    double d { m(1, 0) }, e { m(1, 1) }, f { m(1, 2) }, ty { m(1, 3) };
-    double g { m(2, 0) }, h { m(2, 1) }, i { m(2, 2) }, tz { m(2, 3) };
+    const double a { m(0, 0) };
+    const double b { m(0, 1) };
+    const double c { m(0, 2) };
+    const double tx { m(0, 3) };
 
-    double det {
+    const double d { m(1, 0) };
+    const double e { m(1, 1) };
+    const double f { m(1, 2) };
+    const double ty { m(1, 3) };
+
+    const double g { m(2, 0) };
+    const double h { m(2, 1) };
+    const double i { m(2, 2) };
+    const double tz { m(2, 3) };
+
+    const double det {
         a * (e * i - f * h) -
         b * (d * i - f * g) +
         c * (d * h - e * g)
@@ -135,10 +148,10 @@ Matrix4x4d Transform3D::invert_affine(const Matrix4x4d &m)
 
     if (det == 0)
     {
-        throw std::runtime_error("Matrix is not invertible");
+        std::cerr << "Matrix is not invertible";
     }
 
-    double inv_det { 1.0 / det };
+    const double inv_det { 1.0 / det };
 
     Matrix4x4d inv;
 

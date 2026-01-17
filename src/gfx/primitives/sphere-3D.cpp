@@ -21,16 +21,16 @@ const PolygonMesh& Sphere3D::get_mesh() const
     {
         for (int s = 0; s < lon_segments; ++s)
         {
-            double phi0   = std::numbers::pi * r / lat_segments;
-            double phi1   = std::numbers::pi * (r + 1) / lat_segments;
-            double theta0 = 2.0 * std::numbers::pi * s / lon_segments;
-            double theta1 = 2.0 * std::numbers::pi * (s + 1) / lon_segments;
+            const double phi0   = std::numbers::pi * r / lat_segments;
+            const double phi1   = std::numbers::pi * (r + 1) / lat_segments;
+            const double theta0 = 2.0 * std::numbers::pi * s / lon_segments;
+            const double theta1 = 2.0 * std::numbers::pi * (s + 1) / lon_segments;
 
-            auto get_pos = [&](double phi, double theta)
+            auto get_pos = [&](const double phi, const double theta)
             {
-                double x = radius * std::sin(phi) * std::cos(theta);
-                double y = radius * std::cos(phi);
-                double z = radius * std::sin(phi) * std::sin(theta);
+                const double x = radius * std::sin(phi) * std::cos(theta);
+                const double y = radius * std::cos(phi);
+                const double z = radius * std::sin(phi) * std::sin(theta);
 
                 Vec3d pos { x, y, z };
                 Vec3d normal = pos.normalize();
@@ -44,7 +44,7 @@ const PolygonMesh& Sphere3D::get_mesh() const
 
             auto emit = [&](const auto& a, const auto& b, const auto& c)
             {
-                size_t base = vertices.size();
+                const size_t base = vertices.size();
 
                 vertices.push_back(a.first);
                 vertices.push_back(b.first);
@@ -78,7 +78,7 @@ const PolygonMesh& Sphere3D::get_mesh() const
     mesh_data.set_vertices(std::move(vertices));
     mesh_data.set_normals(std::move(normals));
     mesh_data.set_indices(std::move(indices));
-    mesh_data.set_colors(std::vector<Color4>(mesh_data.num_vertices(), get_color()));
+    mesh_data.set_colors(std::vector(mesh_data.num_vertices(), get_color()));
 
     set_mesh_dirty(false);
 

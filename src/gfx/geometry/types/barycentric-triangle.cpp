@@ -39,13 +39,13 @@ int BarycentricTriangle::corners_inside(const Box2d& box) const
 
 bool BarycentricTriangle::point_inside(const Vec2d& point) const
 {
-    double s = inv_area_2x * (a * point.x + b * point.y + c);
-    double t = inv_area_2x * (d * point.x + e * point.y + f);
+    const double s = inv_area_2x * (a * point.x + b * point.y + c);
+    const double t = inv_area_2x * (d * point.x + e * point.y + f);
 
-    return s >= 0 && t >= 0 && (s + t) <= 1;
+    return s >= 0 && t >= 0 && s + t <= 1;
 }
 
-double BarycentricTriangle::edge(const Vec2d& v_start, const Vec2d& v_end, const Vec2d& point) const
+double BarycentricTriangle::edge(const Vec2d& v_start, const Vec2d& v_end, const Vec2d& point)
 {
     return (v_end.x - v_start.x) * (point.y - v_start.y) - (v_end.y - v_start.y) * (point.x - v_start.x);
 }
@@ -60,7 +60,7 @@ Vec3d BarycentricTriangle::barycentric_weights(const Vec2d& p) const
 
 Vec3d BarycentricTriangle::lerp_barycentric(const Vec3d& a, const Vec3d& b, const Vec3d& c, const Vec2d& point) const
 {
-    Vec3d w = barycentric_weights(point);
+    const Vec3d w = barycentric_weights(point);
     return a * w.x + b * w.y + c * w.z;
 }
 
@@ -81,7 +81,7 @@ double BarycentricTriangle::get_i() const { return i; }
 
 void BarycentricTriangle::precompute()
 {
-    double area_2x = v0.x * (v1.y - v2.y) + v1.x * (v2.y - v0.y) + v2.x * (v0.y - v1.y);
+    const double area_2x = v0.x * (v1.y - v2.y) + v1.x * (v2.y - v0.y) + v2.x * (v0.y - v1.y);
     area = area_2x / 2.0;
 
     if (std::abs(area_2x) < 1e-12)

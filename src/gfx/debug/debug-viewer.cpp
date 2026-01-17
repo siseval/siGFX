@@ -17,7 +17,7 @@ void DebugViewer::update(std::shared_ptr<RenderEngine> render_engine)
 
 void DebugViewer::populate(std::shared_ptr<RenderEngine> render_engine)
 {
-    RendererInfo info { gather_renderer_info(render_engine) };
+    const RendererInfo info { gather_renderer_info(render_engine) };
 
     if (font)
     {
@@ -27,7 +27,7 @@ void DebugViewer::populate(std::shared_ptr<RenderEngine> render_engine)
 
 DebugViewer::RendererInfo DebugViewer::gather_renderer_info(const std::shared_ptr<RenderEngine> render_engine)
 {
-    double current_time_ms { std::chrono::duration<double, std::milli>(
+    const double current_time_ms { std::chrono::duration<double, std::milli>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count() };
 
@@ -36,10 +36,10 @@ DebugViewer::RendererInfo DebugViewer::gather_renderer_info(const std::shared_pt
     {
         fps_history.pop_front();
     }
-    double acc { std::accumulate(fps_history.begin(), fps_history.end(), 0.0) };
-    double fps { acc == 0.0 ? 0.0 : fps_history.size() / (acc / 1000.0) };
+    const double acc { std::accumulate(fps_history.begin(), fps_history.end(), 0.0) };
+    const double fps { acc == 0.0 ? 0.0 : fps_history.size() / (acc / 1000.0) };
 
-    RendererInfo info {
+    const RendererInfo info {
         .fps = fps,
         .num_items = render_engine->num_primitives()
     };
@@ -65,13 +65,14 @@ void DebugViewer::update_text(std::shared_ptr<RenderEngine> render_engine, const
     if (!text)
     {
         text = render_engine->create_text(
-            10.0,
-            10.0,
+            text_position,
             debug_text,
             font,
             font_size,
             text_color
         );
+        text->set_smoothing_radius(0.7);
+        text->set_depth(-256);
     }
     else
     {
@@ -87,12 +88,12 @@ void DebugViewer::update_text(std::shared_ptr<RenderEngine> render_engine, const
     }
 }
 
-int DebugViewer::num_debug_items()
+int DebugViewer::num_debug_items() const
 {
     return show_fps || show_num_items;
 }
 
-void DebugViewer::clear(std::shared_ptr<RenderEngine> render_engine)
+void DebugViewer::clear(std::shared_ptr<RenderEngine> render_engine) const
 {
     if (text && render_engine->contains_primitive(text))
     {

@@ -4,28 +4,30 @@
 
 namespace gfx
 {
-
-class DiffuseFragShader : public Shader3D::FragShader
-{
-
-public:
-
-    std::vector<Color4> frag(const Shader3D::FragInput &input) const override
+    class DiffuseFragShader final : public Shader3D::FragShader
     {
-        std::vector<Color4> out;
-        out.reserve(input.normals.size());
-        
-        for (int i = 0; i < input.normals.size(); i++)
+
+    public:
+
+        std::vector<Color4> frag(const Shader3D::FragInput &input) const override
         {
-            double diffuse = std::max(0.0, Vec3d::dot(input.normals[i], input.light_dir));
-            double intensity = input.ambient_intensity + (1.0 - input.ambient_intensity) * diffuse;
+            std::vector<Color4> out;
+            out.reserve(input.normals.size());
 
-            out.emplace_back(intensity, intensity, intensity, 1.0);
+            for (int i = 0; i < input.normals.size(); i++)
+            {
+                const double diffuse = std::max(0.0, Vec3d::dot(input.normals[i], input.light_dir));
+                const double intensity = input.ambient_intensity + (1.0 - input.ambient_intensity) * diffuse;
+
+                out.emplace_back(
+                    intensity * input.colors[i].r_double(),
+                    intensity * input.colors[i].g_double(),
+                    intensity * input.colors[i].b_double(),
+                    1.0
+                );
+            }
+
+            return out;
         }
-
-        return out;
-    }
-};
-
-
+    };
 }

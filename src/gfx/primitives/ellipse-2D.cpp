@@ -6,39 +6,38 @@
 namespace gfx
 {
 
-std::vector<Vec2i> Ellipse2D::rasterize(const Matrix3x3d &transform) const
+Primitive2D::RasterizeOutput Ellipse2D::rasterize(const Matrix3x3d &transform) const
 {
-    std::vector<Vec2i> pixels;
+    RasterizeOutput output;
 
     if (radius.x <= 0 || radius.y <= 0)
     {
-        return pixels;
+        return output;
     }
 
-    double line_extent { line_thickness / 2.0 };
-    Box2d AABB { get_axis_aligned_bounding_box(transform) };
-    Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
+    const double line_extent { line_thickness / 2.0 };
+    const auto [min, max] { get_axis_aligned_bounding_box(transform) };
+    const Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
 
-    for (int y = AABB.min.y; y <= AABB.max.y; y++)
+    for (int y = min.y; y <= max.y; y++)
     {
-        for (int x = AABB.min.x; x <= AABB.max.x; x++)
+        for (int x = min.x; x <= max.x; x++)
         {
-            Vec2d pos { Transform2D::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - radius };
-            Vec2d r_outer { radius + Vec2d(line_extent) };
-            Vec2d r_inner { radius - Vec2d(line_extent) };
+            const Vec2d pos { Transform2D::transform_point(Vec2d { static_cast<double>(x) , static_cast<double>(y) }, inverse_transform) - radius };
+            const Vec2d r_outer { radius + Vec2d(line_extent) };
+            const Vec2d r_inner { radius - Vec2d(line_extent) };
 
-            double sdf_outer { (pos.x * pos.x) / (r_outer.x * r_outer.x) + (pos.y * pos.y) / (r_outer.y * r_outer.y) };
-            double sdf_inner { (pos.x * pos.x) / (r_inner.x * r_inner.x) + (pos.y * pos.y) / (r_inner.y * r_inner.y) };
+            const double sdf_outer { pos.x * pos.x / (r_outer.x * r_outer.x) + pos.y * pos.y / (r_outer.y * r_outer.y) };
+            const double sdf_inner { pos.x * pos.x / (r_inner.x * r_inner.x) + pos.y * pos.y / (r_inner.y * r_inner.y) };
 
             if (sdf_outer <= 1.0 && (get_filled() || sdf_inner >= 1.0))
             {
-                pixels.push_back(Vec2i { x, y });
-                continue;
+                output.pixels.push_back(Vec2i { x, y });
             }
         }
     }
 
-    return pixels;
+    return output;
 }
 
 
@@ -49,18 +48,18 @@ Box2d Ellipse2D::get_geometry_size() const
 
 Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
 {
-    Box2d extent { get_geometry_size() };
-    Vec2d line_extent { std::ceil(line_thickness / 2.0), std::ceil(line_thickness / 2.0) };
-    Vec2d top_left { extent.min - line_extent };
-    Vec2d bot_right { extent.max + line_extent };
+    const auto [min, max] { get_geometry_size() };
+    const Vec2d line_extent { std::ceil(line_thickness / 2.0), std::ceil(line_thickness / 2.0) };
+    Vec2d top_left { min - line_extent };
+    Vec2d bot_right { max + line_extent };
 
-    std::vector<Vec2d> corners {
+    const std::vector<Vec2d> corners {
         { top_left.x, top_left.y },
         { bot_right.x, top_left.y },
         { top_left.x, bot_right.y },
         { bot_right.x, bot_right.y },
     };
-    std::vector<Vec2d> transformed_corners { Transform2D::transform_points(corners, transform) };
+    const std::vector transformed_corners { Transform2D::transform_points(corners, transform) };
 
     Box2d bounds { transformed_corners[0], transformed_corners[0] };
     bounds.expand(transformed_corners);

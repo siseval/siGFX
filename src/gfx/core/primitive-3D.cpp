@@ -108,7 +108,7 @@ Color4 Primitive3D::get_color() const
 Vec3d Primitive3D::get_anchor() const
 {
     return anchor;
-} 
+}
 
 Shader3D Primitive3D::get_shader() const
 {
@@ -127,17 +127,17 @@ Matrix4x4d Primitive3D::get_transform() const
         return cached_transform;
     }
 
-    Vec3d anchor_offset { Primitive3D::get_anchor() * get_geometry_size().size() };
+    const Vec3d anchor_offset { get_anchor() * get_geometry_size().size() };
 
-    Matrix4x4d anchor_translation = Transform3D::translate({ -anchor_offset.x, -anchor_offset.y, -anchor_offset.z });
-    Matrix4x4d translation = Transform3D::translate({ position.x, position.y, position.z });
+    const Matrix4x4d anchor_translation = Transform3D::translate({ -anchor_offset.x, -anchor_offset.y, -anchor_offset.z });
+    const Matrix4x4d translation = Transform3D::translate({ position.x, position.y, position.z });
 
-    Matrix4x4d rotation_x = Transform3D::rotate_x(rotation.x);
-    Matrix4x4d rotation_y = Transform3D::rotate_y(rotation.y);
-    Matrix4x4d rotation_z = Transform3D::rotate_z(rotation.z);
-    Matrix4x4d rotation = rotation_z * rotation_y * rotation_x;
+    const Matrix4x4d rotation_x = Transform3D::rotate_x(rotation.x);
+    const Matrix4x4d rotation_y = Transform3D::rotate_y(rotation.y);
+    const Matrix4x4d rotation_z = Transform3D::rotate_z(rotation.z);
+    const Matrix4x4d rotation = rotation_z * rotation_y * rotation_x;
 
-    Matrix4x4d scaling = Transform3D::scale({ scale.x, scale.y, scale.z });
+    const Matrix4x4d scaling = Transform3D::scale({ scale.x, scale.y, scale.z });
 
     cached_transform = translation * rotation * scaling * anchor_translation;
     transform_dirty = false;

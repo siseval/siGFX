@@ -35,7 +35,7 @@ private:
 
     void move_target(const double dt);
     void move_head(const double dt);
-    void move_segments();
+    void move_segments() const;
 
     void spawn();
     void die();
@@ -43,7 +43,7 @@ private:
 
     void remove_food();
     void add_food();
-    gfx::Vec2d closest_food();
+    gfx::Vec2d closest_food() const;
 
     void update_segments();
     void add_segment();

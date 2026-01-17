@@ -10,17 +10,17 @@ add_subdirectory(debug)
 add_library(gfx INTERFACE)
 
 target_link_libraries(gfx INTERFACE
-    gfx_core
-    gfx_primitives
-    gfx_shaders
-    gfx_surfaces
-    gfx_utils
-    gfx_text
-    gfx_geometry
-    gfx_debug
+        gfx_core
+        gfx_primitives
+        gfx_shaders
+        gfx_surfaces
+        gfx_utils
+        gfx_text
+        gfx_geometry
+        gfx_debug
 )
 
 target_include_directories(gfx INTERFACE
-    ${INCLUDE_DIR}
+        ${INCLUDE_DIR}
 )
 

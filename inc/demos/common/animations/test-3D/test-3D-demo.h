@@ -43,11 +43,14 @@ private:
 
     std::vector<std::shared_ptr<gfx::Primitive3D>> scene_items;
 
+    std::shared_ptr<gfx::Ellipse2D> crosshair;
+
     gfx::Vec2d prev_mouse_pos { 0.0, 0.0 };
 
     gfx::Vec3d camera_velocity { 0.0, 0.0, 0.0 };
     double camera_acceleration = 500.0;
-    double max_camera_speed = 10.0;
+    double camera_damping = 0.85;
+    double max_camera_speed = 30.0;
 
     double last_frame_ms = 0.0;
 

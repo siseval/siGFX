@@ -4,23 +4,23 @@
 namespace gfx
 {
 
-Render2D::Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling) : 
-    surface(surface), 
-    scene_graph(std::make_shared<SceneGraph2D>()), 
+Render2D::Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling) :
+    surface(surface),
+    scene_graph(std::make_shared<SceneGraph2D>()),
     font_manager(std::make_shared<FontManagerTTF>()),
     viewport_scaling(viewport_scaling) {}
 
 
 void Render2D::draw_frame() const
 {
-    double t { std::chrono::duration<double, std::micro>(
+    const double t { std::chrono::duration<double, std::micro>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count() };
 
     last_frame_time_us = t;
 
-    std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> draw_queue { 
-        get_draw_queue() 
+    std::vector draw_queue {
+        get_draw_queue()
     };
 
     for (const auto& [primitive, transform] : draw_queue)
@@ -30,7 +30,7 @@ void Render2D::draw_frame() const
             continue;
         }
 
-        std::vector<Vec2i> pixels { primitive->rasterize(transform) };
+        Primitive2D::RasterizeOutput output { primitive->rasterize(transform) };
 
         ShaderInput2D input {
             .uv = std::vector<Vec2d>(),
@@ -38,16 +38,28 @@ void Render2D::draw_frame() const
             .color = primitive->get_color()
         };
 
-        for (const auto &pixel_pos : pixels)
+        for (const auto &pixel_pos : output.pixels)
         {
             input.uv.push_back(primitive->get_uv(pixel_pos));
         }
 
-        std::vector<Color4> colors { primitive->get_shader()->frag(input) };
+        std::vector colors { primitive->get_shader()->frag(input) };
 
-        for (size_t i = 0; i < pixels.size(); ++i)
+        if (output.use_alphas)
         {
-            surface->write_pixel(pixels[i], colors[i], primitive->get_depth());
+            for (size_t i = 0; i < colors.size(); ++i)
+            {
+                colors[i].a = static_cast<uint8_t>(std::clamp(
+                    static_cast<int>(colors[i].a * output.alphas[i]),
+                    0,
+                    255
+                ));
+            }
+        }
+
+        for (size_t i = 0; i < output.pixels.size(); ++i)
+        {
+            surface->write_pixel(output.pixels[i], colors[i], primitive->get_depth(), RenderSurface::BlendMode::ALPHA);
         }
     }
 }
@@ -62,22 +74,22 @@ void Render2D::present_frame() const
     surface->present();
 }
 
-void Render2D::add_item(const std::shared_ptr<Primitive2D> item)
+void Render2D::add_item(const std::shared_ptr<Primitive2D> item) const
 {
     scene_graph->add_item(item);
 }
 
-void Render2D::add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent)
+void Render2D::add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent) const
 {
     scene_graph->add_item(item, parent);
 }
 
-void Render2D::remove_item(const std::shared_ptr<Primitive2D> item)
+void Render2D::remove_item(const std::shared_ptr<Primitive2D> item) const
 {
     scene_graph->remove_item(item);
 }
 
-void Render2D::clear_items()
+void Render2D::clear_items() const
 {
     scene_graph->clear();
 }
@@ -92,12 +104,12 @@ bool Render2D::contains_item(const std::shared_ptr<Primitive2D> item) const
     return scene_graph->contains_item(item);
 }
 
-void Render2D::set_resolution(const Vec2i new_resolution)
+void Render2D::set_resolution(const Vec2i new_resolution) const
 {
     surface->resize(new_resolution);
 }
 
-void Render2D::set_resolution(const int width, const int height)
+void Render2D::set_resolution(const int width, const int height) const
 {
     surface->resize(Vec2i { width, height });
 }
@@ -112,7 +124,7 @@ void Render2D::set_viewport_scaling(const double x, const double y)
     viewport_scaling = Vec2d { x, y };
 }
 
-void Render2D::set_clear_color(const Color4 color)
+void Render2D::set_clear_color(const Color4 color) const
 {
     surface->set_clear_color(color);
 }
@@ -127,12 +139,12 @@ void Render2D::set_blend_mode(const RenderSurface::BlendMode mode)
     blend_mode = mode;
 }
 
-void Render2D::set_font_directory(const std::filesystem::path &path)
+void Render2D::set_font_directory(const std::filesystem::path &path) const
 {
     font_manager->set_font_directory_path(path);
 }
 
-void Render2D::load_font_directory(const std::filesystem::path &path)
+void Render2D::load_font_directory(const std::filesystem::path &path) const
 {
     font_manager->load_font_directory(path);
 }
@@ -212,12 +224,12 @@ std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_d
 
 Matrix3x3d Render2D::get_global_transform() const
 {
-    Matrix3x3d scale { Transform2D::scale(viewport_scaling) };
+    const Matrix3x3d scale { Transform2D::scale(viewport_scaling) };
     return scale;
 }
 
 
-std::shared_ptr<Circle2D> Render2D::create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness) const
+std::shared_ptr<Circle2D> Render2D::create_circle(const Vec2d position, const double radius, const Color4 color, const double line_thickness)
 {
     auto circle { std::make_shared<Circle2D>() };
 
@@ -229,13 +241,13 @@ std::shared_ptr<Circle2D> Render2D::create_circle(const Vec2d position, const do
     return circle;
 }
 
-std::shared_ptr<Circle2D> Render2D::create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness) const 
+std::shared_ptr<Circle2D> Render2D::create_circle(const double x, const double y, const double radius, const Color4 color, const double line_thickness)
 {
     return create_circle(Vec2d { x, y }, radius, color, line_thickness);
 }
 
 
-std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness) const
+std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const Vec2d position, const Vec2d radius, const Color4 color, const double line_thickness)
 {
     auto ellipse { std::make_shared<Ellipse2D>() };
 
@@ -247,12 +259,12 @@ std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const Vec2d position, const 
     return ellipse;
 }
 
-std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness) const 
+std::shared_ptr<Ellipse2D> Render2D::create_ellipse(const double x, const double y, const double radius_x, const double radius_y, const Color4 color, const double line_thickness)
 {
     return create_ellipse(Vec2d { x, y }, Vec2d { radius_x, radius_y }, color, line_thickness);
 }
 
-std::shared_ptr<Polyline2D> Render2D::create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const
+std::shared_ptr<Polyline2D> Render2D::create_polyline(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness)
 {
     auto polyline { std::make_shared<Polyline2D>() };
 
@@ -264,13 +276,13 @@ std::shared_ptr<Polyline2D> Render2D::create_polyline(const Vec2d position, cons
     return polyline;
 }
 
-std::shared_ptr<Polyline2D> Render2D::create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness) const 
+std::shared_ptr<Polyline2D> Render2D::create_polyline(const double x, const double y, const std::vector<Vec2d> &points, const Color4 color, const double line_thickness)
 {
     return create_polyline(Vec2d { x, y }, points, color, line_thickness);
 }
 
 
-std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color) const
+std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const std::vector<Vec2d> &points, const Color4 color)
 {
     auto polygon { std::make_shared<Polygon2D>() };
 
@@ -281,7 +293,7 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(const Vec2d position, const 
     return polygon;
 }
 
-std::shared_ptr<Polygon2D> Render2D::create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color) const 
+std::shared_ptr<Polygon2D> Render2D::create_polygon(const double x, const double y, const std::vector<Vec2d> &points, const Color4 fill_color)
 {
     return create_polygon(Vec2d { x, y }, points, fill_color);
 }
@@ -307,7 +319,7 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(const double x, const double
 //     return bitmap;
 // }
 
-std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const
+std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color)
 {
     auto text_primitive { std::make_shared<Text2D>() };
 
@@ -320,7 +332,7 @@ std::shared_ptr<Text2D> Render2D::create_text(const Vec2d position, const std::s
     return text_primitive;
 }
 
-std::shared_ptr<Text2D> Render2D::create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color) const 
+std::shared_ptr<Text2D> Render2D::create_text(const double x, const double y, const std::string &text, const std::shared_ptr<FontTTF> font, const double font_size, const Color4 color)
 {
     return create_text(Vec2d { x, y }, text, font, font_size, color);
 }

@@ -4,16 +4,14 @@
 
 namespace gfx
 {
-
-class DefaultShader2D : public Shader2D
-{
-
-public:
-
-    std::vector<Color4> frag(const ShaderInput2D &input) const override
+    class DefaultShader2D final : public Shader2D
     {
-        return std::vector<Color4>(input.uv.size(), input.color);
-    };
-};
 
+    public:
+
+        std::vector<Color4> frag(const ShaderInput2D &input) const override
+        {
+            return std::vector(input.uv.size(), input.color);
+        }
+    };
 }

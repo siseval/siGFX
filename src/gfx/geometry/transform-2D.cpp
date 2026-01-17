@@ -1,5 +1,7 @@
 #include "gfx/geometry/transform-2D.h"
 
+#include <iostream>
+
 namespace gfx
 {
 
@@ -45,16 +47,16 @@ double Transform2D::extract_rotation(const Matrix3x3d &transform)
 
 Vec2d Transform2D::extract_scale(const Matrix3x3d &transform)
 {
-    double scale_x { std::sqrt(transform(0, 0) * transform(0, 0) + transform(1, 0) * transform(1, 0)) };
-    double scale_y { std::sqrt(transform(0, 1) * transform(0, 1) + transform(1, 1) * transform(1, 1)) };
+    const double scale_x { std::sqrt(transform(0, 0) * transform(0, 0) + transform(1, 0) * transform(1, 0)) };
+    const double scale_y { std::sqrt(transform(0, 1) * transform(0, 1) + transform(1, 1) * transform(1, 1)) };
     return Vec2d { scale_x, scale_y };
 }
 
 Vec2d Transform2D::transform_point(const Vec2d pos, const Matrix3x3d &transform)
 {
-    Matrix3x1d column_matrix {
-        { pos.x }, 
-        { pos.y }, 
+    const Matrix3x1d column_matrix {
+        { pos.x },
+        { pos.y },
         { 1 }};
 
     Matrix3x1d transformed { transform * column_matrix };
@@ -63,9 +65,9 @@ Vec2d Transform2D::transform_point(const Vec2d pos, const Matrix3x3d &transform)
 
 Vec2d Transform2D::transform_vector(const Vec2d vec, const Matrix3x3d &transform)
 {
-    Matrix3x1d column_matrix {
-        { vec.x }, 
-        { vec.y }, 
+    const Matrix3x1d column_matrix {
+        { vec.x },
+        { vec.y },
         { 0 }};
 
     Matrix3x1d transformed { transform * column_matrix };
@@ -75,7 +77,7 @@ Vec2d Transform2D::transform_vector(const Vec2d vec, const Matrix3x3d &transform
 std::vector<Vec2d> Transform2D::transform_points(const std::vector<Vec2d> points, const Matrix3x3d &transform)
 {
     std::vector<Vec2d> transformed_points;
-    for (auto point : points)
+    for (const auto point : points)
     {
         transformed_points.push_back(transform_point(point, transform));
     }
@@ -85,7 +87,7 @@ std::vector<Vec2d> Transform2D::transform_points(const std::vector<Vec2d> points
 std::vector<Vec2d> Transform2D::transform_vectors(const std::vector<Vec2d> vectors, const Matrix3x3d &transform)
 {
     std::vector<Vec2d> transformed_vectors;
-    for (auto vec : vectors)
+    for (const auto vec : vectors)
     {
         transformed_vectors.push_back(transform_vector(vec, transform));
     }
@@ -94,16 +96,20 @@ std::vector<Vec2d> Transform2D::transform_vectors(const std::vector<Vec2d> vecto
 
 Matrix3x3d Transform2D::invert_affine(const Matrix3x3d &m)
 {
-    double a { m(0, 0) }, b { m(0, 1) }, c { m(0, 2) };
-    double d { m(1, 0) }, e { m(1, 1) }, f { m(1, 2) };
-    double det { a * e - b * d };
+    const double a { m(0, 0) };
+    const double b { m(0, 1) };
+    const double c { m(0, 2) };
+    const double d { m(1, 0) };
+    const double e { m(1, 1) };
+    const double f { m(1, 2) };
+    const double det { a * e - b * d };
 
-    if (det == 0) 
+    if (det == 0)
     {
-        throw std::runtime_error("Matrix is not invertible");
+        std::cerr << "Matrix is not invertible";
     }
 
-    double inv_det { 1.0 / det };
+    const double inv_det { 1.0 / det };
 
     Matrix3x3d inv;
     inv(0, 0) = e * inv_det;

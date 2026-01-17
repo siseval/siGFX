@@ -61,9 +61,9 @@ private:
 
     void update_primitives(const double dt);
     void wrap_position(gfx::Vec2d &position);
-    void spawn_ripple(const gfx::Vec2d position);
+    void spawn_ripple(const gfx::Vec2d position) const;
     void update_ripples(const double dt);
-    gfx::Vec2d get_random_position();
+    gfx::Vec2d get_random_position() const;
 
     std::shared_ptr<gfx::Render2D> render2D;
 

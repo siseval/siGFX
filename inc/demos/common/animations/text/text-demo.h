@@ -7,13 +7,13 @@
 namespace demos
 {
 
-class TextDemo : public demos::GfxDemo
+class TextDemo : public GfxDemo
 {
 
 public:
-
-    TextDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer) 
+    
+    explicit TextDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer)
     {
         render2D = renderer->get_render_2D();
     }
@@ -22,24 +22,23 @@ public:
     void render_frame(const double dt) override;
     void end() override;
     void handle_char(const int input) override;
-    void report_mouse(const demos::MouseEvent event) override {}
+    void report_mouse(const MouseEvent event) override {}
 
     std::vector<std::string> debug_text() override
     {
-        return { 
+        return {
             "num points: " + std::to_string(num_points),
             // "holes: " + std::to_string(polygon->get_hole_vertices().size())
         };
     }
 
-    inline gfx::Color4 get_clear_color() const override 
-    { 
-        return gfx::Color4(0.0, 0.0, 0.0, 1.0); 
-    };
+    gfx::Color4 get_clear_color() const override
+    {
+        return gfx::Color4(0.0, 0.0, 0.0, 1.0);
+    }
 
 private:
-
-    bool is_clockwise(std::vector<gfx::Vec2d> vertices);
+    static bool is_clockwise(std::vector<gfx::Vec2d> vertices);
 
     std::shared_ptr<gfx::Render2D> render2D;
 

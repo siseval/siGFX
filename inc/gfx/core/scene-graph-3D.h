@@ -1,67 +1,62 @@
 #pragma once
 
-#include <utility>
-
 #include "gfx/core/primitive-3D.h"
 #include "gfx/core/types/uuid.h"
 
 namespace gfx
 {
-
-struct SceneNode3D
-{
-    SceneNode3D(std::shared_ptr<Primitive3D> item) : primitive(item) {}
-
-    UUID get_id() const
+    struct SceneNode3D
     {
-        if (primitive)
+        explicit SceneNode3D(std::shared_ptr<Primitive3D> item) : primitive(item) {}
+
+        UUID get_id() const
         {
-            return primitive->get_id();
+            if (primitive)
+            {
+                return primitive->get_id();
+            }
+            return UUID(0, 0);
         }
-        return UUID(0, 0);
-    }
 
-    std::shared_ptr<Primitive3D> primitive;
-    Matrix4x4d global_transform = Matrix4x4d::identity();
-    uint64_t cached_transform_version = 0;
-    std::shared_ptr<SceneNode3D> parent = nullptr;
-    std::vector<std::shared_ptr<SceneNode3D>> children;
-};
+        std::shared_ptr<Primitive3D> primitive;
+        Matrix4x4d global_transform = Matrix4x4d::identity();
+        uint64_t cached_transform_version = -1;
+        std::shared_ptr<SceneNode3D> parent = nullptr;
+        std::vector<std::shared_ptr<SceneNode3D>> children;
+    };
 
 
-class SceneGraph3D
-{
+    class SceneGraph3D
+    {
 
-public:
+    public:
 
-    SceneGraph3D();
+        SceneGraph3D();
 
-    std::shared_ptr<SceneNode3D> get_root() const;
-    void set_root_transform(const Matrix4x4d& transform);
+        std::shared_ptr<SceneNode3D> get_root() const;
+        void set_root_transform(const Matrix4x4d &transform) const;
 
-    bool transforms_dirty() const;
-    Matrix4x4d get_global_transform(const std::shared_ptr<Primitive3D> primitive);
-    void update_global_transforms();
+        bool transforms_dirty() const;
+        Matrix4x4d get_global_transform(std::shared_ptr<Primitive3D> primitive) const;
+        void update_global_transforms() const;
 
-    std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_global_transforms();
+        std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_global_transforms();
 
-    void add_item(const std::shared_ptr<Primitive3D> item, const std::shared_ptr<Primitive3D> parent);
-    void add_item(const std::shared_ptr<Primitive3D> item);
+        void add_item(std::shared_ptr<Primitive3D> item, std::shared_ptr<Primitive3D> parent);
+        void add_item(std::shared_ptr<Primitive3D> item);
 
-    void remove_item(const std::shared_ptr<Primitive3D> item);
+        void remove_item(std::shared_ptr<Primitive3D> item);
 
-    void clear();
+        void clear();
 
-    std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_draw_queue();
+        std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_draw_queue();
 
-    int num_items() const;
-    bool contains_item(const std::shared_ptr<Primitive3D> item) const;
+        int num_items() const;
+        bool contains_item(std::shared_ptr<Primitive3D> item) const;
 
-private:
+    private:
 
-    std::shared_ptr<SceneNode3D> root;
-    std::unordered_map<UUID, std::shared_ptr<SceneNode3D>> nodes;
-
-};
-
+        std::shared_ptr<SceneNode3D> root;
+        std::unordered_map<UUID, std::shared_ptr<SceneNode3D>> nodes;
+    };
 }

@@ -9,25 +9,25 @@ void Particle::process(const double dt)
 {
     shape->set_rotation_degrees(velocity.angle_degrees());
 
-    double t { (time_ms() - creation_time_ms) / lifespan_ms };
+    const double t { (time_ms() - creation_time_ms) / lifespan_ms };
     if (colors.size() > 1)
     {
-        shape->set_color(gfx::Color4::lerp(colors[0], colors[1], t));
+        shape->set_color(Color4::lerp(colors[0], colors[1], t));
     }
 
     if (t < 0.2)
     {
-        shape->set_scale(gfx::Vec2d::lerp({ 0.001, 0.001 }, { 1, 1 }, t * 5));
+        shape->set_scale(Vec2d::lerp({ 0.001, 0.001 }, { 1, 1 }, t * 5));
     }
     else
     {
-        double t2 { (t - 0.2) * 1.2 };
-        shape->set_scale(gfx::Vec2d::lerp({ 1, 1 }, { 0.001, 0.001 }, t2));
+        const double t2 { (t - 0.2) * 1.2 };
+        shape->set_scale(Vec2d::lerp({ 1, 1 }, { 0.001, 0.001 }, t2));
         Color4 transparent_color = shape->get_color();
         transparent_color.a = 0.0;
         shape->set_color(Color4::lerp(shape->get_color(), transparent_color, t2 * t2 * 0.02));
     }
-    
+
     update_position(dt);
     apply_gravity(dt);
 
@@ -46,7 +46,7 @@ void Particle::update_position(const double dt)
 
 void Particle::apply_gravity(const double dt)
 {
-    const double gravity = 5.0;
+    constexpr double gravity = 5.0;
     velocity.y += gravity * dt;
 }
 

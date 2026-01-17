@@ -23,17 +23,17 @@ int CursesRenderSurface::init()
 
 void CursesRenderSurface::present()
 {
-    Vec2i frame_buffer_dimensions { resolution / 2 };
+    const Vec2i frame_buffer_dimensions { resolution / 2 };
     for (int y = 0; y < frame_buffer_dimensions.y; y++)
     {
         for (int x = 0; x < frame_buffer_dimensions.x; x++)
         {
-            int frame_buffer_index { y * resolution.x + x };
+            const int frame_buffer_index { y * resolution.x + x };
             if (frame_buffer_index < 0 || frame_buffer_index >= frame_buffer->size())
             {
                 continue;
             }
-            int64_t pixel_value { frame_buffer->at(frame_buffer_index) };
+            const int64_t pixel_value { frame_buffer->at(frame_buffer_index) };
             if ((pixel_value & 0x00000000000000FF) == 0)
             {
                 continue;
@@ -43,10 +43,10 @@ void CursesRenderSurface::present()
                 pixel_tree[(pixel_value & 0b1000) >> 3]
                 [(pixel_value & 0b0100) >> 2]
                 [(pixel_value & 0b0010) >> 1]
-                [(pixel_value & 0b0001)] 
+                [(pixel_value & 0b0001)]
             };
 
-            Color4 color { Color4::from_i32(pixel_value >> 32) };
+            const Color4 color { Color4::from_i32(pixel_value >> 32) };
             if (color.a == 0)
             {
                 continue;
@@ -70,34 +70,10 @@ void CursesRenderSurface::clear_frame_buffer()
     }
 }
 
-inline void CursesRenderSurface::write_pixel(const Vec2i pos, const Color4 color, const int depth)
-{
-    bool left_in_pixel { pos.x % 2 == 0 };
-    bool top_in_pixel { pos.y % 2 == 0 };
-    int frame_buffer_index { (pos.y / 2) * resolution.x + pos.x / 2 };
-
-    if (frame_buffer_index < 0 || frame_buffer_index >= frame_buffer->size())
-    {
-        return;
-    }
-
-    int64_t color_mask { static_cast<int64_t>(color.to_i32()) << 32 };
-    frame_buffer->at(frame_buffer_index) &= 0x00000000000000FF;
-    frame_buffer->at(frame_buffer_index) |= color_mask;
-
-    static constexpr int8_t bit_masks[2][2] {
-        { 0b0001, 0b0010 },
-        { 0b0100, 0b1000 }
-    };
-
-    frame_buffer->at(frame_buffer_index) |= 
-        bit_masks[top_in_pixel][left_in_pixel];
-}
-
 void CursesRenderSurface::resize(const Vec2i new_resolution)
 {
     resolution = new_resolution;
-    frame_buffer->resize((resolution.x * resolution.y / 2), 0);
+    frame_buffer->resize(resolution.x * resolution.y / 2, 0);
 }
 
 void CursesRenderSurface::clear_palette()
@@ -108,7 +84,7 @@ void CursesRenderSurface::clear_palette()
 
 void CursesRenderSurface::set_color(const Color4 color)
 {
-    auto iterator { palette->find(color) };
+    const auto iterator { palette->find(color) };
     uint8_t index = 0;
 
     if (iterator != palette->end())

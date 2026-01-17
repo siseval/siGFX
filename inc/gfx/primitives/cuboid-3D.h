@@ -4,24 +4,21 @@
 
 namespace gfx
 {
+    class Cuboid3D final : public Primitive3D
+    {
 
-class Cuboid3D : public Primitive3D
-{
+    public:
 
-public:
+        Cuboid3D() = default;
 
-    Cuboid3D() = default;
+        const PolygonMesh &get_mesh() const override;
 
-    const PolygonMesh& get_mesh() const override;
+        void set_size(const Vec3d &new_size);
+        void set_size(double width, double height, double depth);
+        Vec3d get_size() const;
 
-    void set_size(const Vec3d& new_size);
-    void set_size(const double width, const double height, const double depth);
-    Vec3d get_size() const;
+    private:
 
-private:
-
-    Vec3d size;
-
-};
-
+        Vec3d size;
+    };
 }

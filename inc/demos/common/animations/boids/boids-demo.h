@@ -42,20 +42,20 @@ public:
 
 private: 
 
-    gfx::Vec2d alignment(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::Vec2d cohesion(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::Vec2d separation(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors);
-    gfx::Vec2d centering(const std::shared_ptr<Boid> boid);
-    gfx::Vec2d mouse_avoidance(const std::shared_ptr<Boid> boid);
-    void apply_behaviors(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors, const double dt);
+    gfx::Vec2d alignment(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
+    gfx::Vec2d cohesion(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
+    gfx::Vec2d separation(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors) const;
+    gfx::Vec2d centering(const std::shared_ptr<Boid> boid) const;
+    gfx::Vec2d mouse_avoidance(const std::shared_ptr<Boid> boid) const;
+    void apply_behaviors(const std::shared_ptr<Boid> boid, const std::vector<std::shared_ptr<Boid>> &neighbors, const double dt) const;
 
-    void wrap_position(const std::shared_ptr<Boid> boid);
+    void wrap_position(const std::shared_ptr<Boid> boid) const;
 
-    std::vector<std::shared_ptr<Boid>> get_neighbors(const std::shared_ptr<Boid> boid);
+    std::vector<std::shared_ptr<Boid>> get_neighbors(const std::shared_ptr<Boid> boid) const;
 
     void process_boid(const std::shared_ptr<Boid> boid, const double dt);
     void process_boids(const double dt);
-    void render_boids();
+    void render_boids() const;
 
     void spawn_boid(const gfx::Vec2d position, const gfx::Vec2d velocity);
     void spawn_boid();

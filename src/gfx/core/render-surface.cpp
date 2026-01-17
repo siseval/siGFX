@@ -7,8 +7,8 @@ namespace gfx
 
 RenderSurface::RenderSurface(const Vec2i resolution)
     : resolution(resolution),
-      frame_buffer(std::make_unique<std::vector<int32_t>>(resolution.x * resolution.y, 0)),
-      depth_buffer(std::make_unique<std::vector<double>>(resolution.x * resolution.y, std::numeric_limits<double>::infinity()))
+      frame_buffer(std::vector(resolution.x * resolution.y, 0)),
+      depth_buffer(std::vector(resolution.x * resolution.y, std::numeric_limits<double>::infinity()))
 {
 }
 
@@ -20,35 +20,34 @@ void RenderSurface::write_pixel(const Vec2i pos, const Color4 color, const doubl
     }
 
     const int index = pos.y * resolution.x + pos.x;
-    if (depth > depth_buffer->at(index))
+    if (depth > depth_buffer.at(index))
     {
         return;
     }
-    depth_buffer->at(index) = depth;
+    depth_buffer.at(index) = depth;
 
     switch (blend_mode)
     {
-        case BlendMode::NONE:
+        case BlendMode::OPAQUE:
         {
-            frame_buffer->data()[index] = std::byteswap(color.to_i32());
+            frame_buffer.data()[index] = std::byteswap(color.to_i32());
             return;
         }
         case BlendMode::ALPHA:
         {
-            Color4 dst = Color4::from_i32(std::byteswap(frame_buffer->data()[index]));
+            const Color4 dst = Color4::from_i32(std::byteswap(frame_buffer.data()[index]));
 
             const double a = color.a_double();
             const double ia = 1.0 - a;
 
-            Color4 out {
+            const Color4 out {
                 static_cast<uint8_t>((color.r_double() * a + dst.r_double() * ia) * 255.0),
                 static_cast<uint8_t>((color.g_double() * a + dst.g_double() * ia) * 255.0),
                 static_cast<uint8_t>((color.b_double() * a + dst.b_double() * ia) * 255.0),
                 static_cast<uint8_t>((a + dst.a_double() * ia) * 255.0)
             };
 
-            frame_buffer->data()[index] = std::byteswap(out.to_i32());
-            return;
+            frame_buffer.data()[index] = std::byteswap(out.to_i32());
         }
     }
 }

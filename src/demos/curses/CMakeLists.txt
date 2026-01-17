@@ -8,10 +8,10 @@ set(CURSES_NEED_NCURSES TRUE)
 set(CURSES_NEED_WIDE TRUE)
 
 target_link_libraries(demos_curses INTERFACE
-    ${CURSES_LIBRARIES}
+        ${CURSES_LIBRARIES}
 )
 
 target_include_directories(demos_curses INTERFACE
-    ${INCLUDE_DIR}
+        ${INCLUDE_DIR}
 )
 

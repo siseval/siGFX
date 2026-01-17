@@ -5,24 +5,21 @@
 
 namespace gfx
 {
+    class Plane3D final : public Primitive3D
+    {
 
-class Plane3D : public Primitive3D
-{
+    public:
 
-public:
+        Plane3D() = default;
 
-    Plane3D() = default;
+        const PolygonMesh &get_mesh() const override;
 
-    const PolygonMesh& get_mesh() const override;
+        void set_size(Vec2d new_size);
+        void set_size(double width, double height);
+        Vec2d get_size() const;
 
-    void set_size(const Vec2d new_size);
-    void set_size(const double width, const double height);
-    Vec2d get_size() const;
+    private:
 
-private:
-
-    Vec2d size;
-
-};
-
+        Vec2d size;
+    };
 }

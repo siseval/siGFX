@@ -4,24 +4,21 @@
 
 namespace gfx
 {
-
-class DefaultFragShader : public Shader3D::FragShader
-{
-
-public:
-
-    std::vector<Color4> frag(const Shader3D::FragInput &input) const override
+    class DefaultFragShader final : public Shader3D::FragShader
     {
-        std::vector<Color4> out;
 
-        for (size_t i = 0; i < input.uvw.size(); ++i)
+    public:
+
+        std::vector<Color4> frag(const Shader3D::FragInput &input) const override
         {
-            out.push_back(input.colors[i]);
+            std::vector<Color4> out;
+
+            for (size_t i = 0; i < input.uvw.size(); ++i)
+            {
+                out.push_back(input.colors[i]);
+            }
+
+            return out;
         }
-
-        return out;
-    }
-};
-
-
+    };
 }

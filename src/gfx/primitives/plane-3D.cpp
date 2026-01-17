@@ -41,7 +41,7 @@ const PolygonMesh& Plane3D::get_mesh() const
     mesh_data.set_vertices(std::move(vertices));
     mesh_data.set_normals(std::move(normals));
     mesh_data.set_indices(std::move(indices));
-    mesh_data.set_colors(std::vector<Color4>(4, get_color()));
+    mesh_data.set_colors(std::vector(4, get_color()));
 
     set_mesh_dirty(false);
 

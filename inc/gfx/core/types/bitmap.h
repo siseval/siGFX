@@ -7,30 +7,27 @@
 
 namespace gfx
 {
+    class Bitmap
+    {
 
-class Bitmap
-{
+    public:
 
-public:
+        explicit Bitmap(Vec2i resolution);
 
-    Bitmap(const Vec2i resolution);
+        void resize(Vec2i new_resolution);
 
-    void resize(const Vec2i new_resolution);
+        void set_pixel(Vec2i pos, Color4 color);
 
-    void set_pixel(const Vec2i pos, const Color4 color);
+        Color4 get_pixel(Vec2i pos) const;
 
-    Color4 get_pixel(const Vec2i pos) const;
+        void fill(Color4 color = Color4{0, 0, 0, 255});
+        void compress_colors(const std::vector<Color4> &palette);
 
-    void fill(const Color4 color = Color4 { 0, 0, 0, 255 });
-    void compress_colors(const std::vector<Color4>& palette);
+        static Bitmap decode_bmp(const std::string &filename);
 
-    static Bitmap decode_bmp(const std::string& filename);
+    private:
 
-private:
-
-    Vec2i resolution;
-    std::vector<Color4> pixels;
-
-};
-
+        Vec2i resolution;
+        std::vector<Color4> pixels;
+    };
 }

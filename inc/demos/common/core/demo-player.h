@@ -18,14 +18,14 @@ public:
     void init();
     void run();
 
-    void resize(const gfx::Vec2i new_resolution);
+    void resize(const gfx::Vec2i new_resolution) const;
     bool screen_size_changed() { return get_screen_size() != renderer->get_resolution(); }
 
 protected:
 
     void cycle_demo(const int direction);
     void handle_input(const int input);
-    std::vector<std::string> get_info();
+    std::vector<std::string> get_info() const;
 
     virtual gfx::Vec2i get_screen_size() = 0;
 

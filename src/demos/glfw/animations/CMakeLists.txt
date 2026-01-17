@@ -1,16 +1,16 @@
 set(GLFW_ANIMATIONS_DEMO_SOURCES
-    main.cpp
+        main.cpp
 )
 
 add_executable(glfw-animations-demo
-    ${GLFW_ANIMATIONS_DEMO_SOURCES}
+        ${GLFW_ANIMATIONS_DEMO_SOURCES}
 )
 
 target_link_libraries(glfw-animations-demo PUBLIC
-    demos_common_core
-    gfx
+        demos_common_core
+        gfx
 )
 
 target_include_directories(glfw-animations-demo PUBLIC
-    ${INCLUDE_DIR}
+        ${INCLUDE_DIR}
 )

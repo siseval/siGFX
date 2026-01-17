@@ -1,8 +1,8 @@
 #include <gfx/core/render-engine.h>
 #include <gfx/surfaces/curses/curses-render-surface.h>
 
-#include "demos/curses/curses-utils.h"
 #include "demos/common/interactive/interactive-demo.h"
+#include "demos/curses/curses-utils.h"
 
 namespace demos
 {
@@ -15,7 +15,7 @@ void run()
     set_bold(true);
 
     auto surface { std::make_shared<CursesRenderSurface>(get_screen_size() * 2) };
-    InteractiveDemo demo(std::make_shared<gfx::RenderEngine>(surface));
+    InteractiveDemo demo(std::make_shared<RenderEngine>(surface));
 
     bool running = true;
 
@@ -24,14 +24,14 @@ void run()
         clear();
         demo.render_frame(0);
         set_color(default_color::WHITE);
-        std::vector<std::string> info { demo.info_text() };
+        std::vector info { demo.info_text() };
         for (int i = 0; i < info.size(); ++i)
         {
             add_str({ 0, i }, info[i]);
         }
         refresh();
 
-        int input { get_input() };
+        const int input { get_input() };
         if (input == 'q')
         {
             running = false;

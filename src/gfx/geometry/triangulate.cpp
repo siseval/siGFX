@@ -6,9 +6,9 @@ namespace gfx
 
 bool Triangulate::is_convex(const BarycentricTriangle &triangle, const bool clockwise)
 {
-    Vec2d ab { triangle.v1 - triangle.v0 };
-    Vec2d ac { triangle.v2 - triangle.v0 };
-    double cross { ab.x * ac.y - ab.y * ac.x };
+    const Vec2d ab { triangle.v1 - triangle.v0 };
+    const Vec2d ac { triangle.v2 - triangle.v0 };
+    const double cross { ab.x * ac.y - ab.y * ac.x };
     return clockwise ? cross > 0 : cross < 0;
 }
 
@@ -63,8 +63,8 @@ Polygon::Contour Triangulate::merge_holes(const Polygon::Contour &contour, const
         }
 
         std::vector<Vec2d> reversed;
-        auto& hole_vertices = 
-            (hole.clockwise == contour.clockwise)
+        auto& hole_vertices =
+            hole.clockwise == contour.clockwise
                 ? (reversed = { hole.vertices.rbegin(), hole.vertices.rend() }, reversed)
                 : hole.vertices;
 
@@ -86,10 +86,10 @@ Polygon::Contour Triangulate::merge_holes(const Polygon::Contour &contour, const
 
         for (int i = 0; i < merged.size(); ++i)
         {
-            Vec2d a = merged[i];
-            Vec2d b = merged[(i + 1) % merged.size()];
+            const Vec2d a = merged[i];
+            const Vec2d b = merged[(i + 1) % merged.size()];
 
-            if ((a.y > bridge_start.y) != (b.y > bridge_start.y))
+            if (a.y > bridge_start.y != b.y > bridge_start.y)
             {
                 double x = a.x + (b.x - a.x) * (bridge_start.y - a.y) / (b.y - a.y);
                 if (x > bridge_start.x && x < best_x)
@@ -128,8 +128,8 @@ Polygon::Contour Triangulate::merge_holes(const Polygon::Contour &contour, const
 std::vector<BarycentricTriangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
 {
     Polygon::Contour merged;
-    auto& merged_contour = 
-        (component.holes.size() > 0)
+    auto& merged_contour =
+        component.holes.size() > 0
             ? (merged = { merge_holes(component.contour, component.holes) }, merged)
             : component.contour;
 
@@ -154,9 +154,9 @@ std::vector<BarycentricTriangle> Triangulate::triangulate_polygon(const Polygon:
         bool ear_found = false;
         for (int i = 0; i < indices.size(); ++i)
         {
-            int prev_index { indices[(i == 0) ? indices.size() - 1 : i - 1] };
-            int cur_index { indices[i] };
-            int next_index { indices[(i + 1) >= indices.size() ? 0 : i + 1] };
+            const int prev_index { indices[i == 0 ? indices.size() - 1 : i - 1] };
+            const int cur_index { indices[i] };
+            const int next_index { indices[i + 1 >= indices.size() ? 0 : i + 1] };
 
             BarycentricTriangle candidate { vertices[prev_index], vertices[cur_index], vertices[next_index] };
 

@@ -7,9 +7,9 @@ namespace demos
 
 using namespace gfx;
 
-std::vector<gfx::Color4> WaterSurfaceShader::frag(const gfx::ShaderInput2D &input) const
+std::vector<Color4> WaterSurfaceShader::frag(const ShaderInput2D &input) const
 {
-    std::vector<gfx::Color4> out;
+    std::vector<Color4> out;
 
     constexpr double wave_freq = 20.0;
     constexpr double wave_speed = 3.0;
@@ -20,21 +20,20 @@ std::vector<gfx::Color4> WaterSurfaceShader::frag(const gfx::ShaderInput2D &inpu
 
     for (const auto &uv : input.uv)
     {
-        double global_time_sec { time_ms() / 1000.0 };
-        Vec2d center { 0.5, 0.5 };
+        const double global_time_sec { time_ms() / 1000.0 };
 
         double ripple_amount = base_brightness;
         for (const auto &ripple : ripples)
         {
-            double distance = Vec2d::distance(uv, ripple->center);
+            const double distance = Vec2d::distance(uv, ripple->center);
 
-            double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
-            double t { ripple_time_sec / ripple_lifetime_sec };
+            const double ripple_time_sec { global_time_sec - ripple->start_time / 1000.0 };
+            const double t { ripple_time_sec / ripple_lifetime_sec };
 
-            double fade_in { smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
+            const double fade_in { smoothstep(std::clamp(t / 0.1, 0.0, 1.0)) };
 
-            double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
-            double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
+            const double wave { std::sin(wave_freq * distance - wave_speed * ripple_time_sec) };
+            const double falloff { std::exp(-dist_falloff * distance - fade_decay * t) };
 
             ripple_amount += wave * falloff * amp_scale * fade_in;
         }
@@ -52,7 +51,7 @@ std::vector<gfx::Color4> WaterSurfaceShader::frag(const gfx::ShaderInput2D &inpu
 void ShaderDemo::init()
 {
     Vec2d resolution { get_resolution() };
-    Vec2d center { resolution / 2 };
+    const Vec2d center { resolution / 2 };
 
     shader = std::make_shared<WaterSurfaceShader>();
 
@@ -83,7 +82,7 @@ void ShaderDemo::update_ripples(const double dt)
     }
     for (const auto& ripple : to_remove)
     {
-        auto it = std::find(shader->ripples.begin(), shader->ripples.end(), ripple);
+        auto it = std::ranges::find(shader->ripples, ripple);
         if (it != shader->ripples.end())
         {
             shader->ripples.erase(it);
@@ -93,7 +92,7 @@ void ShaderDemo::update_ripples(const double dt)
 
 void ShaderDemo::render_frame(const double dt)
 {
-    double t0 { time_us() };
+    const double t0 { time_us() };
 
     update_ripples(dt);
 
@@ -106,7 +105,7 @@ void ShaderDemo::render_frame(const double dt)
 
     shader->mouse_uv = quad->get_uv(mouse_position);
 
-    double t { t0 / 1000000.0 };
+    const double t { t0 / 1000000.0 };
 
     shader->base_color = Color4(
         std::sin(t * 0.5) * 0.1 + 0.2,
@@ -119,17 +118,17 @@ void ShaderDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
-Vec2d ShaderDemo::get_random_position()
+Vec2d ShaderDemo::get_random_position() const
 {
-    Vec2d resolution { get_resolution() };
-    double x = random_double(0.0, static_cast<double>(resolution.x));
-    double y = random_double(0.0, static_cast<double>(resolution.y));
+    const Vec2d resolution { get_resolution() };
+    const double x = random_double(0.0, resolution.x);
+    const double y = random_double(0.0, resolution.y);
     return Vec2d { x, y };
 }
 
-void ShaderDemo::spawn_ripple(const Vec2d position)
+void ShaderDemo::spawn_ripple(const Vec2d position) const
 {
-    auto ripple = std::make_shared<Ripple>();
+    const auto ripple = std::make_shared<Ripple>();
     ripple->center = quad->get_uv(position);
     ripple->start_time = time_ms();
     shader->ripples.push_back(ripple);

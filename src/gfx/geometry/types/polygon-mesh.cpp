@@ -3,17 +3,13 @@
 namespace gfx
 {
 
-PolygonMesh::PolygonMesh() : 
-    vertices(),
-    normals(),
-    indices(),
-    colors() {}
+PolygonMesh::PolygonMesh() {}
 
-PolygonMesh::PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices) : 
+PolygonMesh::PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices) :
     vertices(vertices),
     normals(normals),
     indices(indices),
-    colors(std::vector<Color4>(vertices.size(), Color4::white())) {}
+    colors(std::vector(vertices.size(), Color4::white())) {}
 
 Box3d PolygonMesh::get_extent() const
 {
@@ -72,7 +68,7 @@ const std::vector<Color4>& PolygonMesh::get_colors() const
     return colors;
 }
 
-const size_t PolygonMesh::num_vertices() const
+size_t PolygonMesh::num_vertices() const
 {
     return vertices.size();
 }

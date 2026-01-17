@@ -48,14 +48,14 @@ void Simulate::binary_system(SpaceDemo &demo)
     demo.set_camera_pos({ 0, 0 });
     demo.set_camera_size(10.0);
 
-    double mass1 = 1.0;
-    double mass2 = 0.8;
-    double separation = 1.0;
+    constexpr double mass1 = 1.0;
+    constexpr double mass2 = 0.8;
+    constexpr double separation = 1.0;
 
-    double r1 = (mass2 / (mass1 + mass2)) * separation;
-    double r2 = (mass1 / (mass1 + mass2)) * separation;
+    constexpr double r1 = mass2 / (mass1 + mass2) * separation;
+    double r2 = mass1 / (mass1 + mass2) * separation;
 
-    double v_total = sqrt(units::G * (mass1 + mass2) / separation);
+    const double v_total = sqrt(units::G * (mass1 + mass2) / separation);
 
     demo.spawn_body("star_a",
         { -r1, 0.0 },
@@ -75,11 +75,11 @@ void Simulate::binary_system(SpaceDemo &demo)
         { 0.8, 0.9, 1.0, 1.0 }
     );
 
-    auto orbital_velocity = [](double GM, double radius_AU) {
+    auto orbital_velocity = [](const double GM, const double radius_AU) {
         return sqrt(GM / radius_AU);
     };
 
-    double system_mass = mass1 + mass2;
+    constexpr double system_mass = mass1 + mass2;
 
     struct Planet {
         std::string name;
@@ -106,14 +106,14 @@ void Simulate::binary_system(SpaceDemo &demo)
             p.color);
     }
 
-    double star_b_orbit_radius = 0.2;
-    double star_b_orbit_velocity = orbital_velocity(units::G * mass2, star_b_orbit_radius);
+    constexpr double star_b_orbit_radius = 0.2;
+    const double star_b_orbit_velocity = orbital_velocity(units::G * mass2, star_b_orbit_radius);
 
-    Vec2d star_b_pos = { r2, 0.0 };
-    Vec2d star_b_vel = { 0.0, -v_total * (mass1 / (mass1 + mass2)) };
+    const Vec2d star_b_pos = { r2, 0.0 };
+    const Vec2d star_b_vel = { 0.0, -v_total * (mass1 / (mass1 + mass2)) };
 
-    Vec2d moon_pos = { star_b_pos.x + star_b_orbit_radius, star_b_pos.y };
-    Vec2d moon_vel = { star_b_vel.x, star_b_vel.y + star_b_orbit_velocity };
+    const Vec2d moon_pos = { star_b_pos.x + star_b_orbit_radius, star_b_pos.y };
+    const Vec2d moon_vel = { star_b_vel.x, star_b_vel.y + star_b_orbit_velocity };
 
     demo.spawn_body("captured_moon",
         moon_pos,
@@ -131,7 +131,7 @@ void Simulate::solar_system(SpaceDemo &demo)
 
     demo.spawn_body("sun", { 0.0, 0.0 }, { 0.0, 0.0 }, 0.00465, 1.0, true, { 1.0, 1.0, 0.0, 1.0 });
 
-    auto orbital_velocity = [](double GM, double radius_AU) {
+    auto orbital_velocity = [](const double GM, const double radius_AU) {
         return std::sqrt(GM / radius_AU);
     };
 
@@ -174,7 +174,7 @@ void Simulate::solar_system(SpaceDemo &demo)
         Color4 color;
     };
 
-    auto km_to_au = [](double km) {
+    auto km_to_au = [](const double km) {
         return km / 1.496e8;
     };
 
@@ -198,12 +198,12 @@ void Simulate::solar_system(SpaceDemo &demo)
 
     for (const auto& m : moons) {
         const auto& planet = planets[m.planet_index];
-        double r_moon_AU = km_to_au(m.orbital_radius_km);
-        double v_moon = orbital_velocity(units::G * planet.mass_solar, r_moon_AU);
+        const double r_moon_AU = km_to_au(m.orbital_radius_km);
+        const double v_moon = orbital_velocity(units::G * planet.mass_solar, r_moon_AU);
 
-        Vec2d pos = { planet.radius_AU + r_moon_AU, 0.0 };
-        double v_planet = orbital_velocity(units::G, planet.radius_AU);
-        Vec2d vel = { 0.0, v_planet + v_moon };
+        const Vec2d pos = { planet.radius_AU + r_moon_AU, 0.0 };
+        const double v_planet = orbital_velocity(units::G, planet.radius_AU);
+        const Vec2d vel = { 0.0, v_planet + v_moon };
 
         demo.spawn_body(m.name,
                 pos,

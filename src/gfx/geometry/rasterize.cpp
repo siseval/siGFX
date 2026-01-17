@@ -21,11 +21,11 @@ void Rasterize::rasterize_filled_triangle(const BarycentricTriangle &triangle, s
     {
         bounds.min.x = std::max(0.0, bounds.min.x);
         bounds.min.y = std::max(0.0, bounds.min.y);
-        bounds.max.x = std::min((clip_bounds.x) - 1, bounds.max.x);
-        bounds.max.y = std::min((clip_bounds.y) - 1, bounds.max.y);
+        bounds.max.x = std::min(clip_bounds.x - 1, bounds.max.x);
+        bounds.max.y = std::min(clip_bounds.y - 1, bounds.max.y);
     }
 
-    int corners_inside = triangle.corners_inside(bounds);
+    const int corners_inside = triangle.corners_inside(bounds);
     if (corners_inside == 4)
     {
         for (int y = bounds.min.y; y <= bounds.max.y; ++y)
@@ -38,27 +38,24 @@ void Rasterize::rasterize_filled_triangle(const BarycentricTriangle &triangle, s
         return;
     }
 
-    double a = triangle.get_a();
-    double b = triangle.get_b();
-    double c = triangle.get_c();
+    const double a = triangle.get_a();
+    const double b = triangle.get_b();
+    const double c = triangle.get_c();
 
-    double d = triangle.get_d();
-    double e = triangle.get_e();
-    double f = triangle.get_f();
+    const double d = triangle.get_d();
+    const double e = triangle.get_e();
+    const double f = triangle.get_f();
 
-    double g = triangle.get_g();
-    double h = triangle.get_h();
-    double i = triangle.get_i();
+    const double g = triangle.get_g();
+    const double h = triangle.get_h();
+    const double i = triangle.get_i();
 
-    double area = triangle.get_area();
+    const double area = triangle.get_area();
 
     if (area == 0.0)
     {
         return;
     }
-
-    double start_x = static_cast<double>(bounds.min.x) + 0.5;
-    double start_y = static_cast<double>(bounds.min.y) + 0.5;
 
     double w0_row = a * (bounds.min.x + 0.5) + b * (bounds.min.y + 0.5) + c;
     double w1_row = d * (bounds.min.x + 0.5) + e * (bounds.min.y + 0.5) + f;
@@ -72,7 +69,7 @@ void Rasterize::rasterize_filled_triangle(const BarycentricTriangle &triangle, s
 
         for (int x = bounds.min.x; x < bounds.max.x; ++x)
         {
-            if ((w0 * w1 >= 0) && (w1 * w2 >= 0))
+            if (w0 * w1 >= 0 && w1 * w2 >= 0)
             {
                 pixels.push_back(Vec2i { x, y });
             }

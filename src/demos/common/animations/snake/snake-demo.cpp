@@ -8,8 +8,8 @@ using namespace gfx;
 
 void SnakeDemo::init()
 {
-    Vec2d resolution { get_resolution() };
-    Vec2d center { resolution / 2 };
+    const Vec2d resolution { get_resolution() };
+    const Vec2d center { resolution / 2 };
 
     speed = resolution.x * 0.3;
     target_speed = speed * 1.1;
@@ -30,13 +30,13 @@ void SnakeDemo::init()
 
     for (int i = 0; i < num_colors; ++i)
     {
-        double progress { static_cast<double>(i) / num_colors };
+        const double progress { static_cast<double>(i) / num_colors };
 
         Color4 color { Color4::lerp({ 0.0, 1.0, 0.0 }, { 0.0, 1.0, 1.0 }, progress) };
         segment_palette.push_back(color);
     }
 
-    std::vector<Vec2d> head_points {
+    const std::vector<Vec2d> head_points {
         { 0, 0 },
         { head_dimensions.x / 2, head_dimensions.y / 2 },
         { head_dimensions.x, 0 },
@@ -51,7 +51,7 @@ void SnakeDemo::init()
     head->set_depth(0);
     render2D->add_item(head);
 
-    std::vector<Vec2d> tongue_points {
+    const std::vector<Vec2d> tongue_points {
         { 0, 0 },
         { head_dimensions.x * 0.2, head_dimensions.y * 0.05 },
         { head_dimensions.x * 0.4, head_dimensions.y * 0.2 },
@@ -84,20 +84,20 @@ void SnakeDemo::move_target(const double dt)
 
     if (!control)
     {
-        target_direction += Vec2d { 
-            random_double(-target_turn_speed, target_turn_speed), 
-            random_double(-target_turn_speed, target_turn_speed) 
+        target_direction += Vec2d {
+            random_double(-target_turn_speed, target_turn_speed),
+            random_double(-target_turn_speed, target_turn_speed)
         } * dt;
     }
     target_direction = target_direction.normalize();
 
-    if (head_target.x < target_bounds_margin.x || 
+    if (head_target.x < target_bounds_margin.x ||
         head_target.x > get_resolution().x - target_bounds_margin.x)
     {
         target_direction.x = -target_direction.x;
     }
 
-    if (head_target.y < target_bounds_margin.y || 
+    if (head_target.y < target_bounds_margin.y ||
         head_target.y > get_resolution().y - target_bounds_margin.y)
     {
         target_direction.y = -target_direction.y;
@@ -109,7 +109,7 @@ void SnakeDemo::move_target(const double dt)
 
 void SnakeDemo::move_head(const double dt)
 {
-    Vec2d goal { food.empty() ? head_target : closest_food() };
+    const Vec2d goal { food.empty() ? head_target : closest_food() };
 
     Vec2d to_target { (goal - head->get_position()).normalize() };
 
@@ -129,7 +129,7 @@ void SnakeDemo::move_head(const double dt)
     }
 }
 
-void SnakeDemo::move_segments()
+void SnakeDemo::move_segments() const
 {
     segments[0]->set_position(head->get_position() - Vec2d::from_angle(head->get_rotation(), segment_spacing));
     segments[0]->set_rotation(head->get_rotation());
@@ -143,8 +143,8 @@ void SnakeDemo::move_segments()
 
 void SnakeDemo::spawn()
 {
-    Vec2d resolution { get_resolution() };
-    Vec2d center { resolution / 2 };
+    const Vec2d resolution { get_resolution() };
+    const Vec2d center { resolution / 2 };
 
     head_target = center;
     head->set_position(center);
@@ -181,7 +181,7 @@ void SnakeDemo::do_dead(const double dt)
     }
     for (int i = 0; i < segments.size(); ++i)
     {
-        auto segment { segments[i] };
+        const auto segment { segments[i] };
         Vec2d dir { Vec2d::from_angle(segment->get_rotation()) };
 
         segment->set_position(segment->get_position() + dir * explode_speed * dt);
@@ -196,15 +196,15 @@ void SnakeDemo::do_dead(const double dt)
 
 void SnakeDemo::render_frame(const double dt)
 {
-    double t0 { time_us() };
-    double time_ms { t0 / 1000.0 };
+    const double t0 { time_us() };
+    const double time_ms { t0 / 1000.0 };
 
     tongue->set_scale(std::sin(std::sin(time_ms / 1000) * 8));
     if (dead)
     {
         do_dead(dt);
     }
-    else 
+    else
     {
         move_target(dt);
         move_head(dt);
@@ -216,13 +216,13 @@ void SnakeDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
-Vec2d SnakeDemo::closest_food()
+Vec2d SnakeDemo::closest_food() const
 {
     double closest_dist { Vec2d::distance(head->get_position(), food[0]->get_position()) };
     Vec2d closest_pos { food[0]->get_position() };
     for (int i = 1; i < food.size(); ++i)
     {
-        double dist { Vec2d::distance(head->get_position(), food[i]->get_position()) };
+        const double dist { Vec2d::distance(head->get_position(), food[i]->get_position()) };
         if (dist < closest_dist)
         {
             closest_dist = dist;
@@ -236,10 +236,10 @@ void SnakeDemo::update_segments()
 {
     for (int i = 0; i < segments.size(); ++i)
     {
-        double progress { static_cast<double>(i) / segments.size() };
-        int color_index { static_cast<int>(progress * (segment_palette.size() - 1)) };
+        const double progress { static_cast<double>(i) / segments.size() };
+        const int color_index { static_cast<int>(progress * (segment_palette.size() - 1)) };
 
-        Vec2d radius { Vec2d::lerp({ segment_length, segment_width }, { 0.1, 0.1 }, progress) };
+        const Vec2d radius { Vec2d::lerp({ segment_length, segment_width }, { 0.1, 0.1 }, progress) };
         segments[i]->set_radius(radius);
         segments[i]->set_color(segment_palette[color_index]);
         segments[i]->set_depth(i + 1);
@@ -248,9 +248,9 @@ void SnakeDemo::update_segments()
 
 void SnakeDemo::remove_food()
 {
-    if (food.empty()) 
+    if (food.empty())
     {
-        return; 
+        return;
     }
 
     render2D->remove_item(food.back());
@@ -259,7 +259,7 @@ void SnakeDemo::remove_food()
 
 void SnakeDemo::add_food()
 {
-    Vec2i pos { 
+    const Vec2i pos {
         random_int(target_bounds_margin.x, get_resolution().x - target_bounds_margin.x),
         random_int(target_bounds_margin.y, get_resolution().y - target_bounds_margin.y)
     };
@@ -270,12 +270,12 @@ void SnakeDemo::add_food()
 
 void SnakeDemo::add_segment()
 {
-    auto segment { render2D->create_ellipse({ 0, 0 }, { 0, 0 }, Color4(0, 0, 0)) };
+    const auto segment { render2D->create_ellipse({ 0, 0 }, { 0, 0 }, Color4(0, 0, 0)) };
     segment->set_filled(true);
     segment->set_anchor({ 0.5, 0.5 });
     if (!segments.empty())
     {
-        Vec2d pos { dead ? static_cast<Vec2d>(render2D->get_resolution() / 2.0) : segments.back()->get_position() };
+        const Vec2d pos { dead ? static_cast<Vec2d>(render2D->get_resolution() / 2.0) : segments.back()->get_position() };
         segment->set_position(pos);
         segment->set_rotation(segments.back()->get_rotation());
     }
@@ -289,7 +289,7 @@ void SnakeDemo::add_segment()
 
 void SnakeDemo::remove_segment()
 {
-    if (segments.empty()) 
+    if (segments.empty())
     {
         return;
     }
@@ -302,7 +302,7 @@ void SnakeDemo::remove_segment()
 
 void SnakeDemo::update_scale(const double s)
 {
-    for (auto &segment : segments)
+    for (const auto &segment : segments)
     {
         segment->set_scale(s);
     }

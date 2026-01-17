@@ -4,14 +4,14 @@
 namespace gfx
 {
 
-FontTTF::FontTTF(int units_per_em, double ascent, double descent, double line_gap, int num_glyphs)
+FontTTF::FontTTF(const int units_per_em, const double ascent, const double descent, const double line_gap, const int num_glyphs)
     : units_per_em(units_per_em), ascent(ascent), descent(descent), line_gap(line_gap), num_glyphs(num_glyphs)
 {
 }
 
 std::shared_ptr<FontTTF::GlyphTTF> FontTTF::get_glyph(const uint32_t codepoint) const
 {
-    auto it = glyphs.find(codepoint);
+    const auto it = glyphs.find(codepoint);
     if (it != glyphs.end())
     {
         return it->second;
@@ -21,20 +21,20 @@ std::shared_ptr<FontTTF::GlyphTTF> FontTTF::get_glyph(const uint32_t codepoint) 
 
 std::vector<FontTTF::ContourEdge> FontTTF::get_glyph_edges(const uint32_t codepoint) const
 {
-    auto it = vertex_cache.find(codepoint);
+    const auto it = vertex_cache.find(codepoint);
     if (it != vertex_cache.end())
     {
         return it->second;
     }
 
-    std::vector<FontTTF::ContourEdge> vertices = flatten_glyph(get_glyph(codepoint));
+    std::vector<ContourEdge> vertices = flatten_glyph(get_glyph(codepoint));
     vertex_cache[codepoint] = vertices;
     return vertices;
 }
 
-std::vector<FontTTF::ContourEdge> FontTTF::flatten_glyph(const std::shared_ptr<FontTTF::GlyphTTF> glyph) const
+std::vector<FontTTF::ContourEdge> FontTTF::flatten_glyph(const std::shared_ptr<GlyphTTF> glyph)
 {
-    std::vector<FontTTF::ContourEdge> edges;
+    std::vector<ContourEdge> edges;
     if (!glyph)
     {
         return edges;
@@ -43,16 +43,16 @@ std::vector<FontTTF::ContourEdge> FontTTF::flatten_glyph(const std::shared_ptr<F
     for (const auto &contour : glyph->contours)
     {
         std::vector<std::pair<Vec2d, bool>> points_on_off_curve;
-        for (const auto &point : contour)
+        for (const auto &[x, y, on_curve] : contour)
         {
-            points_on_off_curve.push_back({ Vec2d { point.x, point.y }, point.on_curve });
+            points_on_off_curve.push_back({ Vec2d { x, y }, on_curve });
         }
 
         std::vector<Vec2d> flattened_contour = Flatten::flatten_contour(points_on_off_curve);
-        int num_points = flattened_contour.size();
+        const int num_points = flattened_contour.size();
         for (int i = 0; i < num_points; ++i)
         {
-            FontTTF::ContourEdge edge {
+            ContourEdge edge {
                 flattened_contour[i],
                 flattened_contour[(i + 1) % num_points]
             };
@@ -62,14 +62,14 @@ std::vector<FontTTF::ContourEdge> FontTTF::flatten_glyph(const std::shared_ptr<F
     return edges;
 }
 
-void FontTTF::set_kerning(const char left, const char right, int offset)
+void FontTTF::set_kerning(const char left, const char right, const int offset)
 {
     kerning_table[{static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}] = offset;
 }
 
 int FontTTF::get_kerning(const char left, const char right) const
 {
-    return kerning_table.count({static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}) ?
+    return kerning_table.contains({static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}) ?
         kerning_table.at({static_cast<uint32_t>(static_cast<uint8_t>(left)), static_cast<uint32_t>(static_cast<uint8_t>(right))}) : 0;
 }
 
@@ -80,12 +80,12 @@ void FontTTF::set_metrics(const uint32_t codepoint, const GlyphMetrics &metrics)
 
 int FontTTF::get_glyph_advance(const uint32_t codepoint) const
 {
-    return glyph_metrics.count(codepoint) ? glyph_metrics.at(codepoint).advance_width : 0;
+    return glyph_metrics.contains(codepoint) ? glyph_metrics.at(codepoint).advance_width : 0;
 }
 
 int FontTTF::get_glyph_left_side_bearing(const uint32_t codepoint) const
 {
-    return glyph_metrics.count(codepoint) ? glyph_metrics.at(codepoint).left_side_bearing : 0;
+    return glyph_metrics.contains(codepoint) ? glyph_metrics.at(codepoint).left_side_bearing : 0;
 }
 
 double FontTTF::get_ascent() const
