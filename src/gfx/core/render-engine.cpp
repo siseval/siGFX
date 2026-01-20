@@ -2,7 +2,6 @@
 
 namespace gfx
 {
-
     RenderEngine::RenderEngine(std::shared_ptr<RenderSurface> surface)
         : surface(surface)
     {

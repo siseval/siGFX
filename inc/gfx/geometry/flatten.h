@@ -12,9 +12,9 @@ namespace gfx
     public:
 
         static std::vector<Vec2d> flatten_bezier(
-            Vec2d p0,
-            Vec2d p1,
-            Vec2d p2,
+            Vec2d start,
+            Vec2d control,
+            Vec2d end,
             double tolerance = 0.5
         );
 

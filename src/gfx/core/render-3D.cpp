@@ -6,9 +6,8 @@
 
 namespace gfx
 {
-
     Render3D::Render3D(std::shared_ptr<RenderSurface> surface)
-        : ambient_light(0),
+        : ambient_light(0.0),
           scene_graph(std::make_shared<SceneGraph3D>()),
           surface(surface) {}
 
