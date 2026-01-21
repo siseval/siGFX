@@ -5,19 +5,19 @@
 
 namespace gfx
 {
-    struct UUID
-    {
-        uint64_t part1;
-        uint64_t part2;
+struct UUID
+{
+    uint64_t part1;
+    uint64_t part2;
 
-        UUID();
-        UUID(uint64_t p1, uint64_t p2);
+    UUID();
+    UUID(uint64_t p1, uint64_t p2);
 
-        bool operator==(const UUID &other) const;
-        bool operator!=(const UUID &other) const;
+    bool operator==(const UUID &other) const;
+    bool operator!=(const UUID &other) const;
 
-        static UUID generate();
-    };
+    static UUID generate();
+};
 }
 
 template <>

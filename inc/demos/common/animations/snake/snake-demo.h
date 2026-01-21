@@ -7,88 +7,88 @@
 namespace demos
 {
 
-    class SnakeDemo : public demos::GfxDemo
+class SnakeDemo : public demos::GfxDemo
+{
+
+public:
+
+    SnakeDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
+        : GfxDemo(renderer)
     {
+        render2D = renderer->get_render_2D();
+    }
 
-    public:
+    void init() override;
+    void render_frame(double dt) override;
+    void end() override;
+    void handle_char(int input) override;
+    void report_mouse(const demos::MouseEvent event) override {}
 
-        SnakeDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-            : GfxDemo(renderer)
-        {
-            render2D = renderer->get_render_2D();
-        }
+    virtual std::vector<std::string> debug_text() override
+    {
+        return {
+            "dt: " + std::to_string(last_frame_us / CLOCKS_PER_SEC),
+        };
+    }
 
-        void init() override;
-        void render_frame(double dt) override;
-        void end() override;
-        void handle_char(int input) override;
-        void report_mouse(const demos::MouseEvent event) override {}
+private:
 
-        virtual std::vector<std::string> debug_text() override
-        {
-            return {
-                "dt: " + std::to_string(last_frame_us / CLOCKS_PER_SEC),
-            };
-        }
+    void move_target(double dt);
+    void move_head(double dt);
+    void move_segments() const;
 
-    private:
+    void spawn();
+    void die();
+    void do_dead(double dt);
 
-        void move_target(double dt);
-        void move_head(double dt);
-        void move_segments() const;
+    void remove_food();
+    void add_food();
+    gfx::Vec2d closest_food() const;
 
-        void spawn();
-        void die();
-        void do_dead(double dt);
+    void update_segments();
+    void add_segment();
+    void remove_segment();
+    void update_scale(double s);
 
-        void remove_food();
-        void add_food();
-        gfx::Vec2d closest_food() const;
+    std::shared_ptr<gfx::Render2D> render2D;
 
-        void update_segments();
-        void add_segment();
-        void remove_segment();
-        void update_scale(double s);
+    bool control = false;
+    bool dead = true;
+    double explode_speed = 100;
+    double dead_time = 0.0;
 
-        std::shared_ptr<gfx::Render2D> render2D;
+    bool first_init = true;
 
-        bool control = false;
-        bool dead = true;
-        double explode_speed = 100;
-        double dead_time = 0.0;
+    int num_segments = 64;
+    double scale = 1.0;
 
-        bool first_init = true;
+    double segment_length = 2.0;
+    double segment_width = 1.0;
+    double segment_spacing = 1.0;
 
-        int num_segments = 64;
-        double scale = 1.0;
+    gfx::Vec2d head_target;
+    gfx::Vec2d head_dir;
+    gfx::Vec2d head_dimensions { 5, 2.5 };
 
-        double segment_length = 2.0;
-        double segment_width = 1.0;
-        double segment_spacing = 1.0;
+    double speed = 30;
+    double turn_speed = 5;
 
-        gfx::Vec2d head_target;
-        gfx::Vec2d head_dir;
-        gfx::Vec2d head_dimensions { 5, 2.5 };
+    double target_speed = 30;
+    double target_turn_speed = 10;
+    gfx::Vec2d target_direction;
+    gfx::Vec2d target_bounds_margin;
+    bool target_visible = false;
 
-        double speed = 30;
-        double turn_speed = 5;
+    double food_radius = 0.5;
+    std::vector<std::shared_ptr<gfx::Circle2D>> food;
 
-        double target_speed = 30;
-        double target_turn_speed = 10;
-        gfx::Vec2d target_direction;
-        gfx::Vec2d target_bounds_margin;
-        bool target_visible = false;
+    std::shared_ptr<gfx::Polyline2D> tongue;
+    std::shared_ptr<gfx::Polyline2D> head;
+    std::vector<std::shared_ptr<gfx::Ellipse2D>> segments;
+    std::shared_ptr<gfx::Circle2D> target_marker;
 
-        double food_radius = 0.5;
-        std::vector<std::shared_ptr<gfx::Circle2D>> food;
-
-        std::shared_ptr<gfx::Polyline2D> tongue;
-        std::shared_ptr<gfx::Polyline2D> head;
-        std::vector<std::shared_ptr<gfx::Ellipse2D>> segments;
-        std::shared_ptr<gfx::Circle2D> target_marker;
-
-        std::vector<gfx::Color4> segment_palette;
-        int num_colors = 120;
-    };
+    std::vector<gfx::Color4> segment_palette;
+    int num_colors = 120;
+};
 
 }

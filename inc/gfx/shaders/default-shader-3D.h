@@ -6,15 +6,15 @@
 
 namespace gfx
 {
-    class DefaultShader3D : public Shader3D
-    {
+class DefaultShader3D : public Shader3D
+{
 
-    public:
+public:
 
-        DefaultShader3D()
-            : Shader3D(
-                std::make_shared<DefaultVertShader>(),
-                std::make_shared<DefaultFragShader>()
-            ) {}
-    };
+    DefaultShader3D()
+        : Shader3D(
+            std::make_shared<DefaultVertShader>(),
+            std::make_shared<DefaultFragShader>()
+        ) {}
+};
 }

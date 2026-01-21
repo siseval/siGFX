@@ -8,36 +8,36 @@
 
 namespace gfx
 {
-    class PolygonMesh
-    {
+class PolygonMesh
+{
 
-    public:
+public:
 
-        PolygonMesh();
+    PolygonMesh();
 
-        PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
+    PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
 
-        Box3d get_extent() const;
+    Box3d get_extent() const;
 
-        void set_vertices(std::vector<Vec3d> verts);
-        void set_normals(std::vector<Vec3d> norms);
-        void set_indices(std::vector<size_t> inds);
-        void set_colors(std::vector<Color4> cols);
+    void set_vertices(std::vector<Vec3d> verts);
+    void set_normals(std::vector<Vec3d> norms);
+    void set_indices(std::vector<size_t> inds);
+    void set_colors(std::vector<Color4> cols);
 
-        const std::vector<Vec3d> &get_vertices() const;
-        const std::vector<Vec3d> &get_normals() const;
-        const std::vector<size_t> &get_indices() const;
-        const std::vector<Color4> &get_colors() const;
+    const std::vector<Vec3d> &get_vertices() const;
+    const std::vector<Vec3d> &get_normals() const;
+    const std::vector<size_t> &get_indices() const;
+    const std::vector<Color4> &get_colors() const;
 
-        size_t num_vertices() const;
+    size_t num_vertices() const;
 
-        void clear();
+    void clear();
 
-    private:
+private:
 
-        std::vector<Vec3d> vertices;
-        std::vector<Vec3d> normals;
-        std::vector<size_t> indices;
-        std::vector<Color4> colors;
-    };
+    std::vector<Vec3d> vertices;
+    std::vector<Vec3d> normals;
+    std::vector<size_t> indices;
+    std::vector<Color4> colors;
+};
 }

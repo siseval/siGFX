@@ -6,91 +6,127 @@
 
 namespace gfx
 {
-    class Shader3D
+class Shader3D
+{
+    static int next_id()
+    {
+        static int next_id = 0;
+        return next_id++;
+    }
+
+    int id;
+
+public:
+
+    Shader3D() : id(next_id()) {}
+
+    int get_id() const
+    {
+        return id;
+    }
+
+    struct VertUniforms
+    {
+        Matrix4x4d model_matrix;
+        Matrix4x4d view_matrix;
+        Matrix4x4d projection_matrix;
+        Matrix4x4d mvp_matrix;
+    };
+
+    struct VertInput
+    {
+        Vec3d pos;
+        Vec3d normal;
+    };
+
+    struct VertOutput
+    {
+        Vec3d xyz;
+        double w;
+        Vec3d normal;
+    };
+
+    struct FragUniforms
+    {
+        double t;
+        Vec3d light_dir;
+        double ambient_intensity;
+    };
+
+    struct FragInput
+    {
+        Vec3d uvw;
+        double depth;
+        Vec3d normal;
+        Color4 color;
+    };
+
+    class VertShader
     {
 
     public:
 
-        struct VertInput
+        virtual ~VertShader() = default;
+
+        virtual VertOutput vert(const VertInput &input) const = 0;
+
+        void set_uniforms(const VertUniforms &uni)
         {
-            std::vector<Vec3d> positions;
-            std::vector<Vec3d> normals;
-
-            Matrix4x4d model_matrix;
-            Matrix4x4d view_matrix;
-            Matrix4x4d projection_matrix;
-            Matrix4x4d mvp_matrix;
-        };
-
-        struct VertOutput
-        {
-            std::vector<Vec3d> xyz;
-            std::vector<double> w;
-            std::vector<Vec3d> normals;
-        };
-
-        struct FragInput
-        {
-            std::vector<Vec3d> uvw;
-            std::vector<double> depths;
-            std::vector<Vec3d> normals;
-            std::vector<Color4> colors;
-
-            double t;
-            Vec3d light_dir;
-            double ambient_intensity;
-        };
-
-        class VertShader
-        {
-
-        public:
-
-            virtual ~VertShader() = default;
-
-            virtual VertOutput vert(const VertInput &input) const = 0;
-
-        };
-
-        class FragShader
-        {
-
-        public:
-
-            virtual ~FragShader() = default;
-
-            virtual std::vector<Color4> frag(const FragInput &input) const = 0;
-
-        };
-
-        Shader3D(
-            std::shared_ptr<VertShader> vertex_shader,
-            std::shared_ptr<FragShader> fragment_shader
-        ) : vertex_shader(vertex_shader), fragment_shader(fragment_shader) {}
-
-        VertOutput vert(const VertInput &input) const
-        {
-            return vertex_shader->vert(input);
-        }
-
-        std::vector<Color4> frag(const FragInput &input) const
-        {
-            return fragment_shader->frag(input);
-        }
-
-        std::shared_ptr<VertShader> get_vertex_shader() const
-        {
-            return vertex_shader;
-        }
-
-        std::shared_ptr<FragShader> get_fragment_shader() const
-        {
-            return fragment_shader;
+            uniforms = uni;
         }
 
     protected:
 
-        std::shared_ptr<VertShader> vertex_shader;
-        std::shared_ptr<FragShader> fragment_shader;
+        VertUniforms uniforms;
     };
+
+    class FragShader
+    {
+
+    public:
+
+        virtual ~FragShader() = default;
+
+        virtual Color4 frag(const FragInput &input) const = 0;
+
+        void set_uniforms(const FragUniforms &uni)
+        {
+            uniforms = uni;
+        }
+
+    protected:
+
+        FragUniforms uniforms;
+    };
+
+    Shader3D(
+        std::shared_ptr<VertShader> vertex_shader,
+        std::shared_ptr<FragShader> fragment_shader
+    ) : id(next_id()), vertex_shader(vertex_shader), fragment_shader(fragment_shader) {}
+
+    VertOutput vert(const VertInput &input) const
+    {
+        return vertex_shader->vert(input);
+    }
+
+    Color4 frag(const FragInput &input) const
+    {
+        return fragment_shader->frag(input);
+    }
+
+    std::shared_ptr<VertShader> get_vertex_shader() const
+    {
+        return vertex_shader;
+    }
+
+    std::shared_ptr<FragShader> get_fragment_shader() const
+    {
+        return fragment_shader;
+    }
+
+protected:
+
+    std::shared_ptr<VertShader> vertex_shader;
+    std::shared_ptr<FragShader> fragment_shader;
+};
 }

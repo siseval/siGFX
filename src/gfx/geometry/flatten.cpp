@@ -5,7 +5,12 @@
 namespace gfx
 {
 
-std::vector<Vec2d> Flatten::flatten_bezier(const Vec2d start, const Vec2d control, const Vec2d end, const double tolerance)
+std::vector<Vec2d> Flatten::flatten_bezier(
+    const Vec2d start,
+    const Vec2d control,
+    const Vec2d end,
+    const double tolerance
+)
 {
     struct BezierSegment
     {
@@ -15,13 +20,15 @@ std::vector<Vec2d> Flatten::flatten_bezier(const Vec2d start, const Vec2d contro
         Vec2d p1;
     };
 
-    auto bezier_eval { [](const Vec2d &a, const Vec2d &b, const Vec2d &c, const double t) {
-        const double u = 1.0 - t;
-        return Vec2d {
-            u * u * a.x + 2 * u * t * b.x + t * t * c.x,
-            u * u * a.y + 2 * u * t * b.y + t * t * c.y
-        };
-    } };
+    auto bezier_eval {
+        [](const Vec2d &a, const Vec2d &b, const Vec2d &c, const double t) {
+            const double u = 1.0 - t;
+            return Vec2d {
+                u * u * a.x + 2 * u * t * b.x + t * t * c.x,
+                u * u * a.y + 2 * u * t * b.y + t * t * c.y
+            };
+        }
+    };
 
     std::vector<Vec2d> points;
     std::stack<BezierSegment> segments;
@@ -96,15 +103,24 @@ std::vector<Vec2d> Flatten::flatten_contour(const std::vector<std::pair<Vec2d, b
             if (next_point.second)
             {
                 Vec2d next_on_point { next_point.first.x, next_point.first.y };
-                auto bezier_points { flatten_bezier(prev_on_point, Vec2d { curr_point.first.x, curr_point.first.y }, next_on_point) };
+                auto bezier_points {
+                    flatten_bezier(prev_on_point, Vec2d { curr_point.first.x, curr_point.first.y }, next_on_point)
+                };
                 flattened_points.insert(flattened_points.end(), bezier_points.begin() + 1, bezier_points.end());
                 prev_on_point = next_on_point;
                 ++i;
             }
             else
             {
-                const Vec2d mid_point { (Vec2d { curr_point.first.x, curr_point.first.y } + Vec2d { next_point.first.x, next_point.first.y }) / 2.0 };
-                auto bezier_points { flatten_bezier(prev_on_point, Vec2d { curr_point.first.x, curr_point.first.y }, mid_point) };
+                const Vec2d mid_point {
+                    (Vec2d { curr_point.first.x, curr_point.first.y } + Vec2d {
+                        next_point.first.x,
+                        next_point.first.y
+                    }) / 2.0
+                };
+                auto bezier_points {
+                    flatten_bezier(prev_on_point, Vec2d { curr_point.first.x, curr_point.first.y }, mid_point)
+                };
                 flattened_points.insert(flattened_points.end(), bezier_points.begin() + 1, bezier_points.end());
                 prev_on_point = mid_point;
             }

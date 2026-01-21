@@ -6,37 +6,37 @@
 
 namespace gfx
 {
-    class Polygon
+class Polygon
+{
+
+public:
+
+    struct Contour
     {
+        Contour(std::vector<Vec2d> verts, const bool cw)
+            : vertices(verts), clockwise(cw) {}
 
-    public:
+        Contour() : clockwise(true) {}
 
-        struct Contour
-        {
-            Contour(std::vector<Vec2d> verts, const bool cw)
-                : vertices(verts), clockwise(cw) {}
-
-            Contour() : clockwise(true) {}
-
-            std::vector<Vec2d> vertices;
-            bool clockwise;
-        };
-
-        struct Component
-        {
-            Component(std::vector<Vec2d> vertices, const bool clockwise)
-                : contour(vertices, clockwise) {}
-
-            explicit Component(Contour cont)
-                : contour(cont) {}
-
-            Component(std::vector<Vec2d> vertices, const bool cw, std::vector<Contour> holes)
-                : contour(vertices, cw), holes(holes) {}
-
-            Component() {}
-
-            Contour contour;
-            std::vector<Contour> holes;
-        };
+        std::vector<Vec2d> vertices;
+        bool clockwise;
     };
+
+    struct Component
+    {
+        Component(std::vector<Vec2d> vertices, const bool clockwise)
+            : contour(vertices, clockwise) {}
+
+        explicit Component(Contour cont)
+            : contour(cont) {}
+
+        Component(std::vector<Vec2d> vertices, const bool cw, std::vector<Contour> holes)
+            : contour(vertices, cw), holes(holes) {}
+
+        Component() {}
+
+        Contour contour;
+        std::vector<Contour> holes;
+    };
+};
 }

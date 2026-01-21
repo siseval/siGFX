@@ -13,137 +13,137 @@
 namespace demos
 {
 
-    using namespace gfx;
+using namespace gfx;
 
-    void DemoPlayer::init()
+void DemoPlayer::init()
+{
+    renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
+
+    demos.emplace_back(std::make_shared<Test3DDemo>(renderer));
+    demos.emplace_back(std::make_shared<StarDemo>(renderer));
+    demos.emplace_back(std::make_shared<TextDemo>(renderer));
+    // demos.emplace_back(std::make_shared<VideoDemo>(renderer));
+    demos.emplace_back(std::make_shared<SnakeDemo>(renderer));
+    demos.emplace_back(std::make_shared<BoidsDemo>(renderer));
+    // demos.emplace_back(std::make_shared<FractalDemo>(renderer));
+    demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
+    demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
+    demos.emplace_back(std::make_shared<SpaceDemo>(renderer));
+
+    debug_viewer.set_font(renderer->get_font("gohu-regular"));
+
+    cycle_demo(0);
+}
+
+void DemoPlayer::run()
+{
+    double last_frame_timestamp_us { time_us() };
+    cycle_demo(1);
+    cycle_demo(-1);
+
+    while (running)
     {
-        renderer->load_font_directory("/Users/sigurdsevaldrud/documents/code/c++/gfx/assets/fonts");
+        if (screen_size_changed())
+        {
+            resize(get_screen_size());
+        }
 
-        demos.emplace_back(std::make_shared<Test3DDemo>(renderer));
-        demos.emplace_back(std::make_shared<StarDemo>(renderer));
-        demos.emplace_back(std::make_shared<TextDemo>(renderer));
-        // demos.emplace_back(std::make_shared<VideoDemo>(renderer));
-        demos.emplace_back(std::make_shared<SnakeDemo>(renderer));
-        demos.emplace_back(std::make_shared<BoidsDemo>(renderer));
-        // demos.emplace_back(std::make_shared<FractalDemo>(renderer));
-        demos.emplace_back(std::make_shared<ShaderDemo>(renderer));
-        demos.emplace_back(std::make_shared<FireworksDemo>(renderer));
-        demos.emplace_back(std::make_shared<SpaceDemo>(renderer));
+        const double now_us { time_us() };
+        const double dt_sec { (now_us - last_frame_timestamp_us) / 1000000.0 };
 
-        debug_viewer.set_font(renderer->get_font("gohu-regular"));
+        demos[current_demo]->render_frame(dt_sec);
+        demos[current_demo]->set_last_frame_us(now_us - last_frame_timestamp_us);
+        last_frame_timestamp_us = now_us;
 
-        cycle_demo(0);
+        debug_viewer.update(renderer);
+
+        if (show_info)
+        {
+            draw_info();
+        }
+
+        const int input { get_input() };
+        handle_input(input);
+        demos[current_demo]->handle_char(input);
     }
+}
 
-    void DemoPlayer::run()
+void DemoPlayer::resize(const Vec2i new_resolution) const
+{
+    renderer->set_resolution(new_resolution);
+    demos[current_demo]->init();
+}
+
+void DemoPlayer::handle_input(const int input)
+{
+    switch (input)
     {
-        double last_frame_timestamp_us { time_us() };
+    case 'q':
+        running = false;
+        break;
+    case 'U':
+        show_info = !show_info;
+        break;
+    case '3':
+        show_debug = !show_debug;
+        break;
+    case '4':
+        debug_viewer.set_enabled(!debug_viewer.get_enabled());
+        break;
+    // case '5':
+    //     renderer->debug_viewer_show_aabb(!renderer->is_debug_viewer_showing_aabb());
+    //     break;
+    // case '6':
+    //     renderer->debug_viewer_show_obb(!renderer->is_debug_viewer_showing_obb());
+    //     break;
+    // case '7':
+    //     renderer->debug_viewer_show_anchor(!renderer->is_debug_viewer_showing_anchor());
+    //     break;
+    case 'N':
         cycle_demo(1);
+        break;
+    case 'P':
         cycle_demo(-1);
-
-        while (running)
-        {
-            if (screen_size_changed())
-            {
-                resize(get_screen_size());
-            }
-
-            const double now_us { time_us() };
-            const double dt_sec { (now_us - last_frame_timestamp_us) / 1000000.0 };
-
-            demos[current_demo]->render_frame(dt_sec);
-            demos[current_demo]->set_last_frame_us(now_us - last_frame_timestamp_us);
-            last_frame_timestamp_us = now_us;
-
-            debug_viewer.update(renderer);
-
-            if (show_info)
-            {
-                draw_info();
-            }
-
-            const int input { get_input() };
-            handle_input(input);
-            demos[current_demo]->handle_char(input);
-        }
+        break;
+    default:
+        break;
     }
+}
 
-    void DemoPlayer::resize(const Vec2i new_resolution) const
+std::vector<std::string> DemoPlayer::get_info() const
+{
+    std::vector info { demos[current_demo]->info_text() };
+
+    if (show_debug)
     {
-        renderer->set_resolution(new_resolution);
-        demos[current_demo]->init();
-    }
-
-    void DemoPlayer::handle_input(const int input)
-    {
-        switch (input)
-        {
-        case 'q':
-            running = false;
-            break;
-        case 'U':
-            show_info = !show_info;
-            break;
-        case '3':
-            show_debug = !show_debug;
-            break;
-        case '4':
-            debug_viewer.set_enabled(!debug_viewer.get_enabled());
-            break;
-        // case '5':
-        //     renderer->debug_viewer_show_aabb(!renderer->is_debug_viewer_showing_aabb());
-        //     break;
-        // case '6':
-        //     renderer->debug_viewer_show_obb(!renderer->is_debug_viewer_showing_obb());
-        //     break;
-        // case '7':
-        //     renderer->debug_viewer_show_anchor(!renderer->is_debug_viewer_showing_anchor());
-        //     break;
-        case 'N':
-            cycle_demo(1);
-            break;
-        case 'P':
-            cycle_demo(-1);
-            break;
-        default:
-            break;
-        }
-    }
-
-    std::vector<std::string> DemoPlayer::get_info() const
-    {
-        std::vector info { demos[current_demo]->info_text() };
-
-        if (show_debug)
-        {
-            info.push_back("");
-            for (const auto &line : demos[current_demo]->debug_text())
-            {
-                info.push_back(line);
-            }
-        }
-
         info.push_back("");
-        info.push_back(
-            "[p/n] to cycle (" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + ")"
-        );
-        info.push_back("[q] to quit");
-
-        return info;
-    }
-
-    void DemoPlayer::cycle_demo(const int direction)
-    {
-        demos[current_demo]->end();
-        current_demo = (current_demo + direction + demos.size()) % demos.size();
-        renderer->clear_scene();
-
-        if (demos[current_demo]->get_clear_color() != renderer->get_clear_color())
+        for (const auto &line : demos[current_demo]->debug_text())
         {
-            renderer->set_clear_color(demos[current_demo]->get_clear_color());
+            info.push_back(line);
         }
-
-        demos[current_demo]->init();
     }
+
+    info.push_back("");
+    info.push_back(
+        "[p/n] to cycle (" + std::to_string(current_demo + 1) + "/" + std::to_string(demos.size()) + ")"
+    );
+    info.push_back("[q] to quit");
+
+    return info;
+}
+
+void DemoPlayer::cycle_demo(const int direction)
+{
+    demos[current_demo]->end();
+    current_demo = (current_demo + direction + demos.size()) % demos.size();
+    renderer->clear_scene();
+
+    if (demos[current_demo]->get_clear_color() != renderer->get_clear_color())
+    {
+        renderer->set_clear_color(demos[current_demo]->get_clear_color());
+    }
+
+    demos[current_demo]->init();
+}
 
 }

@@ -4,27 +4,27 @@
 
 namespace gfx
 {
-    class Sphere3D final : public Primitive3D
-    {
+class Sphere3D final : public Primitive3D
+{
 
-    public:
+public:
 
-        const PolygonMesh &get_mesh() const override;
+    const PolygonMesh &get_mesh() const override;
 
-        void set_radius(double new_radius);
-        double get_radius() const;
+    void set_radius(double new_radius);
+    double get_radius() const;
 
-        void set_num_lat_segments(int segments);
-        void set_num_lon_segments(int segments);
-        void set_num_segments(int lat, int lon);
-        void set_num_segments(int segments);
+    void set_num_lat_segments(int segments);
+    void set_num_lon_segments(int segments);
+    void set_num_segments(int lat, int lon);
+    void set_num_segments(int segments);
 
-        int get_lat_segments() const;
+    int get_lat_segments() const;
 
-    private:
+private:
 
-        double radius { 0 };
-        int lat_segments { 12 };
-        int lon_segments { 12 };
-    };
+    double radius { 0 };
+    int lat_segments { 12 };
+    int lon_segments { 12 };
+};
 }
