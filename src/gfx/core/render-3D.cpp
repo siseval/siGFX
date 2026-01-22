@@ -47,6 +47,10 @@ void Render3D::draw_frame() const
     {
         for (int x = 0; x < num_tiles.x; x++)
         {
+            if (tiles[y][x].shader_batches.empty())
+            {
+                continue;
+            }
             render_tile(tiles[y][x], shader_map, t);
         }
     }
