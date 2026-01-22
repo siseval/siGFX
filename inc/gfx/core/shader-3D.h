@@ -94,6 +94,11 @@ public:
             uniforms = uni;
         }
 
+        FragUniforms get_uniforms() const
+        {
+            return uniforms;
+        }
+
     protected:
 
         FragUniforms uniforms;

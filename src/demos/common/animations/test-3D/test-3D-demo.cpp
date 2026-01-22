@@ -42,8 +42,8 @@ void Test3DDemo::init()
     crosshair->set_filled(true);
     renderer->add_primitive(crosshair);
 
-    constexpr double min_range = 256.0;
-    constexpr double max_range = 512.0;
+    constexpr double min_range = 4.0;
+    constexpr double max_range = 256.0;
     constexpr int num_boxes = 0;
     constexpr int num_spheres = 800;
     constexpr int num_segments = 5;

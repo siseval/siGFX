@@ -20,36 +20,52 @@ void Render3D::draw_frame() const
 {
     Vec2i resolution { surface->get_resolution() };
 
-    double aspect_ratio {
-        static_cast<double>(resolution.x) /
-        static_cast<double>(resolution.y)
-    };
-
     double t {
         std::chrono::duration<double, std::milli>(
             std::chrono::high_resolution_clock::now().time_since_epoch()
         ).count() / 1000.0
     };
 
+    std::map<int, Shader3D> shader_map;
+
+    std::vector<ScreenTriangle> screen_triangles {
+        generate_screen_triangles(shader_map)
+    };
+
+    std::vector<std::vector<Tile>> tiles {
+        generate_tiles()
+    };
+
+    bin_triangles(screen_triangles, tiles);
+
+    Vec2i num_tiles {
+        static_cast<int>(std::ceil(static_cast<float>(resolution.x) / TILE_SIZE)),
+        static_cast<int>(std::ceil(static_cast<float>(resolution.y) / TILE_SIZE))
+    };
+
+    for (int y = 0; y < num_tiles.y; y++)
+    {
+        for (int x = 0; x < num_tiles.x; x++)
+        {
+            render_tile(tiles[y][x], shader_map, t);
+        }
+    }
+}
+
+std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::map<int, Shader3D> &shader_map) const
+{
+    std::vector<ScreenTriangle> screen_triangles;
+
+    Vec2i resolution { surface->get_resolution() };
+
+    double aspect_ratio {
+        static_cast<double>(resolution.x) /
+        static_cast<double>(resolution.y)
+    };
+
     const Camera &camera { get_camera() };
     Matrix4x4d view_matrix { camera.get_view_matrix() };
     Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
-
-    std::vector<std::vector<Tile>> tiles;
-    tiles.resize(resolution.y / TILE_SIZE);
-
-    for (int y = 0; y < resolution.y / TILE_SIZE; y++)
-    {
-        tiles[y].reserve(resolution.x / TILE_SIZE);
-        for (int x = 0; x < resolution.x / TILE_SIZE; x++)
-        {
-            tiles[y].emplace_back(Vec2i { x, y } * TILE_SIZE);
-        }
-    }
-
-    std::vector<ScreenTriangle> screen_triangles;
-
-    std::map<int, Shader3D> shaders;
 
     for (const auto &[primitive, transform] : scene_graph->get_draw_queue())
     {
@@ -66,7 +82,7 @@ void Render3D::draw_frame() const
             }
         );
 
-        shaders[shader.get_id()] = shader;
+        shader_map[shader.get_id()] = shader;
 
         for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
         {
@@ -100,12 +116,12 @@ void Render3D::draw_frame() const
                 [&](const int source_index, const int dest_index) {
                     const auto &clip { tri_out[source_index].xyz };
 
-                    const float inv_w { 1.0f / static_cast<float>(tri_out[source_index].w) };
-                    const Vec3f ndc { clip * inv_w };
+                    const double inv_w { 1.0f / static_cast<float>(tri_out[source_index].w) };
+                    const Vec3d ndc { clip * inv_w };
 
                     screen_vertices[dest_index].screen_pos = {
-                        (ndc.x * 0.5f + 0.5f) * resolution.x,
-                        (1.0f - (ndc.y * 0.5f + 0.5f)) * resolution.y
+                        (ndc.x * 0.5 + 0.5) * resolution.x,
+                        (1.0 - (ndc.y * 0.5 + 0.5)) * resolution.y
                     };
 
                     screen_vertices[dest_index].normal = tri_out[source_index].normal;
@@ -143,6 +159,40 @@ void Render3D::draw_frame() const
             );
         }
     }
+    return screen_triangles;
+}
+
+std::vector<std::vector<Render3D::Tile>> Render3D::generate_tiles() const
+{
+    Vec2i resolution { surface->get_resolution() };
+
+    const int num_tiles_x {
+        static_cast<int>(std::ceil(static_cast<float>(resolution.x) / TILE_SIZE))
+    };
+    const int num_tiles_y {
+        static_cast<int>(std::ceil(static_cast<float>(resolution.y) / TILE_SIZE))
+    };
+
+    std::vector<std::vector<Tile>> tiles;
+    tiles.reserve(num_tiles_y);
+
+    for (int ty = 0; ty < num_tiles_y; ty++)
+    {
+        tiles.emplace_back();
+        tiles[ty].reserve(num_tiles_x);
+
+        for (int tx = 0; tx < num_tiles_x; tx++)
+        {
+            tiles[ty].emplace_back(Vec2i { tx * TILE_SIZE, ty * TILE_SIZE });
+        }
+    }
+
+    return tiles;
+}
+
+void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles, std::vector<std::vector<Tile>> &tiles) const
+{
+    Vec2i resolution { surface->get_resolution() };
 
     Vec2i num_tiles { resolution.x / TILE_SIZE, resolution.y / TILE_SIZE };
     for (const auto &triangle : screen_triangles)
@@ -226,152 +276,78 @@ void Render3D::draw_frame() const
             }
         }
     }
-
-    for (int y = 0; y < num_tiles.y; y++)
-    {
-        for (int x = 0; x < num_tiles.x; x++)
-        {
-            Tile &tile = tiles[y][x];
-            for (const auto &[shader_id, triangles] : tile.shader_batches)
-            {
-                int index { 0 };
-                for (const auto &tri : triangles)
-                {
-                    rasterize_triangle_in_tile(tri, index, tile);
-                    index++;
-                }
-
-                auto frag_shader { shaders[shader_id].get_fragment_shader() };
-                frag_shader->set_uniforms(
-                    Shader3D::FragUniforms {
-                        .t = t,
-                        .light_dir = light_dir,
-                        .ambient_intensity = ambient_light
-                    }
-                );
-
-                for (int ty = 0; ty < TILE_SIZE; ty++)
-                {
-                    for (int tx = 0; tx < TILE_SIZE; tx++)
-                    {
-                        const int buffer_index { ty * TILE_SIZE + tx };
-                        const Vec2i pixel_pos {
-                            tile.screen_pos.x + tx,
-                            tile.screen_pos.y + ty
-                        };
-
-                        if (pixel_pos.x >= resolution.x ||
-                            pixel_pos.y >= resolution.y)
-                        {
-                            continue;
-                        }
-
-                        const float depth { tile.depth_buffer[buffer_index] };
-
-                        if (depth < std::numeric_limits<float>::infinity())
-                        {
-                            Vec2f w_xy { tile.weight_buffer[buffer_index] };
-                            Vec3f w { w_xy.x, w_xy.y, 1.0f - w_xy.x - w_xy.y };
-
-                            const ScreenTriangle &triangle { 
-                                triangles[tile.triangle_index_buffer[buffer_index]] 
-                            };
-
-                            const Vec3d normal_interp {
-                                (triangle.v0.normal * w.x +
-                                triangle.v1.normal * w.y +
-                                triangle.v2.normal * w.z).normalize()
-                            };
-
-                            const Color4 color_interp {
-                                triangle.v0.color == triangle.v1.color &&
-                                triangle.v1.color == triangle.v2.color ?
-
-                                triangle.v0.color :
-
-                                Color4::trilinear_interp(
-                                    triangle.v0.color,
-                                    triangle.v1.color,
-                                    triangle.v2.color,
-                                    w.x,
-                                    w.y,
-                                    w.z
-                                )
-                            };
-
-                            const Shader3D::FragInput frag_in {
-                                .uvw = Vec3d { 0.0, 0.0, 0.0 },
-                                .depth = depth,
-                                .normal = normal_interp,
-                                .color = color_interp
-                            };
-
-                            Color4 color { frag_shader->frag(frag_in) };
-                            surface->write_pixel(
-                                pixel_pos,
-                                color,
-                                depth,
-                                RenderSurface::BlendMode::OPAQUE
-                            );
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
-void Render3D::rasterize_triangle_in_tile(
-    const ScreenTriangle &triangle,
-    const int tri_index,
-    Tile &tile
-)
-{
-    Box2f bounds { Box2f::unexpanded() };
-    bounds.expand(
-        Vec2f::clamp(
-            triangle.v0.screen_pos,
-            tile.screen_pos,
-            tile.screen_pos + Vec2i(TILE_SIZE)
-        )
-    );
-    bounds.expand(
-        Vec2f::clamp(
-            triangle.v1.screen_pos,
-            tile.screen_pos,
-            tile.screen_pos + Vec2i(TILE_SIZE)
-        )
-    );
-    bounds.expand(
-        Vec2f::clamp(
-            triangle.v2.screen_pos,
-            tile.screen_pos,
-            tile.screen_pos + Vec2i(TILE_SIZE)
-        )
-    );
 
+
+void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const int tri_index, Tile &tile)
+{
+    Box2f bounds {
+        Vec2d {
+            std::min({ triangle.v0.screen_pos.x, triangle.v1.screen_pos.x, triangle.v2.screen_pos.x }),
+            std::min({ triangle.v0.screen_pos.y, triangle.v1.screen_pos.y, triangle.v2.screen_pos.y })
+        }.round(),
+        Vec2d {
+            std::max({ triangle.v0.screen_pos.x, triangle.v1.screen_pos.x, triangle.v2.screen_pos.x }),
+            std::max({ triangle.v0.screen_pos.y, triangle.v1.screen_pos.y, triangle.v2.screen_pos.y })
+        }.round()
+    };
+
+    Box2f clip_bounds {
+        tile.screen_pos,
+        tile.screen_pos + Vec2i(TILE_SIZE)
+    };
+
+    bounds.min.x = std::max(bounds.min.x, clip_bounds.min.x);
+    bounds.min.y = std::max(bounds.min.y, clip_bounds.min.y);
+    bounds.max.x = std::min(bounds.max.x, clip_bounds.max.x);
+    bounds.max.y = std::min(bounds.max.y, clip_bounds.max.y);
+
+    // Box2f bounds { Box2f::unexpanded() };
+    // bounds.expand(
+    //     Vec2f::clamp(
+    //         triangle.v0.screen_pos,
+    //         tile.screen_pos,
+    //         tile.screen_pos + Vec2i(TILE_SIZE)
+    //     )
+    // );
+    // bounds.expand(
+    //     Vec2f::clamp(
+    //         triangle.v1.screen_pos,
+    //         tile.screen_pos,
+    //         tile.screen_pos + Vec2i(TILE_SIZE)
+    //     )
+    // );
+    // bounds.expand(
+    //     Vec2f::clamp(
+    //         triangle.v2.screen_pos,
+    //         tile.screen_pos,
+    //         tile.screen_pos + Vec2i(TILE_SIZE)
+    //     )
+    // );
+    //
     auto is_top_left = [](const Vec2f& a, const Vec2f& b)
     {
         return (a.y < b.y) || (a.y == b.y && a.x > b.x);
     };
 
-    const float a { triangle.v1.screen_pos.y - triangle.v2.screen_pos.y };
-    const float b { triangle.v2.screen_pos.x - triangle.v1.screen_pos.x };
-    const float c {
+    const double a { triangle.v1.screen_pos.y - triangle.v2.screen_pos.y };
+    const double b { triangle.v2.screen_pos.x - triangle.v1.screen_pos.x };
+    const double c {
         triangle.v1.screen_pos.x * triangle.v2.screen_pos.y -
         triangle.v1.screen_pos.y * triangle.v2.screen_pos.x
     };
 
-    const float d { triangle.v2.screen_pos.y - triangle.v0.screen_pos.y };
-    const float e { triangle.v0.screen_pos.x - triangle.v2.screen_pos.x };
-    const float f {
+    const double d { triangle.v2.screen_pos.y - triangle.v0.screen_pos.y };
+    const double e { triangle.v0.screen_pos.x - triangle.v2.screen_pos.x };
+    const double f {
         triangle.v2.screen_pos.x * triangle.v0.screen_pos.y -
         triangle.v2.screen_pos.y * triangle.v0.screen_pos.x
     };
 
-    const float g { triangle.v0.screen_pos.y - triangle.v1.screen_pos.y };
-    const float h { triangle.v1.screen_pos.x - triangle.v0.screen_pos.x };
-    const float i {
+    const double g { triangle.v0.screen_pos.y - triangle.v1.screen_pos.y };
+    const double h { triangle.v1.screen_pos.x - triangle.v0.screen_pos.x };
+    const double i {
         triangle.v0.screen_pos.x * triangle.v1.screen_pos.y -
         triangle.v0.screen_pos.y * triangle.v1.screen_pos.x
     };
@@ -380,23 +356,23 @@ void Render3D::rasterize_triangle_in_tile(
     const bool tl1 = is_top_left(triangle.v2.screen_pos, triangle.v0.screen_pos);
     const bool tl2 = is_top_left(triangle.v0.screen_pos, triangle.v1.screen_pos);
 
-    const float area { a * (triangle.v0.screen_pos.x) + b * (triangle.v0.screen_pos.y) + c };
-    const float inv_area { 1.0f / area };
+    const double area { a * (triangle.v0.screen_pos.x) + b * (triangle.v0.screen_pos.y) + c };
+    const double inv_area { 1.0f / area };
 
     if (area == 0.0)
     {
         return;
     }
 
-    Vec3f w_row {
-        a * (bounds.min.x + 0.5f) + b * (bounds.min.y + 0.5f) + c,
-        d * (bounds.min.x + 0.5f) + e * (bounds.min.y + 0.5f) + f,
-        g * (bounds.min.x + 0.5f) + h * (bounds.min.y + 0.5f) + i
+    Vec3d w_row {
+        a * (bounds.min.x + 0.5) + b * (bounds.min.y + 0.5) + c,
+        d * (bounds.min.x + 0.5) + e * (bounds.min.y + 0.5) + f,
+        g * (bounds.min.x + 0.5) + h * (bounds.min.y + 0.5) + i
     };
 
     for (int y = std::floor(bounds.min.y); y < std::ceil(bounds.max.y); ++y)
     {
-        Vec3f w { w_row };
+        Vec3d w { w_row };
 
         for (int x = std::floor(bounds.min.x); x < std::ceil(bounds.max.x); ++x)
         {
@@ -404,7 +380,7 @@ void Render3D::rasterize_triangle_in_tile(
                 (w.y > 0 || (w.y == 0 && tl1)) &&
                 (w.z > 0 || (w.z == 0 && tl2)))
             {
-                const float depth {
+                const double depth {
                     (w.x * triangle.v0.z_over_w +
                     w.y * triangle.v1.z_over_w +
                     w.z * triangle.v2.z_over_w) * inv_area
@@ -418,7 +394,7 @@ void Render3D::rasterize_triangle_in_tile(
                 {
                     tile.triangle_index_buffer[buffer_index] = tri_index;
                     tile.depth_buffer[buffer_index] = depth;
-                    tile.weight_buffer[buffer_index] = Vec2f { w.x, w.y } * inv_area;
+                    tile.weight_buffer[buffer_index] = Vec2d { w.x, w.y } * inv_area;
                 }
             }
 
@@ -430,6 +406,93 @@ void Render3D::rasterize_triangle_in_tile(
         w_row.x += b;
         w_row.y += e;
         w_row.z += h;
+    }
+}
+
+void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const
+{
+    Vec2i resolution { surface->get_resolution() };
+
+    for (const auto &[shader_id, triangles] : tile.shader_batches)
+    {
+        int triangle_index { 0 };
+        for (const auto &tri : triangles)
+        {
+            rasterize_triangle_in_tile(tri, triangle_index, tile);
+            triangle_index++;
+        }
+
+        auto frag_shader { shaders.at(shader_id).get_fragment_shader() };
+        frag_shader->set_uniforms(
+            Shader3D::FragUniforms {
+                .t = t,
+                .light_dir = light_dir,
+                .ambient_intensity = ambient_light
+            }
+        );
+
+        for (int i = 0; i < TILE_SIZE * TILE_SIZE; ++i)
+        {
+            const Vec2i pixel_pos {
+                tile.screen_pos.x + (i % TILE_SIZE),
+                tile.screen_pos.y + (i / TILE_SIZE)
+            };
+
+            if (pixel_pos.x >= resolution.x ||
+                pixel_pos.y >= resolution.y)
+            {
+                continue;
+            }
+
+            const double depth { tile.depth_buffer[i] };
+
+            if (depth < std::numeric_limits<float>::infinity())
+            {
+                Vec2f w_xy { tile.weight_buffer[i] };
+                Vec3f w { w_xy.x, w_xy.y, 1.0f - w_xy.x - w_xy.y };
+
+                const ScreenTriangle &triangle { 
+                    triangles[tile.triangle_index_buffer[i]] 
+                };
+
+                const Vec3d normal_interp {
+                    (triangle.v0.normal * w.x +
+                    triangle.v1.normal * w.y +
+                    triangle.v2.normal * w.z).normalize()
+                };
+
+                const Color4 color_interp {
+                    triangle.v0.color == triangle.v1.color &&
+                    triangle.v1.color == triangle.v2.color ?
+
+                    triangle.v0.color :
+
+                    Color4::trilinear_interp(
+                        triangle.v0.color,
+                        triangle.v1.color,
+                        triangle.v2.color,
+                        w.x,
+                        w.y,
+                        w.z
+                    )
+                };
+
+                const Shader3D::FragInput frag_in {
+                    .uvw = Vec3d { 0.0, 0.0, 0.0 },
+                    .depth = depth,
+                    .normal = normal_interp,
+                    .color = color_interp
+                };
+
+                Color4 color { frag_shader->frag(frag_in) };
+                surface->write_pixel(
+                    pixel_pos,
+                    color,
+                    depth,
+                    RenderSurface::BlendMode::OPAQUE
+                );
+            }
+        }
     }
 }
 

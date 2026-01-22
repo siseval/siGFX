@@ -87,11 +87,11 @@ private:
 
     struct ScreenVertex
     {
-        Vec2f screen_pos;
+        Vec2d screen_pos;
         Vec3f normal;
         Color4 color;
-        float z_over_w;
-        float inv_w;
+        double z_over_w;
+        double inv_w;
     };
 
     struct ScreenTriangle
@@ -114,7 +114,7 @@ private:
         Vec2i screen_pos;
         std::map<int, std::vector<ScreenTriangle>> shader_batches;
         std::array<int, TILE_SIZE * TILE_SIZE> triangle_index_buffer;
-        std::array<float, TILE_SIZE * TILE_SIZE> depth_buffer;
+        std::array<double, TILE_SIZE * TILE_SIZE> depth_buffer;
         std::array<Vec2f, TILE_SIZE * TILE_SIZE> weight_buffer;
 
         explicit Tile(const Vec2i screen_pos) : screen_pos(screen_pos) 
@@ -128,6 +128,11 @@ private:
         const int tri_index,
         Tile &tile
     );
+
+    std::vector<ScreenTriangle> generate_screen_triangles(std::map<int, Shader3D> &shaders) const;
+    std::vector<std::vector<Tile>> generate_tiles() const;
+    void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<std::vector<Tile>> &tiles) const;
+    void render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const;
 
     template <typename Shader>
     static Shader3D::VertOutput shade_vertex(const Shader3D::VertInput &input, const Shader shader)

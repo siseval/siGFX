@@ -17,7 +17,7 @@ public:
     GLFWDemoPlayer()
         : demos::DemoPlayer()
     {
-        const gfx::Vec2d resolution { 320, 200 };
+        const gfx::Vec2d resolution { 1920, 1080 };
         const gfx::Vec2d viewport_scaling { 1, 1 };
 
         auto surface = std::make_shared<gfx::GLFWRenderSurface>(resolution);
