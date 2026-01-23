@@ -4,6 +4,7 @@
 #include "gfx/core/primitive-3D.h"
 #include "gfx/core/render-surface.h"
 #include "gfx/core/scene-graph-3D.h"
+#include "gfx/core/thread-pool.h"
 #include "gfx/primitives/cuboid-3D.h"
 #include "gfx/primitives/plane-3D.h"
 #include "gfx/primitives/sphere-3D.h"
@@ -130,8 +131,8 @@ private:
     );
 
     std::vector<ScreenTriangle> generate_screen_triangles(std::map<int, Shader3D> &shaders) const;
-    std::vector<std::vector<Tile>> generate_tiles() const;
-    void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<std::vector<Tile>> &tiles) const;
+    std::vector<Tile> generate_tiles() const;
+    void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
     void render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const;
 
     template <typename Shader>
@@ -152,5 +153,7 @@ private:
 
     std::shared_ptr<SceneGraph3D> scene_graph;
     std::shared_ptr<RenderSurface> surface;
+
+    std::shared_ptr<ThreadPool> thread_pool;
 };
 }

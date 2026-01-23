@@ -6,6 +6,7 @@
 #include <map>
 #include <cmath>
 #include <algorithm>
+#include <thread>
 
 namespace gfx
 {
@@ -13,13 +14,12 @@ namespace gfx
 Render3D::Render3D(std::shared_ptr<RenderSurface> surface)
     : ambient_light(0.0),
       scene_graph(std::make_shared<SceneGraph3D>()),
-      surface(surface) {}
+      surface(surface),
+      thread_pool(std::make_shared<ThreadPool>(std::thread::hardware_concurrency() - 1)) {}
 
 
 void Render3D::draw_frame() const
 {
-    Vec2i resolution { surface->get_resolution() };
-
     double t {
         std::chrono::duration<double, std::milli>(
             std::chrono::high_resolution_clock::now().time_since_epoch()
@@ -32,28 +32,15 @@ void Render3D::draw_frame() const
         generate_screen_triangles(shader_map)
     };
 
-    std::vector<std::vector<Tile>> tiles {
+    std::vector<Tile> tiles {
         generate_tiles()
     };
 
     bin_triangles(screen_triangles, tiles);
 
-    Vec2i num_tiles {
-        static_cast<int>(std::ceil(static_cast<float>(resolution.x) / TILE_SIZE)),
-        static_cast<int>(std::ceil(static_cast<float>(resolution.y) / TILE_SIZE))
-    };
-
-    for (int y = 0; y < num_tiles.y; y++)
-    {
-        for (int x = 0; x < num_tiles.x; x++)
-        {
-            if (tiles[y][x].shader_batches.empty())
-            {
-                continue;
-            }
-            render_tile(tiles[y][x], shader_map, t);
-        }
-    }
+    thread_pool->run(static_cast<int>(tiles.size()), [&](const int tile_index) {
+        render_tile(tiles[tile_index], shader_map, t);
+    });
 }
 
 std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::map<int, Shader3D> &shader_map) const
@@ -166,117 +153,63 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
     return screen_triangles;
 }
 
-std::vector<std::vector<Render3D::Tile>> Render3D::generate_tiles() const
+std::vector<Render3D::Tile> Render3D::generate_tiles() const
 {
-    Vec2i resolution { surface->get_resolution() };
+    const Vec2i resolution { surface->get_resolution() };
+    const int num_tiles { resolution.x / TILE_SIZE * resolution.y / TILE_SIZE };
 
-    const int num_tiles_x {
-        static_cast<int>(std::ceil(static_cast<float>(resolution.x) / TILE_SIZE))
-    };
-    const int num_tiles_y {
-        static_cast<int>(std::ceil(static_cast<float>(resolution.y) / TILE_SIZE))
-    };
+    std::vector<Tile> tiles;
 
-    std::vector<std::vector<Tile>> tiles;
-    tiles.reserve(num_tiles_y);
-
-    for (int ty = 0; ty < num_tiles_y; ty++)
+    for (int i = 0; i < num_tiles; i++)
     {
-        tiles.emplace_back();
-        tiles[ty].reserve(num_tiles_x);
-
-        for (int tx = 0; tx < num_tiles_x; tx++)
-        {
-            tiles[ty].emplace_back(Vec2i { tx * TILE_SIZE, ty * TILE_SIZE });
-        }
+        tiles.emplace_back(Vec2i { 
+            i % (resolution.x / TILE_SIZE) * TILE_SIZE,
+            i / (resolution.x / TILE_SIZE) * TILE_SIZE 
+        });
     }
 
     return tiles;
 }
 
-void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles, std::vector<std::vector<Tile>> &tiles) const
+void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles, std::vector<Tile> &tiles) const
 {
-    Vec2i resolution { surface->get_resolution() };
+    const Vec2i resolution { surface->get_resolution() };
 
-    Vec2i num_tiles { resolution.x / TILE_SIZE, resolution.y / TILE_SIZE };
     for (const auto &triangle : screen_triangles)
     {
-        struct Edge
-        {
-            double a;
-            double b;
-            double c;
-
-            explicit Edge(const Vec2d p0, const Vec2d p1)
-                : a(p0.y - p1.y),
-                  b(p1.x - p0.x),
-                  c(p0.x * p1.y - p0.y * p1.x) {}
-
-            double eval(const Vec2d p) const
-            {
-                return a * p.x + b * p.y + c;
-            }
+        const Vec2i v0_tile {
+            static_cast<int>(std::floor(triangle.v0.screen_pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v0.screen_pos.y)) / TILE_SIZE
+        };
+        const Vec2i v1_tile {
+            static_cast<int>(std::floor(triangle.v1.screen_pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v1.screen_pos.y)) / TILE_SIZE
+        };
+        const Vec2i v2_tile {
+            static_cast<int>(std::floor(triangle.v2.screen_pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v2.screen_pos.y)) / TILE_SIZE
         };
 
-        const Vec2d tv0 { triangle.v0.screen_pos / TILE_SIZE };
-        const Vec2d tv1 { triangle.v1.screen_pos / TILE_SIZE };
-        const Vec2d tv2 { triangle.v2.screen_pos / TILE_SIZE };
-
-        // const Edge e0(tv1, tv2);
-        // const Edge e1(tv2, tv0);
-        // const Edge e2(tv0, tv1);
-        // const std::array<Edge, 3> edges { e0, e1, e2 };
-
-        const Box2d tri_bounds {
-            Vec2d {
-                std::floor(std::min({ tv0.x, tv1.x, tv2.x })),
-                std::floor(std::min({ tv0.y, tv1.y, tv2.y }))
+        const Box2i tile_bounds {
+            Vec2i {
+                std::max(0, std::min({ v0_tile.x, v1_tile.x, v2_tile.x })),
+                std::max(0, std::min({ v0_tile.y, v1_tile.y, v2_tile.y }))
             },
-            Vec2d {
-                std::ceil(std::max({ tv0.x, tv1.x, tv2.x })),
-                std::ceil(std::max({ tv0.y, tv1.y, tv2.y }))
+            Vec2i {
+                std::min(resolution.x / TILE_SIZE - 1, std::max({ v0_tile.x, v1_tile.x, v2_tile.x })),
+                std::min(resolution.y / TILE_SIZE - 1, std::max({ v0_tile.y, v1_tile.y, v2_tile.y }))
             }
         };
 
-        // auto overlaps_tile {
-        //     [&](const Vec2d tile) {
-        //         const std::array<Vec2d, 4> corners {
-        //             Vec2d { tile.x, tile.y },
-        //             Vec2d { tile.x + 1, tile.y },
-        //             Vec2d { tile.x, tile.y + 1 },
-        //             Vec2d { tile.x + 1, tile.y + 1 }
-        //         };
-        //
-        //         for (auto edge : edges)
-        //         {
-        //             if (edge.eval(corners[0]) > 0 &&
-        //                 edge.eval(corners[1]) > 0 &&
-        //                 edge.eval(corners[2]) > 0 &&
-        //                 edge.eval(corners[3]) > 0)
-        //             {
-        //                 return true;
-        //             }
-        //         }
-        //         return true;
-        //     }
-        // };
-
-        for (int y = tri_bounds.min.y; y < tri_bounds.max.y; y++)
+        for (int ty = tile_bounds.min.y; ty <= tile_bounds.max.y; ++ty)
         {
-            if (y < 0 || y >= num_tiles.y)
+            for (int tx = tile_bounds.min.x; tx <= tile_bounds.max.x; ++tx)
             {
-                continue;
-            }
-            for (int x = tri_bounds.min.x; x < tri_bounds.max.x; x++)
-            {
-                if (x < 0 || x >= num_tiles.x)
-                {
-                    continue;
-                }
-                if (true) //overlaps_tile(Vec2d { static_cast<double>(x), static_cast<double>(y) }))
-                {
-                    tiles[y][x].shader_batches[triangle.shader_id].push_back(triangle);
-                }
+                int tile_index {
+                    ty * (resolution.x / TILE_SIZE) + tx
+                };
+
+                tiles[tile_index].shader_batches[triangle.shader_id].emplace_back(triangle);
             }
         }
     }

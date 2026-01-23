@@ -7,6 +7,7 @@ set(GFX_CORE_SOURCES
         render-surface.cpp
         scene-graph-2D.cpp
         scene-graph-3D.cpp
+        thread-pool.cpp
         camera.cpp
 )
 

@@ -42,11 +42,11 @@ void Test3DDemo::init()
     crosshair->set_filled(true);
     renderer->add_primitive(crosshair);
 
-    constexpr double min_range = 4.0;
-    constexpr double max_range = 256.0;
+    constexpr double min_range = 16.0;
+    constexpr double max_range = 48.0;
     constexpr int num_boxes = 0;
-    constexpr int num_spheres = 800;
-    constexpr int num_segments = 5;
+    constexpr int num_spheres = 0;
+    constexpr int num_segments = 12;
 
     auto rand_pos = [](const double min, const double max) {
         return Vec3d::from_angles(random_double(0.0, 360.0), random_double(0.0, 180.0)).normalize() *
