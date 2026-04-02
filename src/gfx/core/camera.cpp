@@ -30,6 +30,11 @@ void Camera::set_position(const Vec3d pos)
     position = pos;
 }
 
+void Camera::set_position(const double x, const double y, const double z)
+{
+    position = Vec3d { x, y, z };
+}
+
 Vec3d Camera::get_position() const
 {
     return position;
@@ -55,12 +60,26 @@ void Camera::set_rotation(const Vec3d rot)
     rotation = rot;
 }
 
+void Camera::set_rotation(const double pitch, const double yaw, const double roll)
+{
+    rotation = Vec3d { pitch, yaw, roll };
+}
+
 void Camera::set_rotation_degrees(const Vec3d rot_deg)
 {
     rotation = Vec3d {
         rot_deg.x * std::numbers::pi / 180,
         rot_deg.y * std::numbers::pi / 180,
         rot_deg.z * std::numbers::pi / 180
+    };
+}
+
+void Camera::set_rotation_degrees(const double pitch_deg, const double yaw_deg, const double roll_deg)
+{
+    rotation = Vec3d {
+        pitch_deg * std::numbers::pi / 180,
+        yaw_deg * std::numbers::pi / 180,
+        roll_deg * std::numbers::pi / 180
     };
 }
 
@@ -116,6 +135,16 @@ Vec3d Camera::get_forward() const
     };
 
     return forward.normalize();
+}
+
+double Camera::get_z_near() const
+{
+    return z_near;
+}
+
+double Camera::get_z_far() const
+{
+    return z_far;
 }
 
 }

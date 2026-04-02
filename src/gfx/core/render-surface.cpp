@@ -50,6 +50,28 @@ void RenderSurface::write_pixel(const Vec2i pos, const Color4 color, const doubl
     }
 }
 
+Color4 RenderSurface::read_pixel(const Vec2i pos) const
+{
+    if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
+    {
+        return Color4 { 0, 0, 0, 0 };
+    }
+
+    const int index = pos.y * resolution.x + pos.x;
+    return Color4::from_i32(std::byteswap(frame_buffer.data()[index]));
+}
+
+double RenderSurface::get_depth(const Vec2i pos) const
+{
+    if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
+    {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    const int index = pos.y * resolution.x + pos.x;
+    return depth_buffer.at(index);
+}
+
 void RenderSurface::set_resolution(const Vec2i new_resolution)
 {
     resolution = new_resolution;

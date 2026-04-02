@@ -15,7 +15,7 @@ Render3D::Render3D(std::shared_ptr<RenderSurface> surface)
     : ambient_light(0.0),
       scene_graph(std::make_shared<SceneGraph3D>()),
       surface(surface),
-      thread_pool(std::make_shared<ThreadPool>(std::thread::hardware_concurrency() - 1)) {}
+      thread_pool(std::make_shared<ThreadPool>(std::thread::hardware_concurrency())) {}
 
 
 void Render3D::draw_frame() const
@@ -25,6 +25,19 @@ void Render3D::draw_frame() const
             std::chrono::high_resolution_clock::now().time_since_epoch()
         ).count() / 1000.0
     };
+
+    for (auto &shader : fullscreen_shaders)
+    {
+        shader->set_uniforms(
+            Shader3D::FragUniforms {
+                .t = t,
+                .light_dir = light_dir,
+                .ambient_intensity = ambient_light,
+                .near_plane = get_camera().get_z_near(),
+                .far_plane = get_camera().get_z_far()
+            }
+        );
+    }
 
     std::map<int, Shader3D> shader_map;
 
@@ -38,38 +51,44 @@ void Render3D::draw_frame() const
 
     bin_triangles(screen_triangles, tiles);
 
+    // for (auto &tile : tiles)
+    // {
+    //     render_tile(tile, shader_map, t);
+    // }
+
     thread_pool->run(static_cast<int>(tiles.size()), [&](const int tile_index) {
         render_tile(tiles[tile_index], shader_map, t);
     });
 }
 
+
 std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::map<int, Shader3D> &shader_map) const
 {
     std::vector<ScreenTriangle> screen_triangles;
 
-    Vec2i resolution { surface->get_resolution() };
+    const Vec2i resolution { surface->get_resolution() };
 
-    double aspect_ratio {
+    const double aspect_ratio {
         static_cast<double>(resolution.x) /
         static_cast<double>(resolution.y)
     };
 
     const Camera &camera { get_camera() };
-    Matrix4x4d view_matrix { camera.get_view_matrix() };
-    Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
+    const Matrix4x4d view_matrix { camera.get_view_matrix() };
+    const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
 
     for (const auto &[primitive, transform] : scene_graph->get_draw_queue())
     {
-        PolygonMesh mesh { primitive->get_mesh() };
+        const PolygonMesh &mesh { primitive->get_mesh() };
 
-        Shader3D shader { primitive->get_shader() };
+        const Shader3D shader { primitive->get_shader() };
 
         shader.get_vertex_shader()->set_uniforms(
             Shader3D::VertUniforms {
-                .model_matrix = primitive->get_transform(),
+                .model_matrix = transform,
                 .view_matrix = view_matrix,
                 .projection_matrix = projection_matrix,
-                .mvp_matrix = projection_matrix * view_matrix * primitive->get_transform()
+                .mvp_matrix = projection_matrix * view_matrix * transform
             }
         );
 
@@ -110,7 +129,7 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
                     const double inv_w { 1.0f / static_cast<float>(tri_out[source_index].w) };
                     const Vec3d ndc { clip * inv_w };
 
-                    screen_vertices[dest_index].screen_pos = {
+                    screen_vertices[dest_index].pos = {
                         (ndc.x * 0.5 + 0.5) * resolution.x,
                         (1.0 - (ndc.y * 0.5 + 0.5)) * resolution.y
                     };
@@ -128,8 +147,8 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
 
             const float area {
                 Vec2f::cross(
-                    screen_vertices[1].screen_pos - screen_vertices[0].screen_pos,
-                    screen_vertices[2].screen_pos - screen_vertices[0].screen_pos
+                    screen_vertices[1].pos - screen_vertices[0].pos,
+                    screen_vertices[2].pos - screen_vertices[0].pos
                 )
             };
 
@@ -156,16 +175,15 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
 std::vector<Render3D::Tile> Render3D::generate_tiles() const
 {
     const Vec2i resolution { surface->get_resolution() };
-    const int num_tiles { resolution.x / TILE_SIZE * resolution.y / TILE_SIZE };
 
     std::vector<Tile> tiles;
 
-    for (int i = 0; i < num_tiles; i++)
+    for (int ty = 0; ty < resolution.y; ty += TILE_SIZE)
     {
-        tiles.emplace_back(Vec2i { 
-            i % (resolution.x / TILE_SIZE) * TILE_SIZE,
-            i / (resolution.x / TILE_SIZE) * TILE_SIZE 
-        });
+        for (int tx = 0; tx < resolution.x; tx += TILE_SIZE)
+        {
+            tiles.emplace_back(Vec2i { tx, ty });
+        }
     }
 
     return tiles;
@@ -178,16 +196,16 @@ void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles
     for (const auto &triangle : screen_triangles)
     {
         const Vec2i v0_tile {
-            static_cast<int>(std::floor(triangle.v0.screen_pos.x)) / TILE_SIZE,
-            static_cast<int>(std::floor(triangle.v0.screen_pos.y)) / TILE_SIZE
+            static_cast<int>(std::floor(triangle.v0.pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v0.pos.y)) / TILE_SIZE
         };
         const Vec2i v1_tile {
-            static_cast<int>(std::floor(triangle.v1.screen_pos.x)) / TILE_SIZE,
-            static_cast<int>(std::floor(triangle.v1.screen_pos.y)) / TILE_SIZE
+            static_cast<int>(std::floor(triangle.v1.pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v1.pos.y)) / TILE_SIZE
         };
         const Vec2i v2_tile {
-            static_cast<int>(std::floor(triangle.v2.screen_pos.x)) / TILE_SIZE,
-            static_cast<int>(std::floor(triangle.v2.screen_pos.y)) / TILE_SIZE
+            static_cast<int>(std::floor(triangle.v2.pos.x)) / TILE_SIZE,
+            static_cast<int>(std::floor(triangle.v2.pos.y)) / TILE_SIZE
         };
 
         const Box2i tile_bounds {
@@ -196,8 +214,8 @@ void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles
                 std::max(0, std::min({ v0_tile.y, v1_tile.y, v2_tile.y }))
             },
             Vec2i {
-                std::min(resolution.x / TILE_SIZE - 1, std::max({ v0_tile.x, v1_tile.x, v2_tile.x })),
-                std::min(resolution.y / TILE_SIZE - 1, std::max({ v0_tile.y, v1_tile.y, v2_tile.y }))
+                std::min((resolution.x + TILE_SIZE - 2) / TILE_SIZE - 1, std::max({ v0_tile.x, v1_tile.x, v2_tile.x })),
+                std::min((resolution.y + TILE_SIZE - 2) / TILE_SIZE - 1, std::max({ v0_tile.y, v1_tile.y, v2_tile.y }))
             }
         };
 
@@ -205,28 +223,24 @@ void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles
         {
             for (int tx = tile_bounds.min.x; tx <= tile_bounds.max.x; ++tx)
             {
-                int tile_index {
-                    ty * (resolution.x / TILE_SIZE) + tx
-                };
+                const int tile_index { ty * ((resolution.x + TILE_SIZE - 1) / TILE_SIZE) + tx };
 
-                tiles[tile_index].shader_batches[triangle.shader_id].emplace_back(triangle);
+                tiles[tile_index].shader_batches[triangle.shader_id].push_back(triangle);
             }
         }
     }
 }
 
-
-
 void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const int tri_index, Tile &tile)
 {
     Box2f bounds {
         Vec2d {
-            std::min({ triangle.v0.screen_pos.x, triangle.v1.screen_pos.x, triangle.v2.screen_pos.x }),
-            std::min({ triangle.v0.screen_pos.y, triangle.v1.screen_pos.y, triangle.v2.screen_pos.y })
+            std::min({ triangle.v0.pos.x, triangle.v1.pos.x, triangle.v2.pos.x }),
+            std::min({ triangle.v0.pos.y, triangle.v1.pos.y, triangle.v2.pos.y })
         }.round(),
         Vec2d {
-            std::max({ triangle.v0.screen_pos.x, triangle.v1.screen_pos.x, triangle.v2.screen_pos.x }),
-            std::max({ triangle.v0.screen_pos.y, triangle.v1.screen_pos.y, triangle.v2.screen_pos.y })
+            std::max({ triangle.v0.pos.x, triangle.v1.pos.x, triangle.v2.pos.x }),
+            std::max({ triangle.v0.pos.y, triangle.v1.pos.y, triangle.v2.pos.y })
         }.round()
     };
 
@@ -240,60 +254,37 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
     bounds.max.x = std::min(bounds.max.x, clip_bounds.max.x);
     bounds.max.y = std::min(bounds.max.y, clip_bounds.max.y);
 
-    // Box2f bounds { Box2f::unexpanded() };
-    // bounds.expand(
-    //     Vec2f::clamp(
-    //         triangle.v0.screen_pos,
-    //         tile.screen_pos,
-    //         tile.screen_pos + Vec2i(TILE_SIZE)
-    //     )
-    // );
-    // bounds.expand(
-    //     Vec2f::clamp(
-    //         triangle.v1.screen_pos,
-    //         tile.screen_pos,
-    //         tile.screen_pos + Vec2i(TILE_SIZE)
-    //     )
-    // );
-    // bounds.expand(
-    //     Vec2f::clamp(
-    //         triangle.v2.screen_pos,
-    //         tile.screen_pos,
-    //         tile.screen_pos + Vec2i(TILE_SIZE)
-    //     )
-    // );
-    //
     auto is_top_left = [](const Vec2f& a, const Vec2f& b)
     {
         return (a.y < b.y) || (a.y == b.y && a.x > b.x);
     };
 
-    const double a { triangle.v1.screen_pos.y - triangle.v2.screen_pos.y };
-    const double b { triangle.v2.screen_pos.x - triangle.v1.screen_pos.x };
+    const double a { triangle.v1.pos.y - triangle.v2.pos.y };
+    const double b { triangle.v2.pos.x - triangle.v1.pos.x };
     const double c {
-        triangle.v1.screen_pos.x * triangle.v2.screen_pos.y -
-        triangle.v1.screen_pos.y * triangle.v2.screen_pos.x
+        triangle.v1.pos.x * triangle.v2.pos.y -
+        triangle.v1.pos.y * triangle.v2.pos.x
     };
 
-    const double d { triangle.v2.screen_pos.y - triangle.v0.screen_pos.y };
-    const double e { triangle.v0.screen_pos.x - triangle.v2.screen_pos.x };
+    const double d { triangle.v2.pos.y - triangle.v0.pos.y };
+    const double e { triangle.v0.pos.x - triangle.v2.pos.x };
     const double f {
-        triangle.v2.screen_pos.x * triangle.v0.screen_pos.y -
-        triangle.v2.screen_pos.y * triangle.v0.screen_pos.x
+        triangle.v2.pos.x * triangle.v0.pos.y -
+        triangle.v2.pos.y * triangle.v0.pos.x
     };
 
-    const double g { triangle.v0.screen_pos.y - triangle.v1.screen_pos.y };
-    const double h { triangle.v1.screen_pos.x - triangle.v0.screen_pos.x };
+    const double g { triangle.v0.pos.y - triangle.v1.pos.y };
+    const double h { triangle.v1.pos.x - triangle.v0.pos.x };
     const double i {
-        triangle.v0.screen_pos.x * triangle.v1.screen_pos.y -
-        triangle.v0.screen_pos.y * triangle.v1.screen_pos.x
+        triangle.v0.pos.x * triangle.v1.pos.y -
+        triangle.v0.pos.y * triangle.v1.pos.x
     };
 
-    const bool tl0 = is_top_left(triangle.v1.screen_pos, triangle.v2.screen_pos);
-    const bool tl1 = is_top_left(triangle.v2.screen_pos, triangle.v0.screen_pos);
-    const bool tl2 = is_top_left(triangle.v0.screen_pos, triangle.v1.screen_pos);
+    const bool tl0 = is_top_left(triangle.v1.pos, triangle.v2.pos);
+    const bool tl1 = is_top_left(triangle.v2.pos, triangle.v0.pos);
+    const bool tl2 = is_top_left(triangle.v0.pos, triangle.v1.pos);
 
-    const double area { a * (triangle.v0.screen_pos.x) + b * (triangle.v0.screen_pos.y) + c };
+    const double area { a * (triangle.v0.pos.x) + b * (triangle.v0.pos.y) + c };
     const double inv_area { 1.0f / area };
 
     if (area == 0.0)
@@ -331,7 +322,6 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
                 {
                     tile.triangle_index_buffer[buffer_index] = tri_index;
                     tile.depth_buffer[buffer_index] = depth;
-                    tile.weight_buffer[buffer_index] = Vec2d { w.x, w.y } * inv_area;
                 }
             }
 
@@ -348,12 +338,13 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
 
 void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const
 {
-    Vec2i resolution { surface->get_resolution() };
+    const Vec2i resolution { surface->get_resolution() };
+    const int num_pixels { TILE_SIZE * TILE_SIZE };
 
-    for (const auto &[shader_id, triangles] : tile.shader_batches)
+    for (const auto &[shader_id, tri] : tile.shader_batches)
     {
         int triangle_index { 0 };
-        for (const auto &tri : triangles)
+        for (const auto &tri : tri)
         {
             rasterize_triangle_in_tile(tri, triangle_index, tile);
             triangle_index++;
@@ -364,11 +355,13 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
             Shader3D::FragUniforms {
                 .t = t,
                 .light_dir = light_dir,
-                .ambient_intensity = ambient_light
+                .ambient_intensity = ambient_light,
+                .near_plane = get_camera().get_z_near(),
+                .far_plane = get_camera().get_z_far()
             }
         );
 
-        for (int i = 0; i < TILE_SIZE * TILE_SIZE; ++i)
+        for (int i = 0; i < num_pixels; ++i)
         {
             const Vec2i pixel_pos {
                 tile.screen_pos.x + (i % TILE_SIZE),
@@ -385,11 +378,19 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
 
             if (depth < std::numeric_limits<float>::infinity())
             {
-                Vec2f w_xy { tile.weight_buffer[i] };
-                Vec3f w { w_xy.x, w_xy.y, 1.0f - w_xy.x - w_xy.y };
-
                 const ScreenTriangle &triangle { 
-                    triangles[tile.triangle_index_buffer[i]] 
+                    tri[tile.triangle_index_buffer[i]] 
+                };
+
+                const Vec3d w {
+                    (triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                    (triangle.v2.pos.x - triangle.v1.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
+
+                    (triangle.v2.pos.y - triangle.v0.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                    (triangle.v0.pos.x - triangle.v2.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
+
+                    (triangle.v0.pos.y - triangle.v1.pos.y) * (pixel_pos.x - triangle.v1.pos.x) +
+                    (triangle.v1.pos.x - triangle.v0.pos.x) * (pixel_pos.y - triangle.v1.pos.y)
                 };
 
                 const Vec3d normal_interp {
@@ -426,9 +427,42 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
                     pixel_pos,
                     color,
                     depth,
-                    RenderSurface::BlendMode::OPAQUE
+                    RenderSurface::BlendMode::ALPHA
                 );
             }
+        }
+    }
+
+    for (const auto &shader : fullscreen_shaders)
+    {
+        for (int i = 0; i < num_pixels; ++i)
+        {
+            const Vec2i pixel_pos {
+                tile.screen_pos.x + (i % TILE_SIZE),
+                tile.screen_pos.y + (i / TILE_SIZE)
+            };
+
+            Color4 color {
+                shader->frag(
+                    Shader3D::FragInput {
+                        .uvw = Vec3d {
+                            static_cast<double>(pixel_pos.x) / static_cast<double>(resolution.x),
+                            static_cast<double>(pixel_pos.y) / static_cast<double>(resolution.y),
+                            0.0
+                        },
+                        .depth = tile.depth_buffer[i],
+                        .normal = Vec3d { 0.0, 0.0, 1.0 },
+                        .color = surface->read_pixel(pixel_pos)
+                    }
+                )
+            };
+
+            surface->write_pixel(
+                pixel_pos,
+                color,
+                tile.depth_buffer[i],
+                RenderSurface::BlendMode::ALPHA
+            );
         }
     }
 }
@@ -507,6 +541,27 @@ std::shared_ptr<Sphere3D> Render3D::create_sphere(
     return sphere;
 }
 
+std::shared_ptr<Cone3D> Render3D::create_cone(
+    const Vec3d position,
+    const double radius,
+    const double height,
+    const Color4 color,
+    const int segments,
+    const Shader3D shader
+)
+{
+    auto cone { std::make_shared<Cone3D>() };
+
+    cone->set_position(position);
+    cone->set_radius(radius);
+    cone->set_height(height);
+    cone->set_color(color);
+    cone->set_segments(segments);
+    cone->set_shader(shader);
+
+    return cone;
+}
+
 void Render3D::add_item(const std::shared_ptr<Primitive3D> &item) const
 {
     scene_graph->add_item(item);
@@ -537,11 +592,6 @@ Vec2i Render3D::get_resolution() const
     return surface->get_resolution();
 }
 
-double Render3D::get_camera_aspect_ratio() const
-{
-    return static_cast<double>(get_resolution().x) / static_cast<double>(get_resolution().y);
-}
-
 void Render3D::set_camera(const Camera &cam)
 {
     camera = cam;
@@ -552,59 +602,9 @@ const Camera &Render3D::get_camera() const
     return camera;
 }
 
-void Render3D::set_camera_position(const Vec3d pos)
+Camera &Render3D::get_camera()
 {
-    camera.set_position(pos);
-}
-
-Vec3d Render3D::get_camera_position() const
-{
-    return camera.get_position();
-}
-
-void Render3D::set_camera_rotation(const Vec3d rot)
-{
-    camera.set_rotation(rot);
-}
-
-void Render3D::set_camera_rotation_degrees(const Vec3d rot_deg)
-{
-    camera.set_rotation_degrees(rot_deg);
-}
-
-Vec3d Render3D::get_camera_rotation() const
-{
-    return camera.get_rotation();
-}
-
-void Render3D::set_camera_fov(const double fov)
-{
-    camera.set_fov(fov);
-}
-
-void Render3D::set_camera_fov_degrees(const double fov_degrees)
-{
-    camera.set_fov_degrees(fov_degrees);
-}
-
-void Render3D::set_camera_z_near(const double z_near)
-{
-    camera.set_z_near(z_near);
-}
-
-void Render3D::set_camera_z_far(const double z_far)
-{
-    camera.set_z_far(z_far);
-}
-
-double Render3D::get_camera_fov() const
-{
-    return camera.get_fov();
-}
-
-Vec3d Render3D::get_camera_forward() const
-{
-    return camera.get_forward();
+    return camera;
 }
 
 void Render3D::set_light_direction(const Vec3d dir)
@@ -632,87 +632,19 @@ void Render3D::set_render_surface(const std::shared_ptr<RenderSurface> new_surfa
     surface = new_surface;
 }
 
+void Render3D::add_fullscreen_shader(const std::shared_ptr<Shader3D::FragShader> shader)
+{
+    fullscreen_shaders.push_back(shader);
 }
 
-/*BarycentricTriangle triangle {
-                screen_vertices[0].screen_pos,
-                screen_vertices[1].screen_pos,
-                screen_vertices[2].screen_pos
-            };
+void Render3D::remove_fullscreen_shader(const std::shared_ptr<Shader3D::FragShader> shader)
+{
+    std::erase(fullscreen_shaders, shader);
+}
 
-            if (triangle.get_area() <= 0.0)
-            {
-                continue;
-            }
+void Render3D::clear_fullscreen_shaders()
+{
+    fullscreen_shaders.clear();
+}
 
-            std::vector<Vec2i> pixels;
-            Rasterize::rasterize_filled_triangle(triangle, pixels, resolution);
-
-            Shader3D::FragInput frag_in {
-                .t = t,
-                .light_dir = light_dir,
-                .ambient_intensity = ambient_light
-            };
-
-            frag_in.uvw.reserve(pixels.size());
-            frag_in.depths.reserve(pixels.size());
-            frag_in.normals.reserve(pixels.size());
-            frag_in.colors.reserve(pixels.size());
-
-            auto vertex_colors { mesh.get_colors() };
-
-            for (const auto &pixel : pixels)
-            {
-                Vec3d w = triangle.barycentric_weights(pixel + Vec2d { 0.5, 0.5 });
-
-                // double inv_w_p =
-                //     w.x * one_over_w[0] +
-                //     w.y * one_over_w[1] +
-                //     w.z * one_over_w[2];
-
-                double depth {
-                    w.x * screen_vertices[0].z_over_w +
-                    w.y * screen_vertices[1].z_over_w +
-                    w.z * screen_vertices[2].z_over_w
-                };
-
-                Vec3d normal_interp {
-                    (
-                        vert_out.normals[idx0] * w.x +
-                        vert_out.normals[idx1] * w.y +
-                        vert_out.normals[idx2] * w.z).normalize()
-                };
-
-                Color4 color_interp {
-                    vertex_colors[idx0] == vertex_colors[idx1] &&
-                    vertex_colors[idx1] == vertex_colors[idx2] ?
-
-                        vertex_colors[idx0] :
-
-                        Color4::trilinear_interp(
-                            vertex_colors[idx0],
-                            vertex_colors[idx1],
-                            vertex_colors[idx2],
-                            w.x,
-                            w.y,
-                            w.z
-                        )
-                };
-
-                frag_in.uvw.emplace_back(0.0, 0.0, 0.0);
-                frag_in.depths.push_back(depth);
-                frag_in.normals.push_back(normal_interp);
-                frag_in.colors.push_back(color_interp);
-            }
-
-            auto pixel_colors { shader.frag(frag_in) };
-            for (size_t p = 0; p < pixel_colors.size(); ++p)
-            {
-                surface->write_pixel(
-                    pixels[p],
-                    pixel_colors[p],
-                    frag_in.depths[p],
-                    RenderSurface::BlendMode::OPAQUE
-                );
-            }
-        }*/
+}

@@ -8,6 +8,7 @@ set(GFX_PRIMITIVES_SOURCES
         polygon-3D.cpp
         plane-3D.cpp
         text-2D.cpp
+        cone-3D.cpp
 )
 
 add_library(gfx_primitives STATIC ${GFX_PRIMITIVES_SOURCES})

@@ -8,6 +8,7 @@
 #include "gfx/primitives/cuboid-3D.h"
 #include "gfx/primitives/plane-3D.h"
 #include "gfx/primitives/sphere-3D.h"
+#include "gfx/primitives/cone-3D.h"
 
 #include <memory>
 #include <map>
@@ -34,13 +35,6 @@ public:
     std::shared_ptr<RenderSurface> get_render_surface() const;
 
     void set_camera(const Camera &cam);
-    void set_camera_position(Vec3d pos);
-    void set_camera_rotation(Vec3d rot);
-    void set_camera_rotation_degrees(Vec3d rot_deg);
-    void set_camera_fov(double fov);
-    void set_camera_fov_degrees(double fov_degrees);
-    void set_camera_z_near(double z_near);
-    void set_camera_z_far(double z_far);
 
     void set_light_direction(Vec3d dir);
     void set_ambient_light(double intensity);
@@ -51,14 +45,14 @@ public:
     Vec2i get_resolution() const;
 
     const Camera &get_camera() const;
-    double get_camera_aspect_ratio() const;
-    Vec3d get_camera_position() const;
-    Vec3d get_camera_rotation() const;
-    double get_camera_fov() const;
-    Vec3d get_camera_forward() const;
+    Camera &get_camera();
 
     Vec3d get_light_direction() const;
     double get_ambient_light() const;
+
+    void add_fullscreen_shader(const std::shared_ptr<Shader3D::FragShader> shader);
+    void remove_fullscreen_shader(const std::shared_ptr<Shader3D::FragShader> shader);
+    void clear_fullscreen_shaders();
 
     static std::shared_ptr<Cuboid3D> create_cuboid(
         Vec3d position,
@@ -82,13 +76,23 @@ public:
         Shader3D shader = DefaultShader3D()
     );
 
+    static std::shared_ptr<Cone3D> create_cone(
+        Vec3d position,
+        double radius,
+        double height,
+        Color4 color,
+        int segments = 16,
+        Shader3D shader = DefaultShader3D()
+    );
+
 private:
 
+    static constexpr int VERTEX_BATCH_SIZE = 1024;
     static constexpr int TILE_SIZE = 32;
 
     struct ScreenVertex
     {
-        Vec2d screen_pos;
+        Vec2d pos;
         Vec3f normal;
         Color4 color;
         double z_over_w;
@@ -116,7 +120,6 @@ private:
         std::map<int, std::vector<ScreenTriangle>> shader_batches;
         std::array<int, TILE_SIZE * TILE_SIZE> triangle_index_buffer;
         std::array<double, TILE_SIZE * TILE_SIZE> depth_buffer;
-        std::array<Vec2f, TILE_SIZE * TILE_SIZE> weight_buffer;
 
         explicit Tile(const Vec2i screen_pos) : screen_pos(screen_pos) 
         {
@@ -153,6 +156,8 @@ private:
 
     std::shared_ptr<SceneGraph3D> scene_graph;
     std::shared_ptr<RenderSurface> surface;
+
+    std::vector<std::shared_ptr<Shader3D::FragShader>> fullscreen_shaders;
 
     std::shared_ptr<ThreadPool> thread_pool;
 };

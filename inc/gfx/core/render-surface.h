@@ -23,6 +23,9 @@ public:
     virtual int init() = 0;
 
     void write_pixel(Vec2i pos, Color4 color, double depth = 0, BlendMode blend_mode = BlendMode::OPAQUE);
+    Color4 read_pixel(Vec2i pos) const;
+
+    double get_depth(Vec2i pos) const;
 
     virtual void present() = 0;
     virtual void clear() const = 0;

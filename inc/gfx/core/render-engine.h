@@ -37,25 +37,14 @@ public:
     void set_resolution(int width, int height) const;
     Vec2i get_resolution() const;
 
-    void set_camera_position(Vec3d position) const;
-    void set_camera_position(double x, double y, double z) const;
-    void set_camera_rotation(Vec3d rotation_rad) const;
-    void set_camera_rotation(double x_rad, double y_rad, double z_rad) const;
-    void set_camera_rotation_degrees(Vec3d rotation_degrees) const;
-    void set_camera_rotation_degrees(double x_deg, double y_deg, double z_deg) const;
-    void set_camera_fov(double fov) const;
-    void set_camera_fov_degrees(double fov_degrees) const;
-    void set_camera_z_near(double z_near) const;
-    void set_camera_z_far(double z_far) const;
+    void set_camera(const Camera &cam) const;
 
     void set_light_direction(Vec3d direction) const;
     void set_light_direction(double x, double y, double z) const;
     void set_ambient_light(double intensity) const;
 
-    Vec3d get_camera_position() const;
-    Vec3d get_camera_rotation() const;
-    double get_camera_fov() const;
-    Vec3d get_camera_forward() const;
+    const Camera &get_camera() const;
+    Camera &get_camera();
 
     Vec3d get_light_direction() const;
     double get_ambient_light() const;
@@ -196,6 +185,26 @@ public:
         double y,
         double z,
         double radius,
+        Color4 color,
+        int segments = 16,
+        Shader3D shader = DefaultShader3D()
+    ) const;
+
+    std::shared_ptr<Cone3D> create_cone(
+        Vec3d position,
+        double radius,
+        double height,
+        Color4 color,
+        int segments = 16,
+        Shader3D shader = DefaultShader3D()
+    ) const;
+
+    std::shared_ptr<Cone3D> create_cone(
+        double x,
+        double y,
+        double z,
+        double radius,
+        double height,
         Color4 color,
         int segments = 16,
         Shader3D shader = DefaultShader3D()

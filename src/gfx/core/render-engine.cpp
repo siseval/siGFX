@@ -101,54 +101,14 @@ Vec2i RenderEngine::get_resolution() const
     return surface->get_resolution();
 }
 
-void RenderEngine::set_camera_position(const Vec3d position) const
+const Camera &RenderEngine::get_camera() const
 {
-    render3D->set_camera_position(position);
+    return render3D->get_camera();
 }
 
-void RenderEngine::set_camera_position(const double x, const double y, const double z) const
+Camera &RenderEngine::get_camera()
 {
-    render3D->set_camera_position(Vec3d { x, y, z });
-}
-
-void RenderEngine::set_camera_rotation(const Vec3d rotation_rad) const
-{
-    render3D->set_camera_rotation(rotation_rad);
-}
-
-void RenderEngine::set_camera_rotation(const double x_rad, const double y_rad, const double z_rad) const
-{
-    render3D->set_camera_rotation(Vec3d { x_rad, y_rad, z_rad });
-}
-
-void RenderEngine::set_camera_rotation_degrees(const Vec3d rotation_degrees) const
-{
-    render3D->set_camera_rotation_degrees(rotation_degrees);
-}
-
-void RenderEngine::set_camera_rotation_degrees(const double x_deg, const double y_deg, const double z_deg) const
-{
-    render3D->set_camera_rotation_degrees(Vec3d { x_deg, y_deg, z_deg });
-}
-
-void RenderEngine::set_camera_fov(const double fov) const
-{
-    render3D->set_camera_fov(fov);
-}
-
-void RenderEngine::set_camera_fov_degrees(const double fov_degrees) const
-{
-    render3D->set_camera_fov_degrees(fov_degrees);
-}
-
-void RenderEngine::set_camera_z_near(const double z_near) const
-{
-    render3D->set_camera_z_near(z_near);
-}
-
-void RenderEngine::set_camera_z_far(const double z_far) const
-{
-    render3D->set_camera_z_far(z_far);
+    return render3D->get_camera();
 }
 
 void RenderEngine::set_light_direction(const Vec3d direction) const
@@ -164,26 +124,6 @@ void RenderEngine::set_light_direction(const double x, const double y, const dou
 void RenderEngine::set_ambient_light(const double intensity) const
 {
     render3D->set_ambient_light(intensity);
-}
-
-Vec3d RenderEngine::get_camera_position() const
-{
-    return render3D->get_camera_position();
-}
-
-Vec3d RenderEngine::get_camera_rotation() const
-{
-    return render3D->get_camera_rotation();
-}
-
-double RenderEngine::get_camera_fov() const
-{
-    return render3D->get_camera_fov();
-}
-
-Vec3d RenderEngine::get_camera_forward() const
-{
-    return render3D->get_camera().get_forward();
 }
 
 Vec3d RenderEngine::get_light_direction() const
@@ -448,6 +388,32 @@ std::shared_ptr<Sphere3D> RenderEngine::create_sphere(
 ) const
 {
     return create_sphere(Vec3d { x, y, z }, radius, color, segments, shader);
+}
+
+std::shared_ptr<Cone3D> RenderEngine::create_cone(
+    const Vec3d position,
+    const double radius,
+    const double height,
+    const Color4 color,
+    const int segments,
+    const Shader3D shader
+) const
+{
+    return render3D->create_cone(position, radius, height, color, segments, shader);
+}
+
+std::shared_ptr<Cone3D> RenderEngine::create_cone(
+    const double x,
+    const double y,
+    const double z,
+    const double radius,
+    const double height,
+    const Color4 color,
+    const int segments,
+    const Shader3D shader
+) const
+{
+    return create_cone(Vec3d { x, y, z }, radius, height, color, segments, shader);
 }
 
 }

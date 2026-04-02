@@ -51,6 +51,8 @@ public:
         double t;
         Vec3d light_dir;
         double ambient_intensity;
+        double near_plane;
+        double far_plane;
     };
 
     struct FragInput

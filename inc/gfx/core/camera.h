@@ -19,16 +19,21 @@ public:
     Vec3d get_forward() const;
 
     void set_position(Vec3d pos);
+    void set_position(double x, double y, double z);
     void set_fov(double f);
     void set_fov_degrees(double fov_degrees);
     void set_rotation(Vec3d rot);
+    void set_rotation(double pitch, double yaw, double roll);
     void set_rotation_degrees(Vec3d rot_deg);
+    void set_rotation_degrees(double pitch_deg, double yaw_deg, double roll_deg);
     void set_z_near(double zn);
     void set_z_far(double zf);
 
     Vec3d get_position() const;
     double get_fov() const;
     Vec3d get_rotation() const;
+    double get_z_near() const;
+    double get_z_far() const;
 
 private:
 
