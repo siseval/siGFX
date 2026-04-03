@@ -266,7 +266,7 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
         }.round()
     };
 
-    Box2f clip_bounds {
+    const Box2f clip_bounds {
         tile.screen_pos,
         tile.screen_pos + Vec2i(TILE_SIZE)
     };
@@ -361,18 +361,18 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
 void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const
 {
     const Vec2i resolution { surface->get_resolution() };
-    const int num_pixels { TILE_SIZE * TILE_SIZE };
+    constexpr int num_pixels { TILE_SIZE * TILE_SIZE };
 
     for (const auto &[shader_id, tri] : tile.shader_batches)
     {
         int triangle_index { 0 };
-        for (const auto &tri : tri)
+        for (const auto &triangle : tri)
         {
-            rasterize_triangle_in_tile(tri, triangle_index, tile);
+            rasterize_triangle_in_tile(triangle, triangle_index, tile);
             triangle_index++;
         }
 
-        auto frag_shader { shaders.at(shader_id).get_fragment_shader() };
+        const auto frag_shader { shaders.at(shader_id).get_fragment_shader() };
         frag_shader->set_uniforms(
             Shader3D::FragUniforms {
                 .t = t,
@@ -464,7 +464,7 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
                 tile.screen_pos.y + (i / TILE_SIZE)
             };
 
-            Color4 color {
+            const Color4 color {
                 shader->frag(
                     Shader3D::FragInput {
                         .uvw = Vec3d {

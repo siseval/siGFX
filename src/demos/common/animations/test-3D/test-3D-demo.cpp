@@ -59,8 +59,9 @@ void Test3DDemo::init()
     renderer->set_ambient_light(0.5);
 
     const Shader3D shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
+    const Shader3D shader2(std::make_shared<DefaultVertShader>(), std::make_shared<FullscreenShader>());
 
-    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, shader);
+    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, shader2);
     renderer->add_primitive(sphere);
 
     plane = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), shader);
