@@ -86,10 +86,10 @@ void Test3DDemo::init()
     renderer->add_primitive(crosshair);
 
     constexpr double min_range = 36.0;
-    constexpr double max_range = 128.0;
+    constexpr double max_range = 256.0;
     constexpr int num_boxes = 0;
-    constexpr int num_spheres = 300;
-    constexpr int num_segments = 5;
+    constexpr int num_spheres = 600;
+    constexpr int num_segments = 10;
 
     auto rand_pos = [](const double min, const double max) {
         return Vec3d::from_angles(random_double(0.0, 360.0), random_double(0.0, 180.0)).normalize() *

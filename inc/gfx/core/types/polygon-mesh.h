@@ -3,6 +3,7 @@
 #include "gfx/core/types/color4.h"
 #include "gfx/math/box3.h"
 #include "gfx/math/vec3.h"
+#include "gfx/core/types/bounding-sphere.h"
 
 #include <vector>
 
@@ -17,7 +18,8 @@ public:
 
     PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
 
-    Box3d get_extent() const;
+    Box3d get_aabb() const;
+    BoundingSphere get_bounding_sphere() const;
 
     void set_vertices(std::vector<Vec3d> verts);
     void set_normals(std::vector<Vec3d> norms);
@@ -39,5 +41,11 @@ private:
     std::vector<Vec3d> normals;
     std::vector<size_t> indices;
     std::vector<Color4> colors;
+
+    mutable bool aabb_dirty;
+    mutable bool bounding_sphere_dirty;
+    mutable Box3d aabb;
+    mutable BoundingSphere bounding_sphere;
+
 };
 }

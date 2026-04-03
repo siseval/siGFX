@@ -2,7 +2,7 @@
 
 #include "gfx/core/shader-3D.h"
 #include "gfx/core/types/uuid.h"
-#include "gfx/geometry/types/polygon-mesh.h"
+#include "gfx/core/types/polygon-mesh.h"
 #include "gfx/math/box3.h"
 #include "gfx/math/matrix.h"
 #include "gfx/shaders/default-shader-3D.h"
@@ -40,9 +40,11 @@ public:
     Vec3d get_anchor() const;
     Shader3D get_shader() const;
 
+    virtual Box3d get_aabb() const;
+    virtual BoundingSphere get_bounding_sphere() const;
+
     UUID get_id() const;
     Matrix4x4d get_transform() const;
-    Box3d get_geometry_size() const;
     int64_t get_transform_version() const;
 
 protected:

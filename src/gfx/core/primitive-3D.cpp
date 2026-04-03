@@ -123,6 +123,16 @@ Shader3D Primitive3D::get_shader() const
     return shader;
 }
 
+Box3d Primitive3D::get_aabb() const
+{
+    return mesh_data.get_aabb();
+}
+
+BoundingSphere Primitive3D::get_bounding_sphere() const
+{
+    return mesh_data.get_bounding_sphere();
+}
+
 UUID Primitive3D::get_id() const
 {
     return id;
@@ -135,7 +145,7 @@ Matrix4x4d Primitive3D::get_transform() const
         return cached_transform;
     }
 
-    const Vec3d anchor_offset { get_anchor() * get_geometry_size().size() };
+    const Vec3d anchor_offset { get_anchor() * get_aabb().size() };
 
     const Matrix4x4d anchor_translation = Transform3D::translate(
         { -anchor_offset.x, -anchor_offset.y, -anchor_offset.z }
@@ -153,11 +163,6 @@ Matrix4x4d Primitive3D::get_transform() const
     transform_dirty = false;
 
     return cached_transform;
-}
-
-Box3d Primitive3D::get_geometry_size() const
-{
-    return get_mesh().get_extent();
 }
 
 int64_t Primitive3D::get_transform_version() const

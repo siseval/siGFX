@@ -2,6 +2,7 @@
 
 #include "gfx/core/primitive-3D.h"
 #include "gfx/core/types/uuid.h"
+#include "gfx/core/types/frustum.h"
 
 namespace gfx
 {
@@ -49,12 +50,14 @@ public:
 
     void clear();
 
-    std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_draw_queue();
+    std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> get_draw_queue(const Frustum& frustum) const;
 
     int num_items() const;
     bool contains_item(std::shared_ptr<Primitive3D> item) const;
 
 private:
+
+    bool sphere_in_frustum(const BoundingSphere &sphere, const Frustum &frustum) const;
 
     std::shared_ptr<SceneNode3D> root;
     std::unordered_map<UUID, std::shared_ptr<SceneNode3D>> nodes;

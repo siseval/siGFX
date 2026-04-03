@@ -27,6 +27,7 @@ public:
 
     struct VertUniforms
     {
+        double t;
         Matrix4x4d model_matrix;
         Matrix4x4d view_matrix;
         Matrix4x4d projection_matrix;

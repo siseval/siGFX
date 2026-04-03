@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "gfx/geometry/types/barycentric-triangle.h"
-#include "gfx/geometry/types/polygon.h"
+#include "gfx/core/types/barycentric-triangle.h"
+#include "gfx/core/types/polygon.h"
 #include "gfx/math/vec2.h"
 
 namespace gfx

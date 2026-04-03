@@ -3,7 +3,6 @@
 #include "gfx/geometry/rasterize.h"
 #include "gfx/geometry/transform-2D.h"
 #include "gfx/geometry/triangulate.h"
-#include "gfx/geometry/types/barycentric-triangle.h"
 
 
 namespace gfx

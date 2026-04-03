@@ -134,21 +134,12 @@ private:
     );
 
     std::vector<ScreenTriangle> generate_screen_triangles(std::map<int, Shader3D> &shaders) const;
-    std::vector<Tile> generate_tiles() const;
+    void generate_tiles() const;
     void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
     void render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const;
 
-    template <typename Shader>
-    static Shader3D::VertOutput shade_vertex(const Shader3D::VertInput &input, const Shader shader)
-    {
-        return shader->vert(input);
-    }
-
-    template <typename Shader>
-    static Color4 shade_pixel(const Shader3D::FragInput &input, const Shader shader)
-    {
-        return shader->frag(input);
-    }
+    void set_resolution_dirty();
+    bool is_resolution_dirty() const;
 
     Camera camera;
     Vec3d light_dir;
@@ -159,6 +150,10 @@ private:
 
     std::vector<std::shared_ptr<Shader3D::FragShader>> fullscreen_shaders;
 
+    bool use_multithreading { true };
     std::shared_ptr<ThreadPool> thread_pool;
+
+    mutable Vec2i last_resolution { 0, 0 };
+    mutable std::vector<Tile> tiles;
 };
 }

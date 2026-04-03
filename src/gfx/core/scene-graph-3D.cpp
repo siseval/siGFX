@@ -84,7 +84,7 @@ Matrix4x4d SceneGraph3D::get_global_transform(const std::shared_ptr<Primitive3D>
     return node->global_transform;
 }
 
-std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> SceneGraph3D::get_draw_queue()
+std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> SceneGraph3D::get_draw_queue(const Frustum& frustum) const
 {
     if (transforms_dirty())
     {
@@ -96,6 +96,11 @@ std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> SceneGraph3D::g
     {
         if (node->primitive != nullptr)
         {
+            BoundingSphere transformed_sphere { node->primitive->get_bounding_sphere().transformed(node->primitive->get_position(), node->primitive->get_scale()) };
+            if (!sphere_in_frustum(transformed_sphere, frustum))
+            {
+                continue;
+            }
             draw_queue.push_back({ node->primitive, get_global_transform(node->primitive) });
         }
     }
@@ -191,6 +196,11 @@ int SceneGraph3D::num_items() const
 bool SceneGraph3D::contains_item(const std::shared_ptr<Primitive3D> item) const
 {
     return nodes.contains(item->get_id());
+}
+
+bool SceneGraph3D::sphere_in_frustum(const BoundingSphere &sphere, const Frustum &frustum) const
+{
+    return frustum.sphere_in_frustum(sphere.center, sphere.radius);
 }
 
 }

@@ -4,6 +4,7 @@
 
 namespace gfx
 {
+
 struct OBB3D
 {
 
@@ -23,4 +24,5 @@ public:
     Vec3d get_uvw(Vec3d point) const;
     std::vector<Vec3d> get_corners() const;
 };
+
 }

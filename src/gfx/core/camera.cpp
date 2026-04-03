@@ -114,7 +114,7 @@ Matrix4x4d Camera::get_projection_matrix(const double aspect_ratio) const
 
     Matrix4x4d projection { Matrix4x4d::zero() };
     projection(0, 0) = f / aspect_ratio;
-    projection(1, 1) = f;
+    projection(1, 1) = -f;
 
     projection(2, 2) = z_far / (z_far - z_near);
     projection(2, 3) = -z_near * z_far / (z_far - z_near);
@@ -130,7 +130,7 @@ Vec3d Camera::get_forward() const
 
     const Vec3d forward {
         std::cos(pitch_rad) * std::sin(yaw_rad),
-        std::sin(pitch_rad),
+        -std::sin(pitch_rad),
         std::cos(pitch_rad) * std::cos(yaw_rad)
     };
 
@@ -145,6 +145,53 @@ double Camera::get_z_near() const
 double Camera::get_z_far() const
 {
     return z_far;
+}
+
+Frustum Camera::get_frustum(const double aspect_ratio) const
+{
+    const Vec3d forward { get_forward() };
+
+    const double half_height_near { std::tan(fov / 2.0) * z_near };
+    const double half_width_near { half_height_near * aspect_ratio };
+
+    const Vec3d near_center { position + forward * z_near };
+    const Vec3d far_center { position + forward * z_far };
+
+    const Vec3d world_up { std::abs(forward.y) > 0.999 ? Vec3d { 0.0, 0.0, 1.0 } : Vec3d { 0.0, 1.0, 0.0 } };
+    const Vec3d right { Vec3d::cross(forward, world_up).normalize() };
+    const Vec3d up { Vec3d::cross(right, forward).normalize() };
+    
+    const Vec3d near_top_left { near_center + up * half_height_near - right * half_width_near };
+    const Vec3d near_top_right { near_center + up * half_height_near + right * half_width_near };
+    const Vec3d near_bottom_left { near_center - up * half_height_near - right * half_width_near };
+    const Vec3d near_bottom_right { near_center - up * half_height_near + right * half_width_near };
+
+    const Vec3d near_normal { forward };
+    const double near_d { -Vec3d::dot(near_normal, near_center) };
+
+    const Vec3d far_normal { -forward };
+    const double far_d { -Vec3d::dot(far_normal, far_center) };
+
+    const Vec3d left_normal { Vec3d::cross(near_bottom_left - position, near_top_left - position).normalize() };
+    const double left_d { -Vec3d::dot(left_normal, position) };
+
+    const Vec3d right_normal { Vec3d::cross(near_top_right - position, near_bottom_right - position).normalize() };
+    const double right_d { -Vec3d::dot(right_normal, position) };
+
+    const Vec3d top_normal { Vec3d::cross(near_top_left - position, near_top_right - position).normalize() };
+    const double top_d { -Vec3d::dot(top_normal, position) };
+
+    const Vec3d bottom_normal { Vec3d::cross(near_bottom_right - position, near_bottom_left - position).normalize() };
+    const double bottom_d { -Vec3d::dot(bottom_normal, position) };
+
+    return Frustum {
+        Frustum::Plane { top_normal, top_d },
+        Frustum::Plane { bottom_normal, bottom_d },
+        Frustum::Plane { left_normal, left_d },
+        Frustum::Plane { right_normal, right_d },
+        Frustum::Plane { near_normal, near_d },
+        Frustum::Plane { far_normal, far_d }
+    };
 }
 
 }

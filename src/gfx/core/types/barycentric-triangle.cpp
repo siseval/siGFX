@@ -1,4 +1,4 @@
-#include "gfx/geometry/types/barycentric-triangle.h"
+#include "gfx/core/types/barycentric-triangle.h"
 
 namespace gfx
 {

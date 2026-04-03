@@ -20,7 +20,7 @@ Render3D::Render3D(std::shared_ptr<RenderSurface> surface)
 
 void Render3D::draw_frame() const
 {
-    double t {
+    const double t {
         std::chrono::duration<double, std::milli>(
             std::chrono::high_resolution_clock::now().time_since_epoch()
         ).count() / 1000.0
@@ -45,26 +45,36 @@ void Render3D::draw_frame() const
         generate_screen_triangles(shader_map)
     };
 
-    std::vector<Tile> tiles {
-        generate_tiles()
-    };
+    generate_tiles();
 
     bin_triangles(screen_triangles, tiles);
 
-    // for (auto &tile : tiles)
-    // {
-    //     render_tile(tile, shader_map, t);
-    // }
-
-    thread_pool->run(static_cast<int>(tiles.size()), [&](const int tile_index) {
-        render_tile(tiles[tile_index], shader_map, t);
-    });
+    if (use_multithreading)
+    {
+        thread_pool->run(static_cast<int>(tiles.size()), [&](const int tile_index) {
+            render_tile(tiles[tile_index], shader_map, t);
+        });
+    }
+    else 
+    {
+        for (auto &tile : tiles)
+        {
+            render_tile(tile, shader_map, t);
+        }
+    }
 }
 
 
 std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::map<int, Shader3D> &shader_map) const
 {
     std::vector<ScreenTriangle> screen_triangles;
+
+    const double t {
+        std::chrono::duration<double, std::milli>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()
+        ).count() / 1000.0
+    };
+
 
     const Vec2i resolution { surface->get_resolution() };
 
@@ -77,7 +87,7 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
     const Matrix4x4d view_matrix { camera.get_view_matrix() };
     const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
 
-    for (const auto &[primitive, transform] : scene_graph->get_draw_queue())
+    for (const auto &[primitive, transform] : scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)))
     {
         const PolygonMesh &mesh { primitive->get_mesh() };
 
@@ -85,6 +95,7 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
 
         shader.get_vertex_shader()->set_uniforms(
             Shader3D::VertUniforms {
+                .t = t,
                 .model_matrix = transform,
                 .view_matrix = view_matrix,
                 .projection_matrix = projection_matrix,
@@ -131,7 +142,7 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
 
                     screen_vertices[dest_index].pos = {
                         (ndc.x * 0.5 + 0.5) * resolution.x,
-                        (1.0 - (ndc.y * 0.5 + 0.5)) * resolution.y
+                        (ndc.y * 0.5 + 0.5) * resolution.y
                     };
 
                     screen_vertices[dest_index].normal = tri_out[source_index].normal;
@@ -172,11 +183,21 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
     return screen_triangles;
 }
 
-std::vector<Render3D::Tile> Render3D::generate_tiles() const
+void Render3D::generate_tiles() const
 {
     const Vec2i resolution { surface->get_resolution() };
+    if (resolution == last_resolution)
+    {
+        for (auto &tile : tiles)
+        {
+            tile.shader_batches.clear();
+            tile.triangle_index_buffer.fill(0);
+            tile.depth_buffer.fill(std::numeric_limits<float>::infinity());
+        }
+        return;
+    }
 
-    std::vector<Tile> tiles;
+    tiles.clear();
 
     for (int ty = 0; ty < resolution.y; ty += TILE_SIZE)
     {
@@ -186,7 +207,8 @@ std::vector<Render3D::Tile> Render3D::generate_tiles() const
         }
     }
 
-    return tiles;
+    last_resolution = resolution;
+    return;
 }
 
 void Render3D::bin_triangles(const std::vector<ScreenTriangle> &screen_triangles, std::vector<Tile> &tiles) const

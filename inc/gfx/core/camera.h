@@ -2,6 +2,7 @@
 
 #include "gfx/math/matrix.h"
 #include "gfx/math/vec3.h"
+#include "gfx/core/types/frustum.h"
 
 namespace gfx
 {
@@ -34,6 +35,8 @@ public:
     Vec3d get_rotation() const;
     double get_z_near() const;
     double get_z_far() const;
+
+    Frustum get_frustum(const double aspect_ratio) const;
 
 private:
 
