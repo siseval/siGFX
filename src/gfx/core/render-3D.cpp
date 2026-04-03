@@ -385,73 +385,75 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
 
         for (int i = 0; i < num_pixels; ++i)
         {
+            const double depth { tile.depth_buffer[i] };
+            if (depth == std::numeric_limits<float>::infinity())
+            {
+                continue;
+            }
+
+            const ScreenTriangle &triangle { tri[tile.triangle_index_buffer[i]] };
+            if (triangle.shader_id != shader_id)
+            {
+                continue;
+            }
+
             const Vec2i pixel_pos {
                 tile.screen_pos.x + (i % TILE_SIZE),
                 tile.screen_pos.y + (i / TILE_SIZE)
             };
-
             if (pixel_pos.x >= resolution.x ||
                 pixel_pos.y >= resolution.y)
             {
                 continue;
             }
 
-            const double depth { tile.depth_buffer[i] };
+            const Vec3d w {
+                (triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                (triangle.v2.pos.x - triangle.v1.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
 
-            if (depth < std::numeric_limits<float>::infinity())
-            {
-                const ScreenTriangle &triangle { 
-                    tri[tile.triangle_index_buffer[i]] 
-                };
+                (triangle.v2.pos.y - triangle.v0.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                (triangle.v0.pos.x - triangle.v2.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
 
-                const Vec3d w {
-                    (triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
-                    (triangle.v2.pos.x - triangle.v1.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
+                (triangle.v0.pos.y - triangle.v1.pos.y) * (pixel_pos.x - triangle.v1.pos.x) +
+                (triangle.v1.pos.x - triangle.v0.pos.x) * (pixel_pos.y - triangle.v1.pos.y)
+            };
 
-                    (triangle.v2.pos.y - triangle.v0.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
-                    (triangle.v0.pos.x - triangle.v2.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
+            const Vec3d normal_interp {
+                (triangle.v0.normal * w.x +
+                triangle.v1.normal * w.y +
+                triangle.v2.normal * w.z).normalize()
+            };
 
-                    (triangle.v0.pos.y - triangle.v1.pos.y) * (pixel_pos.x - triangle.v1.pos.x) +
-                    (triangle.v1.pos.x - triangle.v0.pos.x) * (pixel_pos.y - triangle.v1.pos.y)
-                };
+            const Color4 color_interp {
+                triangle.v0.color == triangle.v1.color &&
+                triangle.v1.color == triangle.v2.color ?
 
-                const Vec3d normal_interp {
-                    (triangle.v0.normal * w.x +
-                    triangle.v1.normal * w.y +
-                    triangle.v2.normal * w.z).normalize()
-                };
+                triangle.v0.color :
 
-                const Color4 color_interp {
-                    triangle.v0.color == triangle.v1.color &&
-                    triangle.v1.color == triangle.v2.color ?
+                Color4::trilinear_interp(
+                    triangle.v0.color,
+                    triangle.v1.color,
+                    triangle.v2.color,
+                    w.x,
+                    w.y,
+                    w.z
+                )
+            };
 
-                    triangle.v0.color :
+            const Shader3D::FragInput frag_in {
+                .uvw = Vec3d { 0.0, 0.0, 0.0 },
+                .depth = depth,
+                .normal = normal_interp,
+                .color = color_interp
+            };
 
-                    Color4::trilinear_interp(
-                        triangle.v0.color,
-                        triangle.v1.color,
-                        triangle.v2.color,
-                        w.x,
-                        w.y,
-                        w.z
-                    )
-                };
-
-                const Shader3D::FragInput frag_in {
-                    .uvw = Vec3d { 0.0, 0.0, 0.0 },
-                    .depth = depth,
-                    .normal = normal_interp,
-                    .color = color_interp
-                };
-
-                Color4 color { frag_shader->frag(frag_in) };
-                surface->write_pixel(
-                    pixel_pos,
-                    color,
-                    depth,
-                    RenderSurface::BlendMode::ALPHA
-                );
-            }
+            Color4 color { frag_shader->frag(frag_in) };
+            surface->write_pixel(
+                pixel_pos,
+                color,
+                depth,
+                RenderSurface::BlendMode::ALPHA
+            );
         }
     }
 
