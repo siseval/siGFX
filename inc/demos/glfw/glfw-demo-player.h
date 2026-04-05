@@ -12,12 +12,17 @@ namespace demos
 class GLFWDemoPlayer : public demos::DemoPlayer
 {
 
+    const gfx::Vec2i res360 { 640, 360 };
+    const gfx::Vec2i res480 { 854, 480 };
+    const gfx::Vec2i res720 { 1280, 720 };
+    const gfx::Vec2i res1080 { 1920, 1080 };
+
 public:
 
     GLFWDemoPlayer()
         : demos::DemoPlayer()
     {
-        const gfx::Vec2d resolution { 1280, 720 };
+        const gfx::Vec2d resolution = res480;
         const gfx::Vec2d viewport_scaling { 1, 1 };
 
         auto surface = std::make_shared<gfx::GLFWRenderSurface>(resolution);

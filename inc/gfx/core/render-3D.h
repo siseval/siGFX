@@ -90,6 +90,30 @@ private:
     static constexpr int VERTEX_BATCH_SIZE = 1024;
     static constexpr int TILE_SIZE = 32;
 
+    struct ClipVertex
+    {
+        Vec3d xyz;
+        double w;
+        Vec3d normal;
+        Color4 color;
+        int shader_id;
+    };
+
+    struct ClipTriangle
+    {
+        ClipVertex v0;
+        ClipVertex v1;
+        ClipVertex v2;
+
+        ClipTriangle() {};
+
+        ClipTriangle(
+            const ClipVertex &v0,
+            const ClipVertex &v1,
+            const ClipVertex &v2
+        ) : v0(v0), v1(v1), v2(v2) {}
+    };
+
     struct ScreenVertex
     {
         Vec2d pos;
@@ -119,6 +143,7 @@ private:
         Vec2i screen_pos;
         std::map<int, std::vector<ScreenTriangle>> shader_batches;
         std::array<int, TILE_SIZE * TILE_SIZE> triangle_index_buffer;
+        std::array<int, TILE_SIZE * TILE_SIZE> shader_id_buffer;
         std::array<double, TILE_SIZE * TILE_SIZE> depth_buffer;
 
         explicit Tile(const Vec2i screen_pos) : screen_pos(screen_pos) 
@@ -133,10 +158,12 @@ private:
         Tile &tile
     );
 
-    std::vector<ScreenTriangle> generate_screen_triangles(std::map<int, Shader3D> &shaders) const;
+    std::vector<Render3D::ScreenTriangle> generate_screen_triangles_old(std::unordered_map<int, Shader3D> &shader_map) const;
+    std::vector<ScreenTriangle> generate_screen_triangles(std::unordered_map<int, Shader3D> &shaders) const;
     void generate_tiles() const;
     void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
-    void render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const;
+    void render_tile(Tile &tile, const std::unordered_map<int, Shader3D> &shaders, const double t) const;
+    int clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangles) const;
 
     void set_resolution_dirty();
     bool is_resolution_dirty() const;

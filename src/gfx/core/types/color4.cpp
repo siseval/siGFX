@@ -71,6 +71,16 @@ Color4 Color4::operator+(const Color4 &other) const
     );
 }
 
+Color4 Color4::operator-(const Color4 &other) const
+{
+    return Color4(
+        static_cast<uint8_t>(std::max(0, r - other.r)),
+        static_cast<uint8_t>(std::max(0, g - other.g)),
+        static_cast<uint8_t>(std::max(0, b - other.b)),
+        static_cast<uint8_t>(std::max(0, a - other.a))
+    );
+}
+
 Color4 Color4::operator*(const double scalar) const
 {
     return Color4(

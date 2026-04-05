@@ -37,6 +37,7 @@ public:
 
     void set_resolution(Vec2i new_resolution);
     Vec2i get_resolution() const;
+    double get_aspect_ratio() const;
 
     virtual void set_clear_color(Color4 color);
     virtual Color4 get_clear_color() const;

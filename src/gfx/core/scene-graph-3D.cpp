@@ -97,7 +97,7 @@ std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> SceneGraph3D::g
         if (node->primitive != nullptr)
         {
             BoundingSphere transformed_sphere { node->primitive->get_bounding_sphere().transformed(node->primitive->get_position(), node->primitive->get_scale()) };
-            if (!sphere_in_frustum(transformed_sphere, frustum))
+            if (!sphere_in_frustum(transformed_sphere, cull_frustum))
             {
                 continue;
             }

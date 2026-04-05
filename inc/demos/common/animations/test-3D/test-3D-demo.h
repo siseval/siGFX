@@ -50,6 +50,7 @@ private:
 
     gfx::Vec2d prev_mouse_pos { 0.0, 0.0 };
 
+    gfx::Camera camera;
     gfx::Vec3d camera_velocity { 0.0, 0.0, 0.0 };
     double camera_acceleration = 500.0;
     double camera_damping = 0.85;

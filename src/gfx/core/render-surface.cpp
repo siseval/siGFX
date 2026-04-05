@@ -82,6 +82,11 @@ Vec2i RenderSurface::get_resolution() const
     return resolution;
 }
 
+double RenderSurface::get_aspect_ratio() const
+{
+    return static_cast<double>(resolution.x) / static_cast<double>(resolution.y);
+}
+
 void RenderSurface::set_clear_color(const Color4 color)
 {
     clear_color = color;

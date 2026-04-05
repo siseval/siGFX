@@ -111,6 +111,11 @@ Camera &RenderEngine::get_camera()
     return render3D->get_camera();
 }
 
+void RenderEngine::set_camera(const Camera &cam) const
+{
+    render3D->set_camera(cam);
+}
+
 void RenderEngine::set_light_direction(const Vec3d direction) const
 {
     render3D->set_light_direction(direction);

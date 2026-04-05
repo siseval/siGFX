@@ -39,7 +39,7 @@ void Render3D::draw_frame() const
         );
     }
 
-    std::map<int, Shader3D> shader_map;
+    std::unordered_map<int, Shader3D> shader_map;
 
     std::vector<ScreenTriangle> screen_triangles {
         generate_screen_triangles(shader_map)
@@ -65,16 +65,134 @@ void Render3D::draw_frame() const
 }
 
 
-std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::map<int, Shader3D> &shader_map) const
+// std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles_old(std::unordered_map<int, Shader3D> &shader_map) const
+// {
+//     std::vector<ScreenTriangle> screen_triangles;
+//
+//     const double t {
+//         std::chrono::duration<double, std::milli>(
+//             std::chrono::high_resolution_clock::now().time_since_epoch()
+//         ).count() / 1000.0
+//     };
+//
+//
+//     const Vec2i resolution { surface->get_resolution() };
+//
+//     const double aspect_ratio {
+//         static_cast<double>(resolution.x) /
+//         static_cast<double>(resolution.y)
+//     };
+//
+//     const Camera &camera { get_camera() };
+//     const Matrix4x4d view_matrix { camera.get_view_matrix() };
+//     const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
+//
+//     for (const auto &[primitive, transform] : scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)))
+//     {
+//         const PolygonMesh &mesh { primitive->get_mesh() };
+//
+//         const Shader3D shader { primitive->get_shader() };
+//
+//         shader.get_vertex_shader()->set_uniforms(
+//             Shader3D::VertUniforms {
+//                 .t = t,
+//                 .model_matrix = transform,
+//                 .view_matrix = view_matrix,
+//                 .projection_matrix = projection_matrix,
+//                 .mvp_matrix = projection_matrix * view_matrix * transform
+//             }
+//         );
+//
+//         shader_map[shader.get_id()] = shader;
+//
+//         for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
+//         {
+//             const size_t idx0 { mesh.get_indices()[i] };
+//             const size_t idx1 { mesh.get_indices()[i + 1] };
+//             const size_t idx2 { mesh.get_indices()[i + 2] };
+//
+//             std::array<Shader3D::VertOutput, 3> tri_out;
+//
+//             auto model_to_clip {
+//                 [&](int src_index, int dest_index) {
+//                     Shader3D::VertInput vert_in {
+//                         .pos = mesh.get_vertices()[src_index],
+//                         .normal = mesh.get_normals()[src_index],
+//                     };
+//                     tri_out[dest_index] = shader.vert(vert_in);
+//                 }
+//             };
+//
+//             model_to_clip(idx0, 0);
+//             model_to_clip(idx1, 1);
+//             model_to_clip(idx2, 2);
+//
+//             if (tri_out[0].w <= 0 || tri_out[1].w <= 0 || tri_out[2].w <= 0)
+//             {
+//                 continue;
+//             }
+//
+//             std::array<ScreenVertex, 3> screen_vertices;
+//             auto clip_to_screen {
+//                 [&](const int source_index, const int dest_index) {
+//                     const auto &clip { tri_out[source_index].xyz };
+//
+//                     const double inv_w { 1.0f / static_cast<float>(tri_out[source_index].w) };
+//                     const Vec3d ndc { clip * inv_w };
+//
+//                     screen_vertices[dest_index].pos = {
+//                         (ndc.x * 0.5 + 0.5) * resolution.x,
+//                         (ndc.y * 0.5 + 0.5) * resolution.y
+//                     };
+//
+//                     screen_vertices[dest_index].normal = tri_out[source_index].normal;
+//
+//                     screen_vertices[dest_index].z_over_w = ndc.z;
+//                     screen_vertices[dest_index].inv_w = inv_w;
+//                 }
+//             };
+//
+//             clip_to_screen(0, 0);
+//             clip_to_screen(1, 1);
+//             clip_to_screen(2, 2);
+//
+//             const float area {
+//                 Vec2f::cross(
+//                     screen_vertices[1].pos - screen_vertices[0].pos,
+//                     screen_vertices[2].pos - screen_vertices[0].pos
+//                 )
+//             };
+//
+//             if (area <= 0.0f)
+//             {
+//                 continue;
+//             }
+//
+//             screen_vertices[0].color = mesh.get_colors()[idx0];
+//             screen_vertices[1].color = mesh.get_colors()[idx1];
+//             screen_vertices[2].color = mesh.get_colors()[idx2];
+//
+//             screen_triangles.emplace_back(
+//                 std::move(screen_vertices[0]),
+//                 std::move(screen_vertices[1]),
+//                 std::move(screen_vertices[2]),
+//                 shader.get_id()
+//             );
+//         }
+//     }
+//     return screen_triangles;
+// }
+
+std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::unordered_map<int, Shader3D> &shader_map) const
 {
     std::vector<ScreenTriangle> screen_triangles;
+    screen_triangles.reserve(10000);
 
     const double t {
         std::chrono::duration<double, std::milli>(
             std::chrono::high_resolution_clock::now().time_since_epoch()
         ).count() / 1000.0
     };
-
 
     const Vec2i resolution { surface->get_resolution() };
 
@@ -86,11 +204,11 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
     const Camera &camera { get_camera() };
     const Matrix4x4d view_matrix { camera.get_view_matrix() };
     const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
+    const Matrix4x4d vp_matrix { projection_matrix * view_matrix };
 
     for (const auto &[primitive, transform] : scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)))
     {
         const PolygonMesh &mesh { primitive->get_mesh() };
-
         const Shader3D shader { primitive->get_shader() };
 
         shader.get_vertex_shader()->set_uniforms(
@@ -99,10 +217,9 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
                 .model_matrix = transform,
                 .view_matrix = view_matrix,
                 .projection_matrix = projection_matrix,
-                .mvp_matrix = projection_matrix * view_matrix * transform
+                .mvp_matrix = vp_matrix * transform
             }
         );
-
         shader_map[shader.get_id()] = shader;
 
         for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
@@ -111,73 +228,81 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::m
             const size_t idx1 { mesh.get_indices()[i + 1] };
             const size_t idx2 { mesh.get_indices()[i + 2] };
 
-            std::array<Shader3D::VertOutput, 3> tri_out;
-
-            auto model_to_clip {
-                [&](int src_index, int dest_index) {
+            const auto model_to_clip {
+                [&](const int source_index) -> ClipVertex {
                     Shader3D::VertInput vert_in {
-                        .pos = mesh.get_vertices()[src_index],
-                        .normal = mesh.get_normals()[src_index],
+                        .pos = mesh.get_vertices()[source_index],
+                        .normal = mesh.get_normals()[source_index],
                     };
-                    tri_out[dest_index] = shader.vert(vert_in);
+                    Shader3D::VertOutput out { shader.vert(vert_in) };
+
+                    return ClipVertex {
+                        .xyz = out.xyz,
+                        .w = out.w,
+                        .normal = out.normal,
+                        .color = mesh.get_colors()[source_index],
+                        .shader_id = shader.get_id()
+                    };
                 }
             };
 
-            model_to_clip(idx0, 0);
-            model_to_clip(idx1, 1);
-            model_to_clip(idx2, 2);
+            std::array<ClipTriangle, 2> clip_triangles;
+            clip_triangles[0] = {
+                model_to_clip(idx0),
+                model_to_clip(idx1),
+                model_to_clip(idx2)
+            };
 
-            if (tri_out[0].w <= 0 || tri_out[1].w <= 0 || tri_out[2].w <= 0)
-            {
-                continue;
-            }
+            const int num_triangles { clip_against_near_plane(clip_triangles) };
 
-            std::array<ScreenVertex, 3> screen_vertices;
-            auto clip_to_screen {
-                [&](const int source_index, const int dest_index) {
-                    const auto &clip { tri_out[source_index].xyz };
+            const auto clip_to_screen {
+                [&](const ClipVertex clip_vertex) {
+                    const double inv_w { 1.0f / static_cast<float>(clip_vertex.w) };
+                    const Vec3d ndc { clip_vertex.xyz * inv_w };
 
-                    const double inv_w { 1.0f / static_cast<float>(tri_out[source_index].w) };
-                    const Vec3d ndc { clip * inv_w };
-
-                    screen_vertices[dest_index].pos = {
-                        (ndc.x * 0.5 + 0.5) * resolution.x,
-                        (ndc.y * 0.5 + 0.5) * resolution.y
+                    return ScreenVertex {
+                        .pos = {
+                            (ndc.x * 0.5 + 0.5) * resolution.x,
+                            (ndc.y * 0.5 + 0.5) * resolution.y
+                        },
+                        .normal = clip_vertex.normal,
+                        .color = clip_vertex.color,
+                        .z_over_w = ndc.z,
+                        .inv_w = inv_w
                     };
-
-                    screen_vertices[dest_index].normal = tri_out[source_index].normal;
-
-                    screen_vertices[dest_index].z_over_w = ndc.z;
-                    screen_vertices[dest_index].inv_w = inv_w;
                 }
             };
 
-            clip_to_screen(0, 0);
-            clip_to_screen(1, 1);
-            clip_to_screen(2, 2);
-
-            const float area {
-                Vec2f::cross(
-                    screen_vertices[1].pos - screen_vertices[0].pos,
-                    screen_vertices[2].pos - screen_vertices[0].pos
-                )
-            };
-
-            if (area <= 0.0f)
+            for (int triangle_index = 0; triangle_index < num_triangles; ++triangle_index)
             {
-                continue;
+                std::array<ScreenVertex, 3> screen_vertices {
+                    clip_to_screen(clip_triangles[triangle_index].v0),
+                    clip_to_screen(clip_triangles[triangle_index].v1),
+                    clip_to_screen(clip_triangles[triangle_index].v2)
+                };
+
+                const auto is_backface { 
+                    [] (const ScreenVertex& v0, const ScreenVertex& v1, const ScreenVertex& v2) -> bool {
+                        const double area = 
+                            (v1.pos.x - v0.pos.x) * (v2.pos.y - v0.pos.y) - 
+                            (v1.pos.y - v0.pos.y) * (v2.pos.x - v0.pos.x);
+                        return area <= 0.0;
+                    }
+                };
+
+                if (is_backface(screen_vertices[0], screen_vertices[1], screen_vertices[2]))
+                {
+                    continue;
+                }
+
+                screen_triangles.emplace_back(
+                    std::move(screen_vertices[0]),
+                    std::move(screen_vertices[1]),
+                    std::move(screen_vertices[2]),
+                    shader.get_id()
+                );
+
             }
-
-            screen_vertices[0].color = mesh.get_colors()[idx0];
-            screen_vertices[1].color = mesh.get_colors()[idx1];
-            screen_vertices[2].color = mesh.get_colors()[idx2];
-
-            screen_triangles.emplace_back(
-                std::move(screen_vertices[0]),
-                std::move(screen_vertices[1]),
-                std::move(screen_vertices[2]),
-                shader.get_id()
-            );
         }
     }
     return screen_triangles;
@@ -343,6 +468,7 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
                 if (depth < tile.depth_buffer[buffer_index])
                 {
                     tile.triangle_index_buffer[buffer_index] = tri_index;
+                    tile.shader_id_buffer[buffer_index] = triangle.shader_id;
                     tile.depth_buffer[buffer_index] = depth;
                 }
             }
@@ -358,20 +484,21 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
     }
 }
 
-void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, const double t) const
+void Render3D::render_tile(Tile &tile, const std::unordered_map<int, Shader3D> &shaders, const double t) const
 {
     const Vec2i resolution { surface->get_resolution() };
     constexpr int num_pixels { TILE_SIZE * TILE_SIZE };
 
     for (const auto &[shader_id, tri] : tile.shader_batches)
     {
-        int triangle_index { 0 };
-        for (const auto &triangle : tri)
+        for (int i = 0; i < tri.size(); ++i)
         {
-            rasterize_triangle_in_tile(triangle, triangle_index, tile);
-            triangle_index++;
+            rasterize_triangle_in_tile(tri[i], i, tile);
         }
+    }
 
+    for (const auto &[shader_id, tri] : tile.shader_batches)
+    {
         const auto frag_shader { shaders.at(shader_id).get_fragment_shader() };
         frag_shader->set_uniforms(
             Shader3D::FragUniforms {
@@ -391,8 +518,7 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
                 continue;
             }
 
-            const ScreenTriangle &triangle { tri[tile.triangle_index_buffer[i]] };
-            if (triangle.shader_id != shader_id)
+            if (tile.shader_id_buffer[i] != shader_id)
             {
                 continue;
             }
@@ -406,6 +532,8 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
             {
                 continue;
             }
+
+            const ScreenTriangle &triangle { tri[tile.triangle_index_buffer[i]] };
 
             const Vec3d w {
                 (triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
@@ -489,6 +617,104 @@ void Render3D::render_tile(Tile &tile, const std::map<int, Shader3D> &shaders, c
             );
         }
     }
+}
+
+int Render3D::clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangles) const
+{
+    const double NEAR_PLANE = 0.0;
+    const ClipTriangle& tri = clip_triangles[0];
+
+    const std::array<bool, 3> inside {
+        tri.v0.xyz.z >= NEAR_PLANE,
+        tri.v1.xyz.z >= NEAR_PLANE,
+        tri.v2.xyz.z >= NEAR_PLANE
+    };
+
+    const int num_inside { (inside[0] ? 1 : 0) + (inside[1] ? 1 : 0) + (inside[2] ? 1 : 0) };
+
+    if (num_inside == 3)
+    {
+        return 1;
+    }
+    if (num_inside == 0)
+    {
+        return 0;
+    }
+
+    const auto intersect { 
+        [&](const ClipVertex& vert_in, const ClipVertex& vert_out) -> ClipVertex {
+            const double t = (NEAR_PLANE - vert_in.xyz.z) / (vert_out.xyz.z - vert_in.xyz.z);
+
+            const Vec3d intersect_pos {
+                vert_in.xyz.x + (vert_out.xyz.x - vert_in.xyz.x) * t,
+                vert_in.xyz.y + (vert_out.xyz.y - vert_in.xyz.y) * t,
+                NEAR_PLANE
+            };
+            const Vec3d intersect_normal {
+                vert_in.normal.x + t * (vert_out.normal.x - vert_in.normal.x),
+                vert_in.normal.y + t * (vert_out.normal.y - vert_in.normal.y),
+                vert_in.normal.z + t * (vert_out.normal.z - vert_in.normal.z)
+            };
+            const Color4 intersect_color {
+                static_cast<uint8_t>(vert_in.color.r + t * (vert_out.color.r - vert_in.color.r)),
+                static_cast<uint8_t>(vert_in.color.g + t * (vert_out.color.g - vert_in.color.g)),
+                static_cast<uint8_t>(vert_in.color.b + t * (vert_out.color.b - vert_in.color.b)),
+                static_cast<uint8_t>(vert_in.color.a + t * (vert_out.color.a - vert_in.color.a))
+            };
+
+            return ClipVertex {
+                .xyz = intersect_pos,
+                .w = vert_in.w + (vert_out.w - vert_in.w) * t,
+                .normal = intersect_normal,
+                .color = intersect_color,
+                .shader_id = vert_in.shader_id
+            };
+        }
+    };
+
+    if (num_inside == 1) 
+    {
+        if (inside[0]) 
+        {
+            clip_triangles[0] = ClipTriangle(tri.v0, intersect(tri.v0, tri.v1), intersect(tri.v0, tri.v2));
+        } 
+        else if (inside[1]) 
+        {
+            clip_triangles[0] = ClipTriangle(intersect(tri.v1, tri.v0), tri.v1, intersect(tri.v1, tri.v2));
+        } 
+        else 
+        {
+            clip_triangles[0] = ClipTriangle(intersect(tri.v2, tri.v0), intersect(tri.v2, tri.v1), tri.v2);
+        }
+        return 1;
+    }
+
+    if (num_inside == 2) 
+    {
+        if (!inside[0]) 
+        {
+            const ClipVertex v10 = intersect(tri.v1, tri.v0);
+            const ClipVertex v20 = intersect(tri.v2, tri.v0);
+            clip_triangles[0] = ClipTriangle(v10, tri.v1, tri.v2);
+            clip_triangles[1] = ClipTriangle(v10, tri.v2, v20);
+        } 
+        else if (!inside[1]) 
+        {
+            const ClipVertex v01 = intersect(tri.v0, tri.v1);
+            const ClipVertex v21 = intersect(tri.v2, tri.v1);
+            clip_triangles[0] = ClipTriangle(tri.v0, v01, tri.v2);
+            clip_triangles[1] = ClipTriangle(v01, v21, tri.v2);
+        } 
+        else 
+        {
+            const ClipVertex v02 = intersect(tri.v0, tri.v2);
+            const ClipVertex v12 = intersect(tri.v1, tri.v2);
+            clip_triangles[0] = ClipTriangle(tri.v0, tri.v1, v02);
+            clip_triangles[1] = ClipTriangle(v02, tri.v1, v12);
+        }
+        return 2;
+    }
+    return 0;
 }
 
 void Render3D::clear_frame() const

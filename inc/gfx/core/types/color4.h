@@ -33,6 +33,7 @@ struct Color4
     Color4 set_alpha(double alpha) const;
 
     Color4 operator+(const Color4 &other) const;
+    Color4 operator-(const Color4 &other) const;
     Color4 operator*(double scalar) const;
     Color4 operator*(const Color4 &other) const;
 

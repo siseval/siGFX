@@ -55,7 +55,8 @@ inline double move_towards(const double current, const double target, const doub
 
 inline double random_double(const double min, const double max)
 {
-    static std::mt19937 rng(static_cast<unsigned int>(std::chrono::steady_clock::now().time_since_epoch().count()));
+    // static std::mt19937 rng(static_cast<unsigned int>(std::chrono::steady_clock::now().time_since_epoch().count()));
+    static std::mt19937 rng(0);
     std::uniform_real_distribution<double> dist(min, max);
     return dist(rng);
 }

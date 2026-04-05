@@ -55,6 +55,8 @@ public:
     int num_items() const;
     bool contains_item(std::shared_ptr<Primitive3D> item) const;
 
+    Frustum cull_frustum;
+
 private:
 
     bool sphere_in_frustum(const BoundingSphere &sphere, const Frustum &frustum) const;

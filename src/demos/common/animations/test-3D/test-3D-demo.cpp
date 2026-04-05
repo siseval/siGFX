@@ -61,7 +61,7 @@ void Test3DDemo::init()
     const Shader3D shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
     const Shader3D shader2(std::make_shared<DefaultVertShader>(), std::make_shared<FullscreenShader>());
 
-    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, shader2);
+    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, shader);
     renderer->add_primitive(sphere);
 
     plane = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), shader);
@@ -86,11 +86,11 @@ void Test3DDemo::init()
     crosshair->set_filled(true);
     renderer->add_primitive(crosshair);
 
-    constexpr double min_range = 36.0;
+    constexpr double min_range = 128.0;
     constexpr double max_range = 256.0;
     constexpr int num_boxes = 0;
-    constexpr int num_spheres = 600;
-    constexpr int num_segments = 10;
+    constexpr int num_spheres = 1000;
+    constexpr int num_segments = 3;
 
     auto rand_pos = [](const double min, const double max) {
         return Vec3d::from_angles(random_double(0.0, 360.0), random_double(0.0, 180.0)).normalize() *
@@ -117,7 +117,7 @@ void Test3DDemo::init()
     {
         auto sphere = renderer->create_sphere(
             rand_pos(min_range, max_range),
-            random_double(1.0, 2.0),
+            random_double(0.2, 0.6),
             Color4::white(),
             num_segments,
             shader
