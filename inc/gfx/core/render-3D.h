@@ -159,7 +159,7 @@ private:
     );
 
     std::vector<Render3D::ScreenTriangle> generate_screen_triangles_old(std::unordered_map<int, Shader3D> &shader_map) const;
-    std::vector<ScreenTriangle> generate_screen_triangles(std::unordered_map<int, Shader3D> &shaders) const;
+    void generate_screen_triangles(std::unordered_map<int, Shader3D> &shaders) const;
     void generate_tiles() const;
     void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
     void render_tile(Tile &tile, const std::unordered_map<int, Shader3D> &shaders, const double t) const;
@@ -167,6 +167,8 @@ private:
 
     void set_resolution_dirty();
     bool is_resolution_dirty() const;
+
+    mutable std::vector<ScreenTriangle> screen_triangles;
 
     Camera camera;
     Vec3d light_dir;

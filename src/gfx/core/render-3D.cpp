@@ -40,13 +40,8 @@ void Render3D::draw_frame() const
     }
 
     std::unordered_map<int, Shader3D> shader_map;
-
-    std::vector<ScreenTriangle> screen_triangles {
-        generate_screen_triangles(shader_map)
-    };
-
+    generate_screen_triangles(shader_map);
     generate_tiles();
-
     bin_triangles(screen_triangles, tiles);
 
     if (use_multithreading)
@@ -183,10 +178,9 @@ void Render3D::draw_frame() const
 //     return screen_triangles;
 // }
 
-std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::unordered_map<int, Shader3D> &shader_map) const
+void Render3D::generate_screen_triangles(std::unordered_map<int, Shader3D> &shader_map) const
 {
-    std::vector<ScreenTriangle> screen_triangles;
-    screen_triangles.reserve(10000);
+    screen_triangles.clear();
 
     const double t {
         std::chrono::duration<double, std::milli>(
@@ -305,7 +299,6 @@ std::vector<Render3D::ScreenTriangle> Render3D::generate_screen_triangles(std::u
             }
         }
     }
-    return screen_triangles;
 }
 
 void Render3D::generate_tiles() const

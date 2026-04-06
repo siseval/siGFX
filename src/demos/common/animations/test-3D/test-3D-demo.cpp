@@ -8,7 +8,7 @@ using namespace gfx;
 namespace demos
 {
 
-class FullscreenShader : public Shader3D::FragShader
+class FogShader : public Shader3D::FragShader
 {
     Color4 frag(const Shader3D::FragInput &input) const override
     {
@@ -31,7 +31,31 @@ class FullscreenShader : public Shader3D::FragShader
     }
 };
 
-class FullscreenShader2 : public Shader3D::FragShader
+class DepthShader : public Shader3D::FragShader
+{
+    Color4 frag(const Shader3D::FragInput &input) const override
+    {
+        const double near { uniforms.near_plane };
+        const double far { uniforms.far_plane };
+
+        const double depth { std::clamp(input.depth, 0.0, 1.0) };
+        const double depth_linear = near * far / (far - depth * (far - near));
+
+        const double dist { std::clamp((depth_linear / far) * 16.0, 0.0, 1.0) };
+
+        const Color4 color {
+            dist,
+            dist,
+            dist,
+            1.0
+        };
+
+        return color;
+    }
+};
+
+
+class RedShader : public Shader3D::FragShader
 {
     Color4 frag(const Shader3D::FragInput &input) const override
     {
@@ -40,6 +64,45 @@ class FullscreenShader2 : public Shader3D::FragShader
             input.color.g_double(),
             input.color.b_double(),
             1.0
+        );
+    }
+};
+
+class BandingShader : public Shader3D::FragShader
+{
+    Color4 frag(const Shader3D::FragInput &input) const override
+    {
+        const double step { 0.1 };
+        return Color4(
+            std::floor(input.color.r_double() / step) * step,
+            std::floor(input.color.g_double() / step) * step,
+            std::floor(input.color.b_double() / step) * step,
+            1.0
+        );
+    }
+};
+
+class DiagonalShader : public Shader3D::FragShader
+{
+    Color4 frag(const Shader3D::FragInput &input) const override
+    {
+        const double t { uniforms.t };
+        const Vec3d uvw { input.uvw };
+
+        const double intensity { (input.color.r_double() + input.color.g_double() + input.color.b_double()) / 3 };
+
+        double diagonal { uvw.x + uvw.y + t };
+        diagonal = std::fmod(diagonal, std::numbers::pi);
+
+        const double r { std::sin(diagonal) };
+        const double g { 1 - std::sin(diagonal) };
+        const double b = 0.5;
+
+        return Color4(
+            std::clamp(r, 0.0, 1.0),
+            std::clamp(g, 0.0, 1.0),
+            std::clamp(b, 0.0, 1.0),
+            intensity
         );
     }
 };
@@ -58,19 +121,23 @@ void Test3DDemo::init()
     renderer->set_light_direction(-1.0, 1.0, -1.0);
     renderer->set_ambient_light(0.5);
 
-    const Shader3D shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
-    const Shader3D shader2(std::make_shared<DefaultVertShader>(), std::make_shared<FullscreenShader>());
+    const Shader3D diffuse_shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
+    const Shader3D simple_shader(std::make_shared<DefaultVertShader>(), std::make_shared<DefaultFragShader>());
+    const Shader3D shader2(std::make_shared<DefaultVertShader>(), std::make_shared<FogShader>());
+    const Shader3D shader3(std::make_shared<DefaultVertShader>(), std::make_shared<BandingShader>());
 
-    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, shader);
+    const Shader3D default_shader { diffuse_shader };
+
+    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, default_shader);
     renderer->add_primitive(sphere);
 
-    plane = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), shader);
+    plane = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), default_shader);
     renderer->add_primitive(plane);
 
-    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4(0.4, 0.4, 0.8), shader);
+    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4(0.4, 0.4, 0.8), default_shader);
     renderer->add_primitive(cube);
 
-    cone = renderer->create_cone(Vec3d::zero(), 1.0, 2.0, Color4(0.8, 0.8, 0.4), 16, shader);
+    cone = renderer->create_cone(Vec3d::zero(), 1.0, 2.0, Color4(0.8, 0.8, 0.4), 16, default_shader);
 
     crosshair = renderer->create_ellipse(
         renderer->get_resolution() / 2,
@@ -79,8 +146,9 @@ void Test3DDemo::init()
         1.0
     );
 
-    // renderer->get_render_3D()->add_fullscreen_shader(std::make_shared<FullscreenShader2>());
-    // renderer->get_render_3D()->add_fullscreen_shader(std::make_shared<FullscreenShader>());
+    // renderer->get_render_3D()->add_fullscreen_shader(std::make_shared<DepthShader>());
+    // renderer->get_render_3D()->add_fullscreen_shader(std::make_shared<DiagonalShader>());
+    // renderer->get_render_3D()->add_fullscreen_shader(std::make_shared<BandingShader>());
 
     crosshair->set_anchor(0.5, 0.5);
     crosshair->set_filled(true);
@@ -89,10 +157,10 @@ void Test3DDemo::init()
     constexpr double min_range = 128.0;
     constexpr double max_range = 256.0;
     constexpr int num_boxes = 0;
-    constexpr int num_spheres = 1000;
+    constexpr int num_spheres = 10000;
     constexpr int num_segments = 3;
 
-    auto rand_pos = [](const double min, const double max) {
+    const auto rand_pos = [](const double min, const double max) {
         return Vec3d::from_angles(random_double(0.0, 360.0), random_double(0.0, 180.0)).normalize() *
             random_double(min, max);
     };
@@ -107,7 +175,7 @@ void Test3DDemo::init()
                 random_double(1.0, 3.0)
             },
             Color4(0.8, 0.8, 0.6),
-            shader
+            default_shader
         );
         scene_items.push_back(box);
         renderer->add_primitive(box);
@@ -120,7 +188,7 @@ void Test3DDemo::init()
             random_double(0.2, 0.6),
             Color4::white(),
             num_segments,
-            shader
+            default_shader
         );
         scene_items.push_back(sphere);
         renderer->add_primitive(sphere);

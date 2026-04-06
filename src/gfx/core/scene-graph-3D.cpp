@@ -84,20 +84,21 @@ Matrix4x4d SceneGraph3D::get_global_transform(const std::shared_ptr<Primitive3D>
     return node->global_transform;
 }
 
-std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> SceneGraph3D::get_draw_queue(const Frustum& frustum) const
+std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>>& SceneGraph3D::get_draw_queue(const Frustum& frustum) const
 {
+    draw_queue.clear();
+
     if (transforms_dirty())
     {
         update_global_transforms();
     }
 
-    std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> draw_queue;
     for (const auto &[id, node] : nodes)
     {
         if (node->primitive != nullptr)
         {
             BoundingSphere transformed_sphere { node->primitive->get_bounding_sphere().transformed(node->primitive->get_position(), node->primitive->get_scale()) };
-            if (!sphere_in_frustum(transformed_sphere, cull_frustum))
+            if (!sphere_in_frustum(transformed_sphere, frustum))
             {
                 continue;
             }

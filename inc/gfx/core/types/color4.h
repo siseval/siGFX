@@ -62,6 +62,7 @@ struct Color4
     static Color4 red();
     static Color4 green();
     static Color4 blue();
+    static Color4 transparent();
 };
 }
 

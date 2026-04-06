@@ -192,5 +192,10 @@ Color4 Color4::blue()
     return Color4(0, 0, 255, 255);
 }
 
+Color4 Color4::transparent()
+{
+    return Color4(0, 0, 0, 0);
+}
+
 
 }
