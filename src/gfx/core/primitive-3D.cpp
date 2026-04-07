@@ -5,7 +5,7 @@
 namespace gfx
 {
 
-Primitive3D::Primitive3D() : id(UUID::generate()), shader(DefaultShader3D()) {}
+Primitive3D::Primitive3D() : id(UUID::generate()) {}
 
 void Primitive3D::set_position(const Vec3d &pos)
 {
@@ -72,6 +72,11 @@ void Primitive3D::set_color(const Color4 &col)
     color = col;
 }
 
+void Primitive3D::set_color(const double r, const double g, const double b, const double a)
+{
+    color = Color4(r, g, b, a);
+}
+
 void Primitive3D::set_anchor(const Vec3d &a)
 {
     anchor = a;
@@ -79,9 +84,9 @@ void Primitive3D::set_anchor(const Vec3d &a)
     increment_transform_version();
 }
 
-void Primitive3D::set_shader(const Shader3D shd)
+void Primitive3D::set_material(const Material mat)
 {
-    shader = shd;
+    material = mat;
 }
 
 Vec3d Primitive3D::get_position() const
@@ -118,9 +123,9 @@ Vec3d Primitive3D::get_anchor() const
     return anchor;
 }
 
-Shader3D Primitive3D::get_shader() const
+Material Primitive3D::get_material() const
 {
-    return shader;
+    return material;
 }
 
 Box3d Primitive3D::get_aabb() const

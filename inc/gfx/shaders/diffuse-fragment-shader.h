@@ -1,15 +1,15 @@
 #pragma once
 
-#include "gfx/core/shader-3D.h"
+#include "gfx/core/material/fragment-shader.h"
 
 namespace gfx
 {
-class DiffuseFragShader final : public Shader3D::FragShader
+class DiffuseFragmentShader final : public FragmentShader
 {
 
 public:
 
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         const double diffuse = std::max(0.0, Vec3d::dot(input.normal, uniforms.light_dir));
         const double intensity = uniforms.ambient_intensity + (1.0 - uniforms.ambient_intensity) * diffuse;

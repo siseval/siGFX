@@ -1,16 +1,19 @@
 #include "demos/common/animations/test-3D/test-3D-demo.h"
 
 #include "demos/common/core/demo-utils.h"
-#include "gfx/shaders/diffuse-frag-shader.h"
+#include "gfx/shaders/diffuse-fragment-shader.h"
+#include "gfx/shaders/default-vertex-shader.h"
+#include "gfx/shaders/default-fragment-shader.h"
+#include "gfx/shaders/diffuse-fragment-shader.h"
 
 using namespace gfx;
 
 namespace demos
 {
 
-class FogShader : public Shader3D::FragShader
+class FogShader : public FragmentShader
 {
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         const double near { uniforms.near_plane };
         const double far { uniforms.far_plane };
@@ -31,9 +34,9 @@ class FogShader : public Shader3D::FragShader
     }
 };
 
-class DepthShader : public Shader3D::FragShader
+class DepthShader : public FragmentShader
 {
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         const double near { uniforms.near_plane };
         const double far { uniforms.far_plane };
@@ -55,9 +58,9 @@ class DepthShader : public Shader3D::FragShader
 };
 
 
-class RedShader : public Shader3D::FragShader
+class RedShader : public FragmentShader
 {
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         return Color4(
             std::clamp(input.color.r_double() * 1.5, 0.0, 1.0),
@@ -68,9 +71,9 @@ class RedShader : public Shader3D::FragShader
     }
 };
 
-class BandingShader : public Shader3D::FragShader
+class BandingShader : public FragmentShader
 {
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         const double step { 0.1 };
         return Color4(
@@ -82,9 +85,9 @@ class BandingShader : public Shader3D::FragShader
     }
 };
 
-class DiagonalShader : public Shader3D::FragShader
+class DiagonalShader : public FragmentShader
 {
-    Color4 frag(const Shader3D::FragInput &input) const override
+    Color4 frag(const FragmentShader::Input &input) const override
     {
         const double t { uniforms.t };
         const Vec3d uvw { input.uvw };
@@ -112,7 +115,7 @@ void Test3DDemo::init()
     renderer->set_clear_color(Color4(0.0, 0.0, 0.0));
     Camera &camera { renderer->get_camera() };
 
-    camera.set_position(0.0, 5.0, 0.0);
+    camera.set_position(0.0, 0.0, -5.0);
     camera.set_rotation_degrees(0.0, 0.0, 0.0);
     camera.set_fov_degrees(75.0);
     camera.set_z_near(0.1);
@@ -121,23 +124,32 @@ void Test3DDemo::init()
     renderer->set_light_direction(-1.0, 1.0, -1.0);
     renderer->set_ambient_light(0.5);
 
-    const Shader3D diffuse_shader(std::make_shared<DefaultVertShader>(), std::make_shared<DiffuseFragShader>());
-    const Shader3D simple_shader(std::make_shared<DefaultVertShader>(), std::make_shared<DefaultFragShader>());
-    const Shader3D shader2(std::make_shared<DefaultVertShader>(), std::make_shared<FogShader>());
-    const Shader3D shader3(std::make_shared<DefaultVertShader>(), std::make_shared<BandingShader>());
+    const Material diffuse_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DiffuseFragmentShader>());
+    const Material simple_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DefaultFragmentShader>());
+    const Material material2(std::make_shared<DefaultVertexShader>(), std::make_shared<FogShader>());
+    const Material material3(std::make_shared<DefaultVertexShader>(), std::make_shared<BandingShader>());
 
-    const Shader3D default_shader { diffuse_shader };
+    const Material default_material { diffuse_material };
 
-    sphere = renderer->create_sphere(Vec3d::zero(), 1.0, Color4(0.8, 0.4, 0.4), 16, default_shader);
+    sphere = std::make_shared<Sphere3D>();
+    sphere->set_radius(1.0);
+    sphere->set_color(0.8, 0.4, 0.4);
+    sphere->set_num_segments(16);
+    sphere->set_material(default_material);
     renderer->add_primitive(sphere);
 
-    plane = renderer->create_plane(0.0, -15.0, 0.0, 20.0, 20.0, Color4(0.4, 0.8, 0.4), default_shader);
+    plane = std::make_shared<Plane3D>();
+    plane->set_position(0.0, -15.0, 0.0);
+    plane->set_size(20.0, 20.0);
+    plane->set_color(0.4, 0.8, 0.4);
+    plane->set_material(default_material);
     renderer->add_primitive(plane);
 
-    cube = renderer->create_cuboid(Vec3d::zero(), Vec3d { 2.0, 2.0, 2.0 }, Color4(0.4, 0.4, 0.8), default_shader);
+    cube = std::make_shared<Cuboid3D>();
+    cube->set_size(2.0, 2.0, 2.0);
+    cube->set_color(0.4, 0.4, 0.8);
+    cube->set_material(default_material);
     renderer->add_primitive(cube);
-
-    cone = renderer->create_cone(Vec3d::zero(), 1.0, 2.0, Color4(0.8, 0.8, 0.4), 16, default_shader);
 
     crosshair = renderer->create_ellipse(
         renderer->get_resolution() / 2,
@@ -167,29 +179,31 @@ void Test3DDemo::init()
 
     for (int i = 0; i < num_boxes; i++)
     {
-        auto box = renderer->create_cuboid(
-            rand_pos(min_range, max_range),
-            Vec3d {
-                random_double(1.0, 3.0),
-                random_double(1.0, 3.0),
-                random_double(1.0, 3.0)
-            },
-            Color4(0.8, 0.8, 0.6),
-            default_shader
-        );
+        auto box { std::make_shared<Cuboid3D>() };
+
+        box->set_position(rand_pos(min_range, max_range));
+        box->set_size(Vec3d {
+            random_double(1.0, 3.0),
+            random_double(1.0, 3.0),
+            random_double(1.0, 3.0)
+        });
+        box->set_color(0.8, 0.8, 0.6);
+        box->set_material(default_material);
+
         scene_items.push_back(box);
         renderer->add_primitive(box);
     }
 
     for (int i = 0; i < num_spheres; i++)
     {
-        auto sphere = renderer->create_sphere(
-            rand_pos(min_range, max_range),
-            random_double(0.2, 0.6),
-            Color4::white(),
-            num_segments,
-            default_shader
-        );
+        auto sphere { std::make_shared<Sphere3D>() };
+
+        sphere->set_position(rand_pos(min_range, max_range));
+        sphere->set_radius(random_double(0.2, 0.6));
+        sphere->set_color(Color4::white());
+        sphere->set_material(default_material);
+        sphere->set_num_segments(num_segments);
+
         scene_items.push_back(sphere);
         renderer->add_primitive(sphere);
     }
