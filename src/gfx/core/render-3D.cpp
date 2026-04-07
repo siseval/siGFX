@@ -55,18 +55,16 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, std::shared_ptr
             std::chrono::high_resolution_clock::now().time_since_epoch()
         ).count() / 1000.0
     };
-
     const Vec2i resolution { surface->get_resolution() };
-
     const double aspect_ratio {
         static_cast<double>(resolution.x) /
         static_cast<double>(resolution.y)
     };
 
     const Camera &camera { get_camera() };
-    const Matrix4x4d view_matrix { camera.get_view_matrix() };
-    const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
-    const Matrix4x4d vp_matrix { projection_matrix * view_matrix };
+    const Matrix4x4d &view_matrix { camera.get_view_matrix() };
+    const Matrix4x4d &projection_matrix { camera.get_projection_matrix(aspect_ratio) };
+    const Matrix4x4d &vp_matrix { projection_matrix * view_matrix };
 
     const auto &draw_queue { scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)) };
     for (const auto &[primitive, transform] : draw_queue)
@@ -108,6 +106,7 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, std::shared_ptr
                     return ClipVertex {
                         .xyz = out.xyz,
                         .w = out.w,
+                        .uv = mesh.get_uvs()[source_index],
                         .normal = out.normal,
                         .color = mesh.get_colors()[source_index],
                     };
@@ -134,6 +133,7 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, std::shared_ptr
                             (ndc.y * 0.5 + 0.5) * resolution.y
                         },
                         .normal = clip_vertex.normal,
+                        .uv = clip_vertex.uv,
                         .color = clip_vertex.color,
                         .z_over_w = ndc.z,
                         .inv_w = inv_w
@@ -375,7 +375,9 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, std::shared
 
     for (const auto &[material_id, tri] : tile.material_batches)
     {
-        const auto frag_shader { material_map.at(material_id)->get_fragment_shader() };
+        const auto &material { material_map.at(material_id) };
+        const auto &texture { material->get_texture() };
+        const auto &frag_shader { material->get_fragment_shader() };
 
         for (int i = 0; i < num_pixels; ++i)
         {
@@ -390,9 +392,9 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, std::shared
                 continue;
             }
 
-            const Vec2i pixel_pos {
-                tile.screen_pos.x + (i % TILE_SIZE),
-                tile.screen_pos.y + (i / TILE_SIZE)
+            const Vec2d pixel_pos {
+                tile.screen_pos.x + (i % TILE_SIZE) + 0.5,
+                tile.screen_pos.y + (i / TILE_SIZE) + 0.5
             };
             if (pixel_pos.x >= resolution.x ||
                 pixel_pos.y >= resolution.y)
@@ -402,50 +404,96 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, std::shared
 
             const ScreenTriangle &triangle { tri[tile.triangle_index_buffer[i]] };
 
-            const Vec3d w {
-                (triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
-                (triangle.v2.pos.x - triangle.v1.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
-
-                (triangle.v2.pos.y - triangle.v0.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
-                (triangle.v0.pos.x - triangle.v2.pos.x) * (pixel_pos.y - triangle.v2.pos.y),
-
-                (triangle.v0.pos.y - triangle.v1.pos.y) * (pixel_pos.x - triangle.v1.pos.x) +
-                (triangle.v1.pos.x - triangle.v0.pos.x) * (pixel_pos.y - triangle.v1.pos.y)
+            const double area {
+                (triangle.v1.pos.x - triangle.v0.pos.x) * (triangle.v2.pos.y - triangle.v0.pos.y) -
+                (triangle.v1.pos.y - triangle.v0.pos.y) * (triangle.v2.pos.x - triangle.v0.pos.x)
             };
+
+            if (area == 0.0)
+            {
+                continue;
+            }
+
+            const Vec3d w {
+                ((triangle.v1.pos.y - triangle.v2.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                (triangle.v2.pos.x - triangle.v1.pos.x) * (pixel_pos.y - triangle.v2.pos.y)) / area,
+
+                ((triangle.v2.pos.y - triangle.v0.pos.y) * (pixel_pos.x - triangle.v2.pos.x) +
+                (triangle.v0.pos.x - triangle.v2.pos.x) * (pixel_pos.y - triangle.v2.pos.y)) / area,
+
+                ((triangle.v0.pos.y - triangle.v1.pos.y) * (pixel_pos.x - triangle.v1.pos.x) +
+                (triangle.v1.pos.x - triangle.v0.pos.x) * (pixel_pos.y - triangle.v1.pos.y)) / area
+            };
+
+            const double inv_w { 
+                triangle.v0.inv_w * w.x +
+                triangle.v1.inv_w * w.y +
+                triangle.v2.inv_w * w.z
+            };
+
+            if (inv_w == 0.0)
+            {
+                continue;
+            }
 
             const Vec3d normal_interp {
-                (triangle.v0.normal * w.x +
-                triangle.v1.normal * w.y +
-                triangle.v2.normal * w.z).normalize()
+                Vec3d((triangle.v0.normal * w.x * triangle.v0.inv_w +
+                triangle.v1.normal * w.y * triangle.v1.inv_w +
+                triangle.v2.normal * w.z * triangle.v2.inv_w) / inv_w).normalize()
             };
 
-            const Color4 color_interp {
-                triangle.v0.color == triangle.v1.color &&
-                triangle.v1.color == triangle.v2.color ?
+            const auto color_interp { 
+                [inv_w](const ScreenTriangle &triangle, const Vec3d &w) -> Color4 {
+                    return triangle.v0.color == triangle.v1.color &&
+                    triangle.v1.color == triangle.v2.color ?
 
-                triangle.v0.color :
+                    triangle.v0.color :
 
-                Color4::trilinear_interp(
-                    triangle.v0.color,
-                    triangle.v1.color,
-                    triangle.v2.color,
-                    w.x,
-                    w.y,
-                    w.z
-                )
+                    Color4::trilinear_interp(
+                        triangle.v0.color, 
+                        triangle.v1.color, 
+                        triangle.v2.color,
+                        w.x * triangle.v0.inv_w, 
+                        w.y * triangle.v1.inv_w, 
+                        w.z * triangle.v2.inv_w
+                    ) / inv_w;
+                }
+            };
+
+            const auto uv_interp {
+                [inv_w](const ScreenTriangle &triangle, const Vec3d &w) -> Vec2d {
+                    return Vec2d {
+                        (triangle.v0.uv.x * w.x * triangle.v0.inv_w +
+                        triangle.v1.uv.x * w.y * triangle.v1.inv_w +
+                        triangle.v2.uv.x * w.z * triangle.v2.inv_w) /
+                        inv_w,
+
+                        (triangle.v0.uv.y * w.x * triangle.v0.inv_w +
+                        triangle.v1.uv.y * w.y * triangle.v1.inv_w +
+                        triangle.v2.uv.y * w.z * triangle.v2.inv_w) /
+                        inv_w
+                    };
+                }
+            };
+
+            const Vec2d uv { uv_interp(triangle, w) };
+
+            const Color4 color { texture ? 
+                texture->sample(uv) : 
+                color_interp(triangle, w)
             };
 
             const FragmentShader::Input frag_in {
-                .uvw = Vec3d { 0.0, 0.0, 0.0 },
+                .uv = uv,
                 .depth = depth,
                 .normal = normal_interp,
-                .color = color_interp
+                .color = color
             };
 
-            Color4 color { frag_shader->frag(frag_in, uniforms) };
+            Color4 out { frag_shader->frag(frag_in, uniforms) };
             surface->write_pixel(
                 pixel_pos,
-                color,
+                out,
                 depth,
                 RenderSurface::BlendMode::ALPHA
             );
@@ -464,10 +512,9 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, std::shared
             const Color4 color {
                 shader->frag(
                     FragmentShader::Input {
-                        .uvw = Vec3d {
+                        .uv = Vec2d {
                             static_cast<double>(pixel_pos.x) / static_cast<double>(resolution.x),
-                            static_cast<double>(pixel_pos.y) / static_cast<double>(resolution.y),
-                            0.0
+                            static_cast<double>(pixel_pos.y) / static_cast<double>(resolution.y)
                         },
                         .depth = tile.depth_buffer[i],
                         .normal = Vec3d { 0.0, 0.0, 1.0 },
@@ -523,6 +570,10 @@ int Render3D::clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangle
                 vert_in.normal.y + t * (vert_out.normal.y - vert_in.normal.y),
                 vert_in.normal.z + t * (vert_out.normal.z - vert_in.normal.z)
             };
+            const Vec2d intersect_uv {
+                vert_in.uv.x + t * (vert_out.uv.x - vert_in.uv.x),
+                vert_in.uv.y + t * (vert_out.uv.y - vert_in.uv.y)
+            };
             const Color4 intersect_color {
                 static_cast<uint8_t>(vert_in.color.r + t * (vert_out.color.r - vert_in.color.r)),
                 static_cast<uint8_t>(vert_in.color.g + t * (vert_out.color.g - vert_in.color.g)),
@@ -533,6 +584,7 @@ int Render3D::clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangle
             return ClipVertex {
                 .xyz = intersect_pos,
                 .w = vert_in.w + (vert_out.w - vert_in.w) * t,
+                .uv = intersect_uv,
                 .normal = intersect_normal,
                 .color = intersect_color,
             };

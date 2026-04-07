@@ -14,7 +14,7 @@ public:
 
     Material();
     Material(const std::shared_ptr<VertexShader> &vert_shader, const std::shared_ptr<FragmentShader> &frag_shader);
-    Material(const std::shared_ptr<Texture> &tex, const std::shared_ptr<VertexShader> &vert_shader, const std::shared_ptr<FragmentShader> &frag_shader);
+    Material(const std::shared_ptr<VertexShader> &vert_shader, const std::shared_ptr<FragmentShader> &frag_shader, const std::shared_ptr<Texture> &tex);
 
     int get_id() const;
 

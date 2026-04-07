@@ -22,6 +22,11 @@ void Texture::set_pixel(const Vec2i pos, const Color4 &color)
     data[pos.y * resolution.x + pos.x] = color;
 }
 
+void Texture::set_pixel(const int x, const int y, const Color4 &color)
+{
+    set_pixel(Vec2i { x, y }, color);
+}
+
 Color4 Texture::sample(const Vec2d uv) const
 {
     const int x = static_cast<int>(uv.x * resolution.x) % resolution.x;

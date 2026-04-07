@@ -34,8 +34,9 @@ struct Color4
 
     Color4 operator+(const Color4 &other) const;
     Color4 operator-(const Color4 &other) const;
-    Color4 operator*(double scalar) const;
+    Color4 operator*(const double scalar) const;
     Color4 operator*(const Color4 &other) const;
+    Color4 operator/(const double scalar) const;
 
     bool operator==(const Color4 &other) const;
     void operator=(const Color4 &other);

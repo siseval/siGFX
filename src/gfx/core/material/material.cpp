@@ -11,10 +11,10 @@ Material::Material(const std::shared_ptr<VertexShader> &vert_shader, const std::
       fragment_shader(frag_shader),
       id(next_id()) {}
 
-Material::Material(const std::shared_ptr<Texture> &tex, const std::shared_ptr<VertexShader> &vert_shader, const std::shared_ptr<FragmentShader> &frag_shader)
-    : texture(tex),
-      vertex_shader(vert_shader),
+Material::Material(const std::shared_ptr<VertexShader> &vert_shader, const std::shared_ptr<FragmentShader> &frag_shader, const std::shared_ptr<Texture> &tex)
+    : vertex_shader(vert_shader),
       fragment_shader(frag_shader),
+      texture(tex),
       id(next_id()) {}
 
 int Material::next_id()

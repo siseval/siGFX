@@ -93,6 +93,11 @@ public:
         };
     }
 
+    static Vec3 clamp(const Vec3 &v, const double min, const double max)
+    {
+        return clamp(v, Vec3(min), Vec3(max));
+    }
+
     Vec3<double> normal() const
     {
         if (std::fabs(x) > 1e-6 || std::fabs(y) > 1e-6)

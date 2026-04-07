@@ -101,6 +101,21 @@ Color4 Color4::operator*(const Color4 &other) const
     );
 }
 
+Color4 Color4::operator/(const double scalar) const
+{
+    if (scalar == 0)
+    {
+        return Color4(255, 255, 255, 255);
+    }
+
+    return Color4(
+        static_cast<uint8_t>(std::clamp(static_cast<int>(r / scalar), 0, 255)),
+        static_cast<uint8_t>(std::clamp(static_cast<int>(g / scalar), 0, 255)),
+        static_cast<uint8_t>(std::clamp(static_cast<int>(b / scalar), 0, 255)),
+        static_cast<uint8_t>(std::clamp(static_cast<int>(a / scalar), 0, 255))
+    );
+}
+
 bool Color4::operator==(const Color4 &other) const
 {
     return r == other.r && g == other.g && b == other.b && a == other.a;

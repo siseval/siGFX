@@ -116,6 +116,14 @@ public:
         };
     }
 
+    static Vec2 clamp(const Vec2 &v, const double min, const double max)
+    {
+        return {
+            static_cast<T>(v.x < min ? min : v.x > max ? max : v.x),
+            static_cast<T>(v.y < min ? min : v.y > max ? max : v.y)
+        };
+    }
+
     double angle() const
     {
         return std::atan2(y, x);

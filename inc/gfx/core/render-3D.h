@@ -59,6 +59,7 @@ private:
     {
         Vec3d xyz;
         double w;
+        Vec2d uv;
         Vec3d normal;
         Color4 color;
     };
@@ -81,7 +82,8 @@ private:
     struct ScreenVertex
     {
         Vec2d pos;
-        Vec3f normal;
+        Vec3d normal;
+        Vec2d uv;
         Color4 color;
         double z_over_w;
         double inv_w;

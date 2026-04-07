@@ -90,11 +90,11 @@ class DiagonalShader : public FragmentShader
     Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         const double t { uniforms.t };
-        const Vec3d uvw { input.uvw };
+        const Vec2d uv { input.uv };
 
         const double intensity { (input.color.r_double() + input.color.g_double() + input.color.b_double()) / 3 };
 
-        double diagonal { uvw.x + uvw.y + t };
+        double diagonal { uv.x + uv.y + t };
         diagonal = std::fmod(diagonal, std::numbers::pi);
 
         const double r { std::sin(diagonal) };
@@ -109,6 +109,178 @@ class DiagonalShader : public FragmentShader
         );
     }
 };
+
+PolygonMesh create_two_material_mesh()
+{
+    PolygonMesh mesh;
+
+    std::vector<Vec3d> vertices;
+    std::vector<Vec3d> normals;
+    std::vector<Vec2d> uvs;
+    std::vector<PolygonMesh::Face> faces;
+
+    const int resolution = 16;
+
+    auto emit = [&](const Vec3d &a, const Vec3d &b, const Vec3d &c,
+                    const Vec2d &uva, const Vec2d &uvb, const Vec2d &uvc,
+                    const Vec3d &normal, size_t material_id)
+    {
+        const size_t base = vertices.size();
+
+        vertices.push_back(a);
+        vertices.push_back(b);
+        vertices.push_back(c);
+
+        normals.push_back(normal);
+        normals.push_back(normal);
+        normals.push_back(normal);
+
+        uvs.push_back(uva);
+        uvs.push_back(uvb);
+        uvs.push_back(uvc);
+
+        faces.push_back(PolygonMesh::Face { base + 0, base + 1, base + 2, material_id });
+    };
+
+    for (int x = 0; x < resolution; ++x)
+    {
+        for (int z = 0; z < resolution; ++z)
+        {
+            double x0 = (double)x / resolution - 0.5;
+            double x1 = (double)(x + 1) / resolution - 0.5;
+            double z0 = (double)z / resolution - 0.5;
+            double z1 = (double)(z + 1) / resolution - 0.5;
+
+            Vec3d v0 { x0, 0.5, z0 };
+            Vec3d v1 { x1, 0.5, z0 };
+            Vec3d v2 { x1, 0.5, z1 };
+            Vec3d v3 { x0, 0.5, z1 };
+
+            Vec2d uv0 { (double)x / resolution, (double)z / resolution };
+            Vec2d uv1 { (double)(x + 1) / resolution, (double)z / resolution };
+            Vec2d uv2 { (double)(x + 1) / resolution, (double)(z + 1) / resolution };
+            Vec2d uv3 { (double)x / resolution, (double)(z + 1) / resolution };
+
+            Vec3d n { 0, 1, 0 };
+
+            emit(v0, v1, v2, uv0, uv1, uv2, n, 0);
+            emit(v0, v2, v3, uv0, uv2, uv3, n, 0);
+        }
+    }
+
+    for (int x = 0; x < resolution; ++x)
+    {
+        for (int z = 0; z < resolution; ++z)
+        {
+            double x0 = (double)x / resolution - 0.5;
+            double x1 = (double)(x + 1) / resolution - 0.5;
+            double z0 = (double)z / resolution - 0.5;
+            double z1 = (double)(z + 1) / resolution - 0.5;
+
+            Vec3d v0 { x0, -0.5, z0 };
+            Vec3d v1 { x1, -0.5, z0 };
+            Vec3d v2 { x1, -0.5, z1 };
+            Vec3d v3 { x0, -0.5, z1 };
+
+            Vec2d uv0 { (double)x / resolution, (double)z / resolution };
+            Vec2d uv1 { (double)(x + 1) / resolution, (double)z / resolution };
+            Vec2d uv2 { (double)(x + 1) / resolution, (double)(z + 1) / resolution };
+            Vec2d uv3 { (double)x / resolution, (double)(z + 1) / resolution };
+
+            Vec3d n { 0, -1, 0 };
+
+            emit(v0, v2, v1, uv0, uv2, uv1, n, 1);
+            emit(v0, v3, v2, uv0, uv3, uv2, n, 1);
+        }
+    }
+
+    mesh.set_vertices(std::move(vertices));
+    mesh.set_normals(std::move(normals));
+    mesh.set_uvs(std::move(uvs));
+    mesh.set_faces(std::move(faces));
+
+    mesh.set_colors(std::vector(mesh.num_vertices(), Color4::white()));
+
+    return mesh;
+}
+
+Texture create_checkered_texture()
+{
+    const Vec2i resolution { 64, 64 };
+    const Vec2i square_size { resolution.x / 8, resolution.y / 8 };
+    Texture texture(resolution);
+
+    for (int y = 0; y < resolution.y; ++y)
+    {
+        for (int x = 0; x < resolution.x; ++x)
+        {
+            const int square_x = x / square_size.x;
+            const int square_y = y / square_size.y;
+
+            const bool is_white = (square_x + square_y) % 2 == 0;
+            const Color4 color = is_white ? Color4::white() : Color4::black();
+
+            texture.set_pixel(x, y, color);
+        }
+    }
+
+    return texture;
+}
+
+Texture create_gradient_texture()
+{
+    const Vec2i resolution { 64, 64 };
+    Texture texture(resolution);
+
+    for (int y = 0; y < resolution.y; ++y)
+    {
+        for (int x = 0; x < resolution.x; ++x)
+        {
+            const double t = static_cast<double>(x) / (resolution.x - 1);
+            const Color4 color(t, t, t, 1.0);
+            texture.set_pixel(x, y, color);
+        }
+    }
+
+    return texture;
+}
+
+Texture create_grass_texture()
+{
+    const Vec2i resolution { 64, 64 };
+    Texture texture(resolution);
+
+    for (int y = 0; y < resolution.y; ++y)
+    {
+        for (int x = 0; x < resolution.x; ++x)
+        {
+            const double t = random_double(0.5, 1.0);
+            const Color4 color(0.0, t, 0.0, 1.0);
+            texture.set_pixel(x, y, color);
+        }
+    }
+
+    return texture;
+}
+
+Texture smooth_noise_texture(const Vec2i &resolution)
+{
+    Texture texture(resolution);
+
+    for (int y = 0; y < resolution.y; ++y)
+    {
+        for (int x = 0; x < resolution.x; ++x)
+        {
+            const double yt = static_cast<double>(y) / (resolution.y - 1);
+            const double xt = static_cast<double>(x) / (resolution.x - 1);
+            const double t = (std::sin(xt * std::numbers::pi * 4) + std::sin(yt * std::numbers::pi * 4)) * 0.5 + 0.5;
+            const Color4 color(t, t, t, 1.0);
+            texture.set_pixel(x, y, color);
+        }
+    }
+
+    return texture;
+}
 
 void Test3DDemo::init()
 {
@@ -128,27 +300,39 @@ void Test3DDemo::init()
     const Material simple_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DefaultFragmentShader>());
     const Material material2(std::make_shared<DefaultVertexShader>(), std::make_shared<FogShader>());
     const Material material3(std::make_shared<DefaultVertexShader>(), std::make_shared<BandingShader>());
+    const Material rainbow_checker_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DiagonalShader>(), std::make_shared<Texture>(create_checkered_texture()));
+    const Material grass_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DiffuseFragmentShader>(), std::make_shared<Texture>(create_grass_texture()));
+    const Material gradient_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DiffuseFragmentShader>(), std::make_shared<Texture>(create_gradient_texture()));
+    const Material smooth_noise_material(std::make_shared<DefaultVertexShader>(), std::make_shared<DiffuseFragmentShader>(), std::make_shared<Texture>(smooth_noise_texture({ 256, 256 })));
 
     const auto default_material { std::make_shared<Material>(diffuse_material) };
+
+    teapot = std::make_shared<Polygon3D>();
+    teapot->set_mesh(create_two_material_mesh());
+    teapot->set_position(0.0, 0.0, 30.0);
+    teapot->set_scale(10.0, 10.0, 10.0);
+    teapot->set_material(default_material, 0);
+    teapot->set_material(std::make_shared<Material>(material2), 1);
+    renderer->add_primitive(teapot);
 
     sphere = std::make_shared<Sphere3D>();
     sphere->set_radius(1.0);
     sphere->set_color(0.8, 0.4, 0.4);
     sphere->set_num_segments(16);
-    sphere->set_material(default_material);
+    sphere->set_material(std::make_shared<Material>(rainbow_checker_material));
     renderer->add_primitive(sphere);
 
     plane = std::make_shared<Plane3D>();
     plane->set_position(0.0, -15.0, 0.0);
     plane->set_size(20.0, 20.0);
     plane->set_color(0.4, 0.8, 0.4);
-    plane->set_material(default_material);
+    plane->set_material(std::make_shared<Material>(grass_material));
     renderer->add_primitive(plane);
 
     cube = std::make_shared<Cuboid3D>();
     cube->set_size(2.0, 2.0, 2.0);
     cube->set_color(0.4, 0.4, 0.8);
-    cube->set_material(default_material);
+    cube->set_material(std::make_shared<Material>(smooth_noise_material));
     renderer->add_primitive(cube);
 
     crosshair = renderer->create_ellipse(

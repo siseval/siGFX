@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/math/vec3.h"
+#include "gfx/math/vec2.h"
 #include "gfx/core/types/color4.h"
 
 namespace gfx
@@ -22,7 +23,7 @@ public:
 
     struct Input
     {
-        Vec3d uvw;
+        Vec2d uv;
         double depth;
         Vec3d normal;
         Color4 color;

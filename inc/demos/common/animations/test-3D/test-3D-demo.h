@@ -5,6 +5,7 @@
 #include "gfx/primitives/plane-3D.h"
 #include "gfx/primitives/sphere-3D.h"
 #include "gfx/primitives/cone-3D.h"
+#include "gfx/primitives/polygon-3D.h"
 
 #include <map>
 
@@ -43,6 +44,7 @@ private:
     std::shared_ptr<gfx::Sphere3D> sphere;
     std::shared_ptr<gfx::Plane3D> plane;
     std::shared_ptr<gfx::Cone3D> cone;
+    std::shared_ptr<gfx::Polygon3D> teapot;
 
     std::vector<std::shared_ptr<gfx::Primitive3D>> scene_items;
 
