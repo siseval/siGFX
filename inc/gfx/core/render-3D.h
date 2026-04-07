@@ -61,7 +61,6 @@ private:
         double w;
         Vec3d normal;
         Color4 color;
-        int material_id;
     };
 
     struct ClipTriangle
@@ -123,10 +122,10 @@ private:
         Tile &tile
     );
 
-    void generate_screen_triangles(std::unordered_map<int, Material> &material_map) const;
+    void generate_screen_triangles(std::unordered_map<int, std::shared_ptr<Material>> &material_map) const;
     void generate_tiles() const;
     void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
-    void render_tile(Tile &tile, const std::unordered_map<int, Material> &material_map, const double t) const;
+    void render_tile(Tile &tile, const std::unordered_map<int, std::shared_ptr<Material>> &material_map, const double t) const;
     int clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangles) const;
 
     void set_resolution_dirty();

@@ -35,13 +35,10 @@ public:
 
     virtual ~VertexShader() = default;
 
-    virtual Output vert(const Input &input) const = 0;
-
-    void set_uniforms(const Uniforms &uni);
+    virtual Output vert(const Input &input, const Uniforms &uniforms) const = 0;
 
 protected:
 
-    Uniforms uniforms;
 };
 
 }

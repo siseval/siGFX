@@ -84,9 +84,10 @@ void Primitive3D::set_anchor(const Vec3d &a)
     increment_transform_version();
 }
 
-void Primitive3D::set_material(const Material mat)
+void Primitive3D::set_material(const std::shared_ptr<Material> &mat, const size_t slot)
 {
-    material = mat;
+    materials.resize(std::max(static_cast<size_t>(slot + 1), materials.size()));
+    materials[slot] = mat;
 }
 
 Vec3d Primitive3D::get_position() const
@@ -123,9 +124,18 @@ Vec3d Primitive3D::get_anchor() const
     return anchor;
 }
 
-Material Primitive3D::get_material() const
+std::shared_ptr<Material> Primitive3D::get_material(const size_t slot) const
 {
-    return material;
+    if (slot < 0 || slot >= materials.size())
+    {
+        return nullptr;
+    }
+    return materials[slot];
+}
+
+std::vector<std::shared_ptr<Material>> Primitive3D::get_materials() const
+{
+    return materials;
 }
 
 Box3d Primitive3D::get_aabb() const

@@ -3,9 +3,4 @@
 namespace gfx
 {
 
-void FragmentShader::set_uniforms(const Uniforms &uni)
-{
-    uniforms = uni;
-}
-
 }

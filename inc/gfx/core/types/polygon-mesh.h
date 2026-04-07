@@ -3,33 +3,43 @@
 #include "gfx/core/types/color4.h"
 #include "gfx/math/box3.h"
 #include "gfx/math/vec3.h"
+#include "gfx/math/vec2.h"
 #include "gfx/core/types/bounding-sphere.h"
 
 #include <vector>
 
 namespace gfx
 {
+
 class PolygonMesh
 {
 
 public:
 
-    PolygonMesh();
+    struct Face
+    {
+        size_t v1;
+        size_t v2;
+        size_t v3;
+        size_t material_index { 0 };
+    };
 
-    PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices);
+    PolygonMesh();
 
     Box3d get_aabb() const;
     BoundingSphere get_bounding_sphere() const;
 
-    void set_vertices(std::vector<Vec3d> verts);
-    void set_normals(std::vector<Vec3d> norms);
-    void set_indices(std::vector<size_t> inds);
-    void set_colors(std::vector<Color4> cols);
+    void set_vertices(const std::vector<Vec3d> &verts);
+    void set_normals(const std::vector<Vec3d> &norms);
+    void set_uvs(const std::vector<Vec2d> &uvs);
+    void set_colors(const std::vector<Color4> &cols);
+    void set_faces(const std::vector<Face> &fcs);
 
     const std::vector<Vec3d> &get_vertices() const;
     const std::vector<Vec3d> &get_normals() const;
-    const std::vector<size_t> &get_indices() const;
+    const std::vector<Vec2d> &get_uvs() const;
     const std::vector<Color4> &get_colors() const;
+    const std::vector<Face> &get_faces() const;
 
     size_t num_vertices() const;
 
@@ -39,8 +49,9 @@ private:
 
     std::vector<Vec3d> vertices;
     std::vector<Vec3d> normals;
-    std::vector<size_t> indices;
+    std::vector<Vec2d> uv_coords;
     std::vector<Color4> colors;
+    std::vector<Face> faces;
 
     mutable bool aabb_dirty;
     mutable bool bounding_sphere_dirty;

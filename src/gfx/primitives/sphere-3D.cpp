@@ -15,7 +15,8 @@ const PolygonMesh &Sphere3D::get_mesh() const
 
     std::vector<Vec3d> vertices;
     std::vector<Vec3d> normals;
-    std::vector<size_t> indices;
+    std::vector<Vec2d> uvs;
+    std::vector<PolygonMesh::Face> faces;
 
     for (int r = 0; r < lat_segments; ++r)
     {
@@ -36,12 +37,24 @@ const PolygonMesh &Sphere3D::get_mesh() const
                 return std::make_pair(pos, normal);
             };
 
+            auto get_uv = [&](const double phi, const double theta) {
+                const double u = theta / (2.0 * std::numbers::pi);
+                const double v = phi / std::numbers::pi;
+                return Vec2d { u, v };
+            };
+
             auto v0 = get_pos(phi0, theta0);
             auto v1 = get_pos(phi0, theta1);
             auto v2 = get_pos(phi1, theta1);
             auto v3 = get_pos(phi1, theta0);
 
-            auto emit = [&](const auto &a, const auto &b, const auto &c) {
+            auto uv0 = get_uv(phi0, theta0);
+            auto uv1 = get_uv(phi0, theta1);
+            auto uv2 = get_uv(phi1, theta1);
+            auto uv3 = get_uv(phi1, theta0);
+
+            auto emit = [&](const auto &a, const auto &b, const auto &c,
+                            const auto &uva, const auto &uvb, const auto &uvc) {
                 const size_t base = vertices.size();
 
                 vertices.push_back(a.first);
@@ -52,30 +65,33 @@ const PolygonMesh &Sphere3D::get_mesh() const
                 normals.push_back(b.second);
                 normals.push_back(c.second);
 
-                indices.push_back(base + 0);
-                indices.push_back(base + 1);
-                indices.push_back(base + 2);
+                uvs.push_back(uva);
+                uvs.push_back(uvb);
+                uvs.push_back(uvc);
+
+                faces.push_back(PolygonMesh::Face { base + 0, base + 1, base + 2 });
             };
 
             if (r == 0)
             {
-                emit(v0, v2, v3);
+                emit(v0, v2, v3, uv0, uv2, uv3);
             }
             else if (r == lat_segments - 1)
             {
-                emit(v0, v1, v2);
+                emit(v0, v1, v2, uv0, uv1, uv2);
             }
             else
             {
-                emit(v0, v1, v2);
-                emit(v0, v2, v3);
+                emit(v0, v1, v2, uv0, uv1, uv2);
+                emit(v0, v2, v3, uv0, uv2, uv3);
             }
         }
     }
 
     mesh_data.set_vertices(std::move(vertices));
     mesh_data.set_normals(std::move(normals));
-    mesh_data.set_indices(std::move(indices));
+    mesh_data.set_uvs(std::move(uvs));
+    mesh_data.set_faces(std::move(faces));
     mesh_data.set_colors(std::vector(mesh_data.num_vertices(), get_color()));
 
     set_mesh_dirty(false);

@@ -9,7 +9,7 @@ class DefaultVertexShader final : public VertexShader
 
 public:
 
-    VertexShader::Output vert(const VertexShader::Input &input) const override
+    VertexShader::Output vert(const VertexShader::Input &input, const VertexShader::Uniforms &uniforms) const override
     {
         const Matrix4x1d pos_h {
             { input.pos.x },

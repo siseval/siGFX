@@ -20,17 +20,17 @@ public:
     virtual const PolygonMesh &get_mesh() const = 0;
 
     void set_position(const Vec3d &pos);
-    void set_position(double x, double y, double z);
+    void set_position(const double x, const double y, const double z);
     void set_scale(const Vec3d &s);
-    void set_scale(double x, double y, double z);
+    void set_scale(const double x, const double y, const double z);
     void set_rotation(const Vec3d &rot);
-    void set_rotation(double x, double y, double z);
+    void set_rotation(const double x, const double y, const double z);
     void set_rotation_degrees(const Vec3d &rot);
-    void set_rotation_degrees(double x, double y, double z);
+    void set_rotation_degrees(const double x, const double y, const double z);
     void set_color(const Color4 &col);
     void set_color(const double r, const double g, const double b, const double a = 1.0);
     void set_anchor(const Vec3d &a);
-    void set_material(const Material mat);
+    void set_material(const std::shared_ptr<Material> &mat, const size_t slot = 0);
 
     Vec3d get_position() const;
     Vec3d get_scale() const;
@@ -38,7 +38,8 @@ public:
     Vec3d get_rotation_degrees() const;
     Color4 get_color() const;
     Vec3d get_anchor() const;
-    Material get_material() const;
+    std::shared_ptr<Material> get_material(const size_t slot = 0) const;
+    std::vector<std::shared_ptr<Material>> get_materials() const;
 
     virtual Box3d get_aabb() const;
     virtual BoundingSphere get_bounding_sphere() const;
@@ -58,7 +59,7 @@ protected:
     void increment_transform_version();
 
     UUID id;
-    Material material;
+    std::vector<std::shared_ptr<Material>> materials;
     Color4 color;
 
     Vec3d position;

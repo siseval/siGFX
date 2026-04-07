@@ -26,20 +26,7 @@ void Render3D::draw_frame() const
         ).count() / 1000.0
     };
 
-    for (auto &shader : fullscreen_shaders)
-    {
-        shader->set_uniforms(
-            FragmentShader::Uniforms {
-                .t = t,
-                .light_dir = light_dir,
-                .ambient_intensity = ambient_light,
-                .near_plane = get_camera().get_z_near(),
-                .far_plane = get_camera().get_z_far()
-            }
-        );
-    }
-
-    std::unordered_map<int, Material> material_map;
+    std::unordered_map<int, std::shared_ptr<Material>> material_map;
     generate_screen_triangles(material_map);
     generate_tiles();
     bin_triangles(screen_triangles, tiles);
@@ -59,7 +46,7 @@ void Render3D::draw_frame() const
     }
 }
 
-void Render3D::generate_screen_triangles(std::unordered_map<int, Material> &material_map) const
+void Render3D::generate_screen_triangles(std::unordered_map<int, std::shared_ptr<Material>> &material_map) const
 {
     screen_triangles.clear();
 
@@ -81,28 +68,34 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, Material> &mate
     const Matrix4x4d projection_matrix { camera.get_projection_matrix(aspect_ratio) };
     const Matrix4x4d vp_matrix { projection_matrix * view_matrix };
 
-    for (const auto &[primitive, transform] : scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)))
+    const auto &draw_queue { scene_graph->get_draw_queue(camera.get_frustum(aspect_ratio)) };
+    for (const auto &[primitive, transform] : draw_queue)
+    {
+        for (const auto &material : primitive->get_materials())
+        {
+            if (material)
+            {
+                material_map[material->get_id()] = material;
+            }
+        }
+    }
+
+    for (const auto &[primitive, transform] : draw_queue)
     {
         const PolygonMesh &mesh { primitive->get_mesh() };
-        const Material &material { primitive->get_material() };
-        const std::shared_ptr<VertexShader> vert_shader { material.get_vertex_shader() };
 
-        vert_shader->set_uniforms(
-            VertexShader::Uniforms {
+        for (PolygonMesh::Face face : mesh.get_faces())
+        {
+            const std::shared_ptr<Material> &material { primitive->get_material(face.material_index) };
+            const std::shared_ptr<VertexShader> &vert_shader { material->get_vertex_shader() };
+
+            const VertexShader::Uniforms uniforms {
                 .t = t,
                 .model_matrix = transform,
                 .view_matrix = view_matrix,
                 .projection_matrix = projection_matrix,
                 .mvp_matrix = vp_matrix * transform
-            }
-        );
-        material_map[material.get_id()] = material;
-
-        for (size_t i = 0; i < mesh.get_indices().size(); i += 3)
-        {
-            const size_t idx0 { mesh.get_indices()[i] };
-            const size_t idx1 { mesh.get_indices()[i + 1] };
-            const size_t idx2 { mesh.get_indices()[i + 2] };
+            };
 
             const auto model_to_clip {
                 [&](const int source_index) -> ClipVertex {
@@ -110,30 +103,29 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, Material> &mate
                         .pos = mesh.get_vertices()[source_index],
                         .normal = mesh.get_normals()[source_index],
                     };
-                    const VertexShader::Output out { vert_shader->vert(vert_in) };
+                    const VertexShader::Output out { vert_shader->vert(vert_in, uniforms) };
 
                     return ClipVertex {
                         .xyz = out.xyz,
                         .w = out.w,
                         .normal = out.normal,
                         .color = mesh.get_colors()[source_index],
-                        .material_id = material.get_id()
                     };
                 }
             };
 
             std::array<ClipTriangle, 2> clip_triangles;
             clip_triangles[0] = {
-                model_to_clip(idx0),
-                model_to_clip(idx1),
-                model_to_clip(idx2)
+                model_to_clip(face.v1),
+                model_to_clip(face.v2),
+                model_to_clip(face.v3),
             };
 
             const int num_triangles { clip_against_near_plane(clip_triangles) };
 
             const auto clip_to_screen {
                 [&](const ClipVertex clip_vertex) {
-                    const double inv_w { 1.0f / static_cast<float>(clip_vertex.w) };
+                    const double inv_w { 1.0 / clip_vertex.w };
                     const Vec3d ndc { clip_vertex.xyz * inv_w };
 
                     return ScreenVertex {
@@ -175,7 +167,7 @@ void Render3D::generate_screen_triangles(std::unordered_map<int, Material> &mate
                     std::move(screen_vertices[0]),
                     std::move(screen_vertices[1]),
                     std::move(screen_vertices[2]),
-                    material.get_id()
+                    material->get_id()
                 );
 
             }
@@ -360,7 +352,7 @@ void Render3D::rasterize_triangle_in_tile(const ScreenTriangle &triangle, const 
     }
 }
 
-void Render3D::render_tile(Tile &tile, const std::unordered_map<int, Material> &material_map, const double t) const
+void Render3D::render_tile(Tile &tile, const std::unordered_map<int, std::shared_ptr<Material>> &material_map, const double t) const
 {
     const Vec2i resolution { surface->get_resolution() };
     constexpr int num_pixels { TILE_SIZE * TILE_SIZE };
@@ -373,18 +365,17 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, Material> &
         }
     }
 
+    const FragmentShader::Uniforms uniforms {
+        .t = t,
+        .light_dir = light_dir,
+        .ambient_intensity = ambient_light,
+        .near_plane = get_camera().get_z_near(),
+        .far_plane = get_camera().get_z_far()
+    };
+
     for (const auto &[material_id, tri] : tile.material_batches)
     {
-        const auto frag_shader { material_map.at(material_id).get_fragment_shader() };
-        frag_shader->set_uniforms(
-            FragmentShader::Uniforms {
-                .t = t,
-                .light_dir = light_dir,
-                .ambient_intensity = ambient_light,
-                .near_plane = get_camera().get_z_near(),
-                .far_plane = get_camera().get_z_far()
-            }
-        );
+        const auto frag_shader { material_map.at(material_id)->get_fragment_shader() };
 
         for (int i = 0; i < num_pixels; ++i)
         {
@@ -451,7 +442,7 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, Material> &
                 .color = color_interp
             };
 
-            Color4 color { frag_shader->frag(frag_in) };
+            Color4 color { frag_shader->frag(frag_in, uniforms) };
             surface->write_pixel(
                 pixel_pos,
                 color,
@@ -481,7 +472,8 @@ void Render3D::render_tile(Tile &tile, const std::unordered_map<int, Material> &
                         .depth = tile.depth_buffer[i],
                         .normal = Vec3d { 0.0, 0.0, 1.0 },
                         .color = surface->read_pixel(pixel_pos)
-                    }
+                    },
+                    uniforms
                 )
             };
 
@@ -543,7 +535,6 @@ int Render3D::clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangle
                 .w = vert_in.w + (vert_out.w - vert_in.w) * t,
                 .normal = intersect_normal,
                 .color = intersect_color,
-                .material_id = vert_in.material_id
             };
         }
     };

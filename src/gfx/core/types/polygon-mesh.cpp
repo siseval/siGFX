@@ -5,15 +5,6 @@ namespace gfx
 
 PolygonMesh::PolygonMesh() {}
 
-PolygonMesh::PolygonMesh(std::vector<Vec3d> vertices, std::vector<Vec3d> normals, std::vector<size_t> indices)
-    : vertices(vertices),
-      normals(normals),
-      indices(indices),
-      colors(std::vector(vertices.size(), Color4::white())),
-      aabb_dirty(true),
-      bounding_sphere_dirty(true)
-{}
-
 Box3d PolygonMesh::get_aabb() const
 {
     if (!aabb_dirty)
@@ -64,26 +55,31 @@ BoundingSphere PolygonMesh::get_bounding_sphere() const
     return bounding_sphere;
 }
 
-void PolygonMesh::set_vertices(const std::vector<Vec3d> verts)
+void PolygonMesh::set_vertices(const std::vector<Vec3d> &verts)
 {
     vertices = verts;
     aabb_dirty = true;
     bounding_sphere_dirty = true;
 }
 
-void PolygonMesh::set_normals(const std::vector<Vec3d> norms)
+void PolygonMesh::set_normals(const std::vector<Vec3d> &norms)
 {
     normals = norms;
 }
 
-void PolygonMesh::set_indices(const std::vector<size_t> inds)
+void PolygonMesh::set_uvs(const std::vector<Vec2d> &uvs)
 {
-    indices = inds;
+    uv_coords = uvs;
 }
 
-void PolygonMesh::set_colors(const std::vector<Color4> cols)
+void PolygonMesh::set_colors(const std::vector<Color4> &cols)
 {
     colors = cols;
+}
+
+void PolygonMesh::set_faces(const std::vector<Face> &fcs)
+{
+    faces = fcs;
 }
 
 const std::vector<Vec3d> &PolygonMesh::get_vertices() const
@@ -96,14 +92,19 @@ const std::vector<Vec3d> &PolygonMesh::get_normals() const
     return normals;
 }
 
-const std::vector<size_t> &PolygonMesh::get_indices() const
-{
-    return indices;
-}
-
 const std::vector<Color4> &PolygonMesh::get_colors() const
 {
     return colors;
+}
+
+const std::vector<Vec2d> &PolygonMesh::get_uvs() const
+{
+    return uv_coords;
+}
+
+const std::vector<PolygonMesh::Face> &PolygonMesh::get_faces() const
+{
+    return faces;
 }
 
 size_t PolygonMesh::num_vertices() const
@@ -115,8 +116,9 @@ void PolygonMesh::clear()
 {
     vertices.clear();
     normals.clear();
-    indices.clear();
+    uv_coords.clear();
     colors.clear();
+    faces.clear();
 }
 
 }

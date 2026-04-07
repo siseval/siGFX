@@ -30,13 +30,10 @@ public:
 
     virtual ~FragmentShader() = default;
 
-    virtual Color4 frag(const Input &input) const = 0;
-
-    void set_uniforms(const Uniforms &uni);
+    virtual Color4 frag(const Input &input, const Uniforms &uniforms) const = 0;
 
 protected:
 
-    Uniforms uniforms;
 };
 
 }

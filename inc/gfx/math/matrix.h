@@ -159,6 +159,20 @@ public:
         return result;
     }
 
+    template <typename U>
+    operator Matrix<U, rows, cols>() const
+    {
+        Matrix<U, rows, cols> result;
+        for (int r = 0; r < rows; ++r)
+        {
+            for (int c = 0; c < cols; ++c)
+            {
+                result(r, c) = static_cast<U>(data[r][c]);
+            }
+        }
+        return result;
+    }
+
 private:
 
     T data[rows][cols];
@@ -168,4 +182,14 @@ using Matrix3x3d = Matrix<double, 3, 3>;
 using Matrix3x1d = Matrix<double, 3, 1>;
 using Matrix4x4d = Matrix<double, 4, 4>;
 using Matrix4x1d = Matrix<double, 4, 1>;
+
+using Matrix3x3f = Matrix<float, 3, 3>;
+using Matrix3x1f = Matrix<float, 3, 1>;
+using Matrix4x4f = Matrix<float, 4, 4>;
+using Matrix4x1f = Matrix<float, 4, 1>;
+
+using Matrix3x3i = Matrix<int, 3, 3>;
+using Matrix3x1i = Matrix<int, 3, 1>;
+using Matrix4x4i = Matrix<int, 4, 4>;
+using Matrix4x1i = Matrix<int, 4, 1>;
 }

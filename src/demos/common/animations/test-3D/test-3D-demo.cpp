@@ -13,7 +13,7 @@ namespace demos
 
 class FogShader : public FragmentShader
 {
-    Color4 frag(const FragmentShader::Input &input) const override
+    Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         const double near { uniforms.near_plane };
         const double far { uniforms.far_plane };
@@ -36,7 +36,7 @@ class FogShader : public FragmentShader
 
 class DepthShader : public FragmentShader
 {
-    Color4 frag(const FragmentShader::Input &input) const override
+    Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         const double near { uniforms.near_plane };
         const double far { uniforms.far_plane };
@@ -60,7 +60,7 @@ class DepthShader : public FragmentShader
 
 class RedShader : public FragmentShader
 {
-    Color4 frag(const FragmentShader::Input &input) const override
+    Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         return Color4(
             std::clamp(input.color.r_double() * 1.5, 0.0, 1.0),
@@ -73,7 +73,7 @@ class RedShader : public FragmentShader
 
 class BandingShader : public FragmentShader
 {
-    Color4 frag(const FragmentShader::Input &input) const override
+    Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         const double step { 0.1 };
         return Color4(
@@ -87,7 +87,7 @@ class BandingShader : public FragmentShader
 
 class DiagonalShader : public FragmentShader
 {
-    Color4 frag(const FragmentShader::Input &input) const override
+    Color4 frag(const FragmentShader::Input &input, const FragmentShader::Uniforms &uniforms) const override
     {
         const double t { uniforms.t };
         const Vec3d uvw { input.uvw };
@@ -129,7 +129,7 @@ void Test3DDemo::init()
     const Material material2(std::make_shared<DefaultVertexShader>(), std::make_shared<FogShader>());
     const Material material3(std::make_shared<DefaultVertexShader>(), std::make_shared<BandingShader>());
 
-    const Material default_material { diffuse_material };
+    const auto default_material { std::make_shared<Material>(diffuse_material) };
 
     sphere = std::make_shared<Sphere3D>();
     sphere->set_radius(1.0);
@@ -169,8 +169,8 @@ void Test3DDemo::init()
     constexpr double min_range = 128.0;
     constexpr double max_range = 256.0;
     constexpr int num_boxes = 0;
-    constexpr int num_spheres = 10000;
-    constexpr int num_segments = 3;
+    constexpr int num_spheres = 1000;
+    constexpr int num_segments = 10;
 
     const auto rand_pos = [](const double min, const double max) {
         return Vec3d::from_angles(random_double(0.0, 360.0), random_double(0.0, 180.0)).normalize() *
