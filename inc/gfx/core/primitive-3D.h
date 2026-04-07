@@ -58,7 +58,7 @@ protected:
     void increment_transform_version();
 
     UUID id;
-    Material material { Material() };
+    Material material;
     Color4 color;
 
     Vec3d position;
