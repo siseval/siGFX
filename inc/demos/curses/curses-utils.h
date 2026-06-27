@@ -1,8 +1,8 @@
 #pragma once
 
 #include <locale.h>
-#include <string>
 #include <ncurses.h>
+#include <string>
 #include <gfx/math/vec2.h>
 
 #ifndef BUTTON5_PRESSED

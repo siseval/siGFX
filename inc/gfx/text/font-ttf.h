@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "gfx/math/box2.h"
-#include "gfx/text/font.h"
 
 namespace gfx
 {
@@ -66,14 +65,13 @@ public:
 private:
 
     static std::vector<ContourEdge> flatten_glyph(std::shared_ptr<GlyphTTF> glyph);
-    bool decode_utf8(const std::string &s, size_t pos, uint32_t &out_codepoint, size_t &bytes) const;
-    std::string name;
+    std::string _name;
 
-    int units_per_em;
-    double ascent;
-    double descent;
-    double line_gap;
-    int num_glyphs;
+    int _units_per_em;
+    double _ascent;
+    double _descent;
+    double _line_gap;
+    int _num_glyphs;
 
     struct PairHash
     {
@@ -83,10 +81,10 @@ private:
         }
     };
 
-    std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> glyphs;
-    std::unordered_map<uint32_t, GlyphMetrics> glyph_metrics;
-    std::unordered_map<std::pair<uint32_t, uint32_t>, int, PairHash> kerning_table;
+    std::unordered_map<uint32_t, std::shared_ptr<GlyphTTF>> _glyphs;
+    std::unordered_map<uint32_t, GlyphMetrics> _glyph_metrics;
+    std::unordered_map<std::pair<uint32_t, uint32_t>, int, PairHash> _kerning_table;
 
-    mutable std::unordered_map<uint32_t, std::vector<ContourEdge>> vertex_cache;
+    mutable std::unordered_map<uint32_t, std::vector<ContourEdge>> _vertex_cache;
 };
 }

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <gfx/core/render-2D.h>
-#include <gfx/primitives/ellipse-2D.h>
-#include <gfx/math/vec2.h>
 #include <gfx/core/types/color4.h>
+#include <gfx/math/vec2.h>
+#include <gfx/primitives/ellipse-2D.h>
 
 #include "demos/common/core/demo-utils.h"
 
@@ -24,16 +24,16 @@ public:
         const double lifespan
     )
         : renderer(renderer),
+          size(size),
           position(position),
           velocity(velocity),
-          size(size),
           colors(colors),
           lifespan_ms(lifespan)
     {
         shape = renderer->create_ellipse(position, size, colors[0]);
         shape->set_filled(true);
         renderer->add_item(shape);
-        creation_time_ms = demos::time_ms();
+        creation_time_ms = time_ms();
     }
 
     void process(double dt);

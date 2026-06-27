@@ -102,7 +102,7 @@ std::vector<Vec2d> Flatten::flatten_contour(const std::vector<std::pair<Vec2d, b
             const auto &next_point { points_on_off_curve[(start_index + i + 1) % num_points] };
             if (next_point.second)
             {
-                Vec2d next_on_point { next_point.first.x, next_point.first.y };
+                const Vec2d next_on_point { next_point.first.x, next_point.first.y };
                 auto bezier_points {
                     flatten_bezier(prev_on_point, Vec2d { curr_point.first.x, curr_point.first.y }, next_on_point)
                 };

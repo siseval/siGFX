@@ -1,7 +1,7 @@
 #pragma once
 
-#include <random>
 #include <chrono>
+#include <random>
 
 namespace demos
 {
@@ -19,7 +19,7 @@ inline double smoothstep(const double d)
 inline double smoothstep(const double edge0, const double edge1, const double x)
 {
     double t = (x - edge0) / (edge1 - edge0);
-    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
     return t * t * (3.0 - 2.0 * t);
 }
 
@@ -36,10 +36,10 @@ inline double exponential_interp_3(
     const double k = 5.0
 )
 {
-    double exp_t = (1.0 - std::exp(-k * t)) / (1.0 - std::exp(-k));
+    const double exp_t = (1.0 - std::exp(-k * t)) / (1.0 - std::exp(-k));
 
-    double ab = a + (b - a) * exp_t;
-    double bc = b + (c - b) * exp_t;
+    const double ab = a + (b - a) * exp_t;
+    const double bc = b + (c - b) * exp_t;
 
     return ab + (bc - ab) * exp_t;
 }
@@ -57,14 +57,14 @@ inline double random_double(const double min, const double max)
 {
     // static std::mt19937 rng(static_cast<unsigned int>(std::chrono::steady_clock::now().time_since_epoch().count()));
     static std::mt19937 rng(0);
-    std::uniform_real_distribution<double> dist(min, max);
+    std::uniform_real_distribution dist(min, max);
     return dist(rng);
 }
 
 inline int random_int(const int min, const int max)
 {
     static std::mt19937 rng(static_cast<unsigned int>(std::chrono::steady_clock::now().time_since_epoch().count()));
-    std::uniform_int_distribution<int> dist(min, max);
+    std::uniform_int_distribution dist(min, max);
     return dist(rng);
 }
 
@@ -91,7 +91,7 @@ inline double time_us()
 
 inline double lerp(const double a, const double b, const double t)
 {
-    return a + (b - a) * (t < 0 ? 0 : (t > 1 ? 1 : t));
+    return a + (b - a) * (t < 0 ? 0 : t > 1 ? 1 : t);
 }
 
 inline double inv_lerp(const double a, const double b, const double v)

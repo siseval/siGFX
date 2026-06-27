@@ -7,13 +7,13 @@
 namespace demos
 {
 
-class StarDemo : public demos::GfxDemo
+class StarDemo : public GfxDemo
 {
 
 public:
 
-    StarDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer)
+    StarDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer)
     {
         render2D = renderer->get_render_2D();
     }
@@ -22,7 +22,7 @@ public:
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_mouse(const demos::MouseEvent event) override {}
+    void report_mouse(const MouseEvent event) override {}
 
 private:
 

@@ -5,11 +5,8 @@
 namespace gfx
 {
 template <typename T>
-class Box2
+struct Box2
 {
-
-public:
-
     Vec2<T> min;
     Vec2<T> max;
 

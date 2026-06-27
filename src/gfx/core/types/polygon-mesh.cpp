@@ -3,37 +3,37 @@
 namespace gfx
 {
 
-PolygonMesh::PolygonMesh() {}
+PolygonMesh::PolygonMesh() : _aabb_dirty(true), _bounding_sphere_dirty(true) {}
 
 Box3d PolygonMesh::get_aabb() const
 {
-    if (!aabb_dirty)
+    if (!_aabb_dirty)
     {
-        return aabb;
+        return _aabb;
     }
 
-    if (vertices.empty())
+    if (_vertices.empty())
     {
         return Box3d { Vec3d { 0, 0, 0 }, Vec3d { 0, 0, 0 } };
     }
 
-    Box3d extent { vertices[0], vertices[0] };
+    Box3d extent { _vertices[0], _vertices[0] };
 
-    for (const auto &vertex : vertices)
+    for (const auto &vertex : _vertices)
     {
         extent.expand(vertex);
     }
 
-    aabb = extent;
-    aabb_dirty = false;
-    return aabb;
+    _aabb       = extent;
+    _aabb_dirty = false;
+    return _aabb;
 }
 
 BoundingSphere PolygonMesh::get_bounding_sphere() const
 {
-    if (!bounding_sphere_dirty)
+    if (!_bounding_sphere_dirty)
     {
-        return bounding_sphere;
+        return _bounding_sphere;
     }
 
     const Box3d aabb { get_aabb() };
@@ -41,7 +41,7 @@ BoundingSphere PolygonMesh::get_bounding_sphere() const
 
     double radius { 0 };
 
-    for (const auto &vertex : vertices)
+    for (const auto &vertex : _vertices)
     {
         const double dist { (vertex - center).length() };
         if (dist > radius)
@@ -50,75 +50,75 @@ BoundingSphere PolygonMesh::get_bounding_sphere() const
         }
     }
 
-    bounding_sphere = BoundingSphere(center, radius);
-    bounding_sphere_dirty = false;
-    return bounding_sphere;
+    _bounding_sphere       = BoundingSphere(center, radius);
+    _bounding_sphere_dirty = false;
+    return _bounding_sphere;
 }
 
 void PolygonMesh::set_vertices(const std::vector<Vec3d> &verts)
 {
-    vertices = verts;
-    aabb_dirty = true;
-    bounding_sphere_dirty = true;
+    _vertices              = verts;
+    _aabb_dirty            = true;
+    _bounding_sphere_dirty = true;
 }
 
 void PolygonMesh::set_normals(const std::vector<Vec3d> &norms)
 {
-    normals = norms;
+    _normals = norms;
 }
 
 void PolygonMesh::set_uvs(const std::vector<Vec2d> &uvs)
 {
-    uv_coords = uvs;
+    _uv_coords = uvs;
 }
 
 void PolygonMesh::set_colors(const std::vector<Color4> &cols)
 {
-    colors = cols;
+    _colors = cols;
 }
 
 void PolygonMesh::set_faces(const std::vector<Face> &fcs)
 {
-    faces = fcs;
+    _faces = fcs;
 }
 
 const std::vector<Vec3d> &PolygonMesh::get_vertices() const
 {
-    return vertices;
+    return _vertices;
 }
 
 const std::vector<Vec3d> &PolygonMesh::get_normals() const
 {
-    return normals;
-}
-
-const std::vector<Color4> &PolygonMesh::get_colors() const
-{
-    return colors;
+    return _normals;
 }
 
 const std::vector<Vec2d> &PolygonMesh::get_uvs() const
 {
-    return uv_coords;
+    return _uv_coords;
+}
+
+const std::vector<Color4> &PolygonMesh::get_colors() const
+{
+    return _colors;
 }
 
 const std::vector<PolygonMesh::Face> &PolygonMesh::get_faces() const
 {
-    return faces;
+    return _faces;
 }
 
 size_t PolygonMesh::num_vertices() const
 {
-    return vertices.size();
+    return _vertices.size();
 }
 
 void PolygonMesh::clear()
 {
-    vertices.clear();
-    normals.clear();
-    uv_coords.clear();
-    colors.clear();
-    faces.clear();
+    _vertices.clear();
+    _normals.clear();
+    _uv_coords.clear();
+    _colors.clear();
+    _faces.clear();
 }
 
 }

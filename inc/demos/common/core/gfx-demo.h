@@ -2,6 +2,7 @@
 
 #include <string>
 #include "gfx/core/render-engine.h"
+#include "gfx/debug/debug-viewer.h"
 
 namespace demos
 {
@@ -59,8 +60,9 @@ class GfxDemo
 
 public:
 
-    GfxDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : renderer(renderer) {}
+    GfxDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : renderer(renderer),
+          debug_viewer(debug_viewer) {}
 
     virtual void init() = 0;
     virtual void render_frame(double dt) = 0;
@@ -89,12 +91,12 @@ public:
         return 1000000 / last_frame_us;
     }
 
-    std::vector<std::string> info_text()
+    std::vector<std::string> info_text() const
     {
         std::vector<std::string> info;
         info.push_back(
-            "resolution: " + std::to_string(renderer->get_resolution().round().x) + "x" + std::to_string(
-                renderer->get_resolution().round().y
+            "resolution: " + std::to_string(renderer->get_resolution().round_to_int().x) + "x" + std::to_string(
+                renderer->get_resolution().round_to_int().y
             )
         );
         info.push_back("fps: " + std::to_string(static_cast<int>(get_fps())));
@@ -116,6 +118,7 @@ public:
 protected:
 
     std::shared_ptr<gfx::RenderEngine> renderer;
+    std::shared_ptr<gfx::DebugViewer> debug_viewer;
     double last_frame_us = 0.0;
 };
 

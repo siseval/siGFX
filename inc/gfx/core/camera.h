@@ -1,8 +1,8 @@
 #pragma once
 
+#include "gfx/core/types/frustum.h"
 #include "gfx/math/matrix.h"
 #include "gfx/math/vec3.h"
-#include "gfx/core/types/frustum.h"
 
 namespace gfx
 {
@@ -36,14 +36,14 @@ public:
     double get_z_near() const;
     double get_z_far() const;
 
-    Frustum get_frustum(const double aspect_ratio) const;
+    Frustum get_frustum(double aspect_ratio) const;
 
 private:
 
-    Vec3d position;
-    Vec3d rotation;
-    double z_near;
-    double z_far;
-    double fov;
+    Vec3d _position;
+    Vec3d _rotation;
+    double _z_near;
+    double _z_far;
+    double _fov;
 };
 }

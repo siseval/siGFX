@@ -9,8 +9,8 @@ void PhysicsDemo::init() {}
 
 void PhysicsDemo::render_frame(const double dt) {}
 
-void PhysicsDemo::handle_char(const int input) {}
-
 void PhysicsDemo::end() {}
+
+void PhysicsDemo::handle_char(const int input) {}
 
 }

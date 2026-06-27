@@ -13,7 +13,6 @@ void StarDemo::init()
     constexpr double distance_ratio = 16;
 
     render2D->clear_items();
-    render2D->get_render_surface()->clear_palette();
     polylines.clear();
     colors.clear();
 
@@ -78,6 +77,12 @@ void StarDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
+void StarDemo::end()
+{
+    render2D->clear_items();
+    polylines.clear();
+}
+
 void StarDemo::handle_char(const int input)
 {
     switch (input)
@@ -110,12 +115,6 @@ void StarDemo::handle_char(const int input)
     default:
         break;
     }
-}
-
-void StarDemo::end()
-{
-    render2D->clear_items();
-    polylines.clear();
 }
 
 }

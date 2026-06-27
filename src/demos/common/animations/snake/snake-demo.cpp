@@ -11,20 +11,19 @@ void SnakeDemo::init()
     const Vec2d resolution { get_resolution() };
     const Vec2d center { resolution / 2 };
 
-    speed = resolution.x * 0.3;
-    target_speed = speed * 1.1;
+    speed         = resolution.x * 0.3;
+    target_speed  = speed * 1.1;
     explode_speed = speed * 3.0;
 
     dead = true;
 
-    segment_length = resolution.x * 0.02;
-    segment_width = segment_length * 0.5;
-    segment_spacing = segment_length * 0.5;
-    head_dimensions = { segment_length * 2.5, segment_width * 2.5 };
+    segment_length       = resolution.x * 0.02;
+    segment_width        = segment_length * 0.5;
+    segment_spacing      = segment_length * 0.5;
+    head_dimensions      = { segment_length * 2.5, segment_width * 2.5 };
     target_bounds_margin = resolution * 0.1;
 
     render2D->clear_items();
-    render2D->get_render_surface()->clear_palette();
     segments.clear();
     segment_palette.clear();
 
@@ -76,6 +75,102 @@ void SnakeDemo::init()
     render2D->add_item(target_marker);
 
     spawn();
+}
+
+void SnakeDemo::render_frame(const double dt)
+{
+    const double t0 { time_us() };
+    const double time_ms { t0 / 1000.0 };
+
+    tongue->set_scale(std::sin(std::sin(time_ms / 1000) * 8));
+    if (dead)
+    {
+        do_dead(dt);
+    }
+    else
+    {
+        move_target(dt);
+        move_head(dt);
+        move_segments();
+    }
+
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
+}
+
+void SnakeDemo::end()
+{
+    render2D->clear_items();
+    dead = true;
+}
+
+void SnakeDemo::handle_char(const int input)
+{
+    switch (input)
+    {
+    case 'k':
+        add_segment();
+        num_segments += 1;
+        break;
+
+    case 'j':
+        if (num_segments > 1)
+        {
+            remove_segment();
+            num_segments -= 1;
+        }
+        break;
+    case 'l':
+        update_scale(scale + 0.1);
+        break;
+    case 'h':
+        if (scale > 0.2)
+        {
+            update_scale(scale - 0.1);
+        }
+        break;
+
+    case 'w':
+        target_direction = { 0, -1 };
+        break;
+    case 's':
+        target_direction = { 0, 1 };
+        break;
+    case 'a':
+        target_direction = { -1, 0 };
+        break;
+    case 'd':
+        target_direction = { 1, 0 };
+        break;
+
+    case 'm':
+        if (dead)
+        {
+            spawn();
+            break;
+        }
+        die();
+        break;
+
+    case 'c':
+        control = !control;
+        break;
+
+    case 'f':
+        add_food();
+        break;
+    case 'r':
+        remove_food();
+        break;
+
+    case 'v':
+        target_visible = !target_visible;
+        break;
+
+    default:
+        break;
+    }
 }
 
 void SnakeDemo::move_target(const double dt)
@@ -199,58 +294,6 @@ void SnakeDemo::do_dead(const double dt)
     dead_time += dt;
 }
 
-void SnakeDemo::render_frame(const double dt)
-{
-    const double t0 { time_us() };
-    const double time_ms { t0 / 1000.0 };
-
-    tongue->set_scale(std::sin(std::sin(time_ms / 1000) * 8));
-    if (dead)
-    {
-        do_dead(dt);
-    }
-    else
-    {
-        move_target(dt);
-        move_head(dt);
-        move_segments();
-    }
-
-    render2D->clear_frame();
-    render2D->draw_frame();
-    render2D->present_frame();
-}
-
-Vec2d SnakeDemo::closest_food() const
-{
-    double closest_dist { Vec2d::distance(head->get_position(), food[0]->get_position()) };
-    Vec2d closest_pos { food[0]->get_position() };
-    for (int i = 1; i < food.size(); ++i)
-    {
-        const double dist { Vec2d::distance(head->get_position(), food[i]->get_position()) };
-        if (dist < closest_dist)
-        {
-            closest_dist = dist;
-            closest_pos = food[i]->get_position();
-        }
-    }
-    return closest_pos;
-}
-
-void SnakeDemo::update_segments()
-{
-    for (int i = 0; i < segments.size(); ++i)
-    {
-        const double progress { static_cast<double>(i) / segments.size() };
-        const int color_index { static_cast<int>(progress * (segment_palette.size() - 1)) };
-
-        const Vec2d radius { Vec2d::lerp({ segment_length, segment_width }, { 0.1, 0.1 }, progress) };
-        segments[i]->set_radius(radius);
-        segments[i]->set_color(segment_palette[color_index]);
-        segments[i]->set_depth(i + 1);
-    }
-}
-
 void SnakeDemo::remove_food()
 {
     if (food.empty())
@@ -268,9 +311,39 @@ void SnakeDemo::add_food()
         random_int(target_bounds_margin.x, get_resolution().x - target_bounds_margin.x),
         random_int(target_bounds_margin.y, get_resolution().y - target_bounds_margin.y)
     };
-    food.push_back(render2D->create_circle(pos, food_radius, Color4(1.0, 0.7, 0.0, 1.0), 1.0));
+    food.push_back(render2D->create_circle(static_cast<Vec2d>(pos), food_radius, Color4(1.0, 0.7, 0.0, 1.0), 1.0));
     food.back()->set_filled(true);
     render2D->add_item(food.back());
+}
+
+Vec2d SnakeDemo::closest_food() const
+{
+    double closest_dist { Vec2d::distance(head->get_position(), food[0]->get_position()) };
+    Vec2d closest_pos { food[0]->get_position() };
+    for (int i = 1; i < food.size(); ++i)
+    {
+        const double dist { Vec2d::distance(head->get_position(), food[i]->get_position()) };
+        if (dist < closest_dist)
+        {
+            closest_dist = dist;
+            closest_pos  = food[i]->get_position();
+        }
+    }
+    return closest_pos;
+}
+
+void SnakeDemo::update_segments()
+{
+    for (int i = 0; i < segments.size(); ++i)
+    {
+        const double progress { static_cast<double>(i) / segments.size() };
+        const int color_index { static_cast<int>(progress * (segment_palette.size() - 1)) };
+
+        const Vec2d radius { Vec2d::lerp({ segment_length, segment_width }, { 0.1, 0.1 }, progress) };
+        segments[i]->set_radius(radius);
+        segments[i]->set_color(segment_palette[color_index]);
+        segments[i]->set_depth(i + 1);
+    }
 }
 
 void SnakeDemo::add_segment()
@@ -315,80 +388,6 @@ void SnakeDemo::update_scale(const double s)
     }
     head->set_scale(s);
     scale = s;
-}
-
-void SnakeDemo::handle_char(const int input)
-{
-    switch (input)
-    {
-    case 'k':
-        add_segment();
-        num_segments += 1;
-        break;
-
-    case 'j':
-        if (num_segments > 1)
-        {
-            remove_segment();
-            num_segments -= 1;
-        }
-        break;
-    case 'l':
-        update_scale(scale + 0.1);
-        break;
-    case 'h':
-        if (scale > 0.2)
-        {
-            update_scale(scale - 0.1);
-        }
-        break;
-
-    case 'w':
-        target_direction = { 0, -1 };
-        break;
-    case 's':
-        target_direction = { 0, 1 };
-        break;
-    case 'a':
-        target_direction = { -1, 0 };
-        break;
-    case 'd':
-        target_direction = { 1, 0 };
-        break;
-
-    case 'm':
-        if (dead)
-        {
-            spawn();
-            break;
-        }
-        die();
-        break;
-
-    case 'c':
-        control = !control;
-        break;
-
-    case 'f':
-        add_food();
-        break;
-    case 'r':
-        remove_food();
-        break;
-
-    case 'v':
-        target_visible = !target_visible;
-        break;
-
-    default:
-        break;
-    }
-}
-
-void SnakeDemo::end()
-{
-    render2D->clear_items();
-    dead = true;
 }
 
 }

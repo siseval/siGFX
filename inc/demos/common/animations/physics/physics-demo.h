@@ -7,7 +7,7 @@
 namespace demos
 {
 
-class PhysicsDemo : public demos::GfxDemo
+class PhysicsDemo : public GfxDemo
 {
 
 public:
@@ -19,7 +19,7 @@ public:
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_mouse(const demos::MouseEvent event) override {}
+    void report_mouse(const MouseEvent event) override {}
 
 private:
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <functional>
 
 namespace gfx
@@ -23,7 +22,7 @@ struct UUID
 template <>
 struct std::hash<gfx::UUID>
 {
-    size_t operator()(const gfx::UUID &uuid) const
+    size_t operator()(const gfx::UUID &uuid) const noexcept
     {
         return std::hash<uint64_t>()(uuid.part1) ^ std::hash<uint64_t>()(uuid.part2) << 1;
     }

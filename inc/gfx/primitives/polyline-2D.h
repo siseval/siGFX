@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "gfx/core/primitive-2D.h"
 #include "gfx/math/box2.h"
 #include "gfx/math/matrix.h"
@@ -65,13 +67,13 @@ public:
         std::vector<Vec2i> &pixels
     ) const;
 
-    std::vector<Vec2d> points;
-    std::vector<bool> segments_visible;
-    bool do_close { false };
-    bool do_fill { false };
-    double line_thickness { 1.0 };
-    bool do_rounded_corners { false };
-    bool clockwise { false };
+    std::vector<Vec2d> _points;
+    std::vector<bool> _segments_visible;
+    bool _do_close { false };
+    bool _do_fill { false };
+    double _line_thickness { 1.0 };
+    bool _do_rounded_corners { false };
+    bool _clockwise { false };
     static constexpr int CORNER_SEGMENTS { 8 };
 };
 }

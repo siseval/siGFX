@@ -20,6 +20,6 @@ public:
 
 private:
 
-    Vec2d size;
+    Vec2d _size;
 };
 }

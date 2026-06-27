@@ -46,11 +46,7 @@ public:
         const FireworkOptions &options,
         const std::vector<gfx::Color4> colors
     )
-        : renderer(renderer),
-          position(position),
-          velocity(velocity),
-          start_velocity(velocity),
-          size(options.size),
+        : start_velocity(velocity),
           max_particles(options.max_particles),
           particle_size(options.particle_size),
           particle_lifespan_ms(options.particle_lifespan_ms),
@@ -58,7 +54,11 @@ public:
           smoke_size(options.smoke_size),
           smoke_speed(options.smoke_speed),
           smoke_trail_interval_ms(options.smoke_trail_interval_ms),
+          renderer(renderer),
+          position(position),
+          velocity(velocity),
           colors(colors),
+          size(options.size),
           state(State::Ascending)
     {
         static std::vector<gfx::Vec2d> body_points {
@@ -85,7 +85,7 @@ public:
         cap->set_rounded_corners(true);
         renderer->add_item(cap, shape);
 
-        creation_time_ms = demos::time_ms();
+        creation_time_ms = time_ms();
     }
 
     gfx::Vec2d start_velocity;

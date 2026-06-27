@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gfx/core/primitive-3D.h"
-#include "gfx/core/types/uuid.h"
 #include "gfx/core/types/frustum.h"
+#include "gfx/core/types/uuid.h"
 
 namespace gfx
 {
@@ -56,11 +56,10 @@ public:
     bool contains_item(std::shared_ptr<Primitive3D> item) const;
 
 private:
+    static bool sphere_in_frustum(const BoundingSphere &sphere, const Frustum &frustum);
 
-    bool sphere_in_frustum(const BoundingSphere &sphere, const Frustum &frustum) const;
-
-    mutable std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> draw_queue;
-    std::shared_ptr<SceneNode3D> root;
-    std::unordered_map<UUID, std::shared_ptr<SceneNode3D>> nodes;
+    mutable std::vector<std::pair<std::shared_ptr<Primitive3D>, Matrix4x4d>> _draw_queue;
+    std::shared_ptr<SceneNode3D> _root;
+    std::unordered_map<UUID, std::shared_ptr<SceneNode3D>> _nodes;
 };
 }

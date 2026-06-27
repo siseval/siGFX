@@ -17,7 +17,6 @@ public:
     static Matrix4x4d scale(Vec3d scale);
 
     static Vec3d extract_translation(const Matrix4x4d &transform);
-    static double extract_rotation(const Matrix4x4d &transform);
     static Vec3d extract_scale(const Matrix4x4d &transform);
 
     static Vec3d transform_point(Vec3d pos, const Matrix4x4d &transform);

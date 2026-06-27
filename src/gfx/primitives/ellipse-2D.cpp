@@ -10,12 +10,12 @@ Primitive2D::RasterizeOutput Ellipse2D::rasterize(const Matrix3x3d &transform) c
 {
     RasterizeOutput output;
 
-    if (radius.x <= 0 || radius.y <= 0)
+    if (_radius.x <= 0 || _radius.y <= 0)
     {
         return output;
     }
 
-    const double line_extent { line_thickness / 2.0 };
+    const double line_extent { _line_thickness / 2.0 };
     const auto [min, max] { get_axis_aligned_bounding_box(transform) };
     const Matrix3x3d inverse_transform { Transform2D::invert_affine(transform) };
 
@@ -27,10 +27,10 @@ Primitive2D::RasterizeOutput Ellipse2D::rasterize(const Matrix3x3d &transform) c
                 Transform2D::transform_point(
                     Vec2d { static_cast<double>(x), static_cast<double>(y) },
                     inverse_transform
-                ) - radius
+                ) - _radius
             };
-            const Vec2d r_outer { radius + Vec2d(line_extent) };
-            const Vec2d r_inner { radius - Vec2d(line_extent) };
+            const Vec2d r_outer { _radius + Vec2d(line_extent) };
+            const Vec2d r_inner { _radius - Vec2d(line_extent) };
 
             const double sdf_outer {
                 pos.x * pos.x / (r_outer.x * r_outer.x) + pos.y * pos.y / (r_outer.y * r_outer.y)
@@ -52,13 +52,13 @@ Primitive2D::RasterizeOutput Ellipse2D::rasterize(const Matrix3x3d &transform) c
 
 Box2d Ellipse2D::get_geometry_size() const
 {
-    return Box2d { Vec2d::zero(), radius * 2 };
+    return Box2d { Vec2d::zero(), _radius * 2 };
 }
 
 Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) const
 {
     const auto [min, max] { get_geometry_size() };
-    const Vec2d line_extent { std::ceil(line_thickness / 2.0), std::ceil(line_thickness / 2.0) };
+    const Vec2d line_extent { std::ceil(_line_thickness / 2.0), std::ceil(_line_thickness / 2.0) };
     Vec2d top_left { min - line_extent };
     Vec2d bot_right { max + line_extent };
 
@@ -78,40 +78,40 @@ Box2d Ellipse2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) cons
 
 Vec2d Ellipse2D::get_radius() const
 {
-    return radius;
+    return _radius;
 }
 
 void Ellipse2D::set_radius(const Vec2d r)
 {
-    radius = r;
+    _radius = r;
     set_obb_dirty();
 }
 
 void Ellipse2D::set_radius(const double rx, const double ry)
 {
-    radius = Vec2d { rx, ry };
+    _radius = Vec2d { rx, ry };
     set_obb_dirty();
 }
 
 double Ellipse2D::get_line_thickness() const
 {
-    return line_thickness;
+    return _line_thickness;
 }
 
 void Ellipse2D::set_line_thickness(const double t)
 {
-    line_thickness = t;
+    _line_thickness = t;
     set_obb_dirty();
 }
 
 bool Ellipse2D::get_filled() const
 {
-    return filled;
+    return _filled;
 }
 
 void Ellipse2D::set_filled(const bool f)
 {
-    filled = f;
+    _filled = f;
 }
 
 

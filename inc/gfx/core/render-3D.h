@@ -6,11 +6,12 @@
 #include "gfx/core/scene-graph-3D.h"
 #include "gfx/core/thread-pool.h"
 
-#include <memory>
 #include <map>
+#include <memory>
 
 namespace gfx
 {
+    
 class Render3D
 {
 
@@ -32,13 +33,18 @@ public:
 
     void set_camera(const Camera &cam);
 
-    void set_light_direction(const Vec3d dir);
-    void set_ambient_light(const double intensity);
+    void set_light_direction(Vec3d dir);
+    void set_ambient_light(double intensity);
 
     void set_render_surface(std::shared_ptr<RenderSurface> new_surface);
 
+    void set_texture_filtering_mode(Texture::FilteringMode mode);
+    Texture::FilteringMode get_texture_filtering_mode() const;
+
     int num_items() const;
     Vec2i get_resolution() const;
+
+    int get_num_triangles() const;
 
     const Camera &get_camera() const;
     Camera &get_camera();
@@ -46,13 +52,15 @@ public:
     Vec3d get_light_direction() const;
     double get_ambient_light() const;
 
-    void add_fullscreen_shader(const std::shared_ptr<FragmentShader> shader);
-    void remove_fullscreen_shader(const std::shared_ptr<FragmentShader> shader);
+    void add_fullscreen_shader(std::shared_ptr<FragmentShader> shader);
+    void remove_fullscreen_shader(std::shared_ptr<FragmentShader> shader);
     void clear_fullscreen_shaders();
+    
+    void set_multicore_vertex_transformation(bool enable);
+    void set_multicore_rasterization(bool enable);
 
 private:
 
-    static constexpr int VERTEX_BATCH_SIZE = 1024;
     static constexpr int TILE_SIZE = 32;
 
     struct ClipVertex
@@ -70,7 +78,7 @@ private:
         ClipVertex v1;
         ClipVertex v2;
 
-        ClipTriangle() {};
+        ClipTriangle() : v0(), v1(), v2() {}
 
         ClipTriangle(
             const ClipVertex &v0,
@@ -112,7 +120,7 @@ private:
         std::array<int, TILE_SIZE * TILE_SIZE> material_id_buffer;
         std::array<double, TILE_SIZE * TILE_SIZE> depth_buffer;
 
-        explicit Tile(const Vec2i screen_pos) : screen_pos(screen_pos) 
+        explicit Tile(const Vec2i screen_pos) : screen_pos(screen_pos), triangle_index_buffer(), material_id_buffer()
         {
             depth_buffer.fill(std::numeric_limits<float>::infinity());
         }
@@ -120,34 +128,38 @@ private:
 
     static void rasterize_triangle_in_tile(
         const ScreenTriangle &triangle,
-        const int tri_index,
+        int tri_index,
         Tile &tile
     );
 
     void generate_screen_triangles(std::unordered_map<int, std::shared_ptr<Material>> &material_map) const;
+    void generate_screen_triangles_multithreaded(std::unordered_map<int, std::shared_ptr<Material>> &material_map) const;
     void generate_tiles() const;
     void bin_triangles(const std::vector<ScreenTriangle> &triangles, std::vector<Tile> &tiles) const;
-    void render_tile(Tile &tile, const std::unordered_map<int, std::shared_ptr<Material>> &material_map, const double t) const;
-    int clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangles) const;
+    void render_tile(Tile &tile, const std::unordered_map<int, std::shared_ptr<Material>> &material_map, double t) const;
 
-    void set_resolution_dirty();
-    bool is_resolution_dirty() const;
+    static int clip_against_near_plane(std::array<ClipTriangle, 2> &clip_triangles);
+    static VertexShader::Output default_vertex_shader(const VertexShader::Input &input, const VertexShader::Uniforms &uniforms);
 
-    mutable std::vector<ScreenTriangle> screen_triangles;
+    mutable std::vector<ScreenTriangle> _screen_triangles;
 
-    Camera camera;
-    Vec3d light_dir;
-    double ambient_light;
+    Camera _camera;
+    Vec3d _light_dir;
+    double _ambient_light;
 
-    std::shared_ptr<SceneGraph3D> scene_graph;
-    std::shared_ptr<RenderSurface> surface;
+    std::shared_ptr<SceneGraph3D> _scene_graph;
+    std::shared_ptr<RenderSurface> _surface;
 
-    std::vector<std::shared_ptr<FragmentShader>> fullscreen_shaders;
+    std::vector<std::shared_ptr<FragmentShader>> _fullscreen_shaders;
 
-    bool use_multithreading { true };
-    std::shared_ptr<ThreadPool> thread_pool;
+    bool _multicore_vertex_transformation { true };
+    bool _multicore_rasterization { true };
 
-    mutable Vec2i last_resolution { 0, 0 };
-    mutable std::vector<Tile> tiles;
+    Texture::FilteringMode _texture_filtering_mode { Texture::FilteringMode::NEAREST };
+
+    std::shared_ptr<ThreadPool> _thread_pool;
+
+    mutable Vec2i _last_resolution { 0, 0 };
+    mutable std::vector<Tile> _tiles;
 };
 }

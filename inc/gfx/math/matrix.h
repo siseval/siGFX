@@ -4,7 +4,7 @@
 
 namespace gfx
 {
-template <typename T, int rows, int cols>
+template <typename T, int ROWS, int COLS>
 class Matrix
 {
 
@@ -20,7 +20,7 @@ public:
             int c = 0;
             for (const auto &val : row)
             {
-                data[r][c] = val;
+                _data[r][c] = val;
                 ++c;
             }
             ++r;
@@ -30,11 +30,11 @@ public:
     static Matrix identity()
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = (r == c) ? T(1) : T(0);
+                result(r, c) = r == c ? T(1) : T(0);
             }
         }
         return result;
@@ -43,9 +43,9 @@ public:
     static Matrix zero()
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
                 result(r, c) = T(0);
             }
@@ -55,22 +55,22 @@ public:
 
     T &operator()(int r, int c)
     {
-        return data[r][c];
+        return _data[r][c];
     }
 
     const T &operator()(int r, int c) const
     {
-        return data[r][c];
+        return _data[r][c];
     }
 
     Matrix operator+(const Matrix &other) const
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = data[r][c] + other(r, c);
+                result(r, c) = _data[r][c] + other(r, c);
             }
         }
         return result;
@@ -79,11 +79,11 @@ public:
     Matrix operator-(const Matrix &other) const
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = data[r][c] - other(r, c);
+                result(r, c) = _data[r][c] - other(r, c);
             }
         }
         return result;
@@ -92,11 +92,11 @@ public:
     Matrix operator*(T scalar) const
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = data[r][c] * scalar;
+                result(r, c) = _data[r][c] * scalar;
             }
         }
         return result;
@@ -105,24 +105,24 @@ public:
     Matrix operator/(T scalar) const
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = data[r][c] / scalar;
+                result(r, c) = _data[r][c] / scalar;
             }
         }
         return result;
     }
 
-    Matrix<T, cols, rows> transpose() const
+    Matrix<T, COLS, ROWS> transpose() const
     {
-        Matrix<T, cols, rows> result;
-        for (int r = 0; r < rows; ++r)
+        Matrix<T, COLS, ROWS> result;
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(c, r) = data[r][c];
+                result(c, r) = _data[r][c];
             }
         }
         return result;
@@ -131,28 +131,28 @@ public:
     Matrix apply(std::function<T(T)> func) const
     {
         Matrix result;
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = func(data[r][c]);
+                result(r, c) = func(_data[r][c]);
             }
         }
         return result;
     }
 
     template <int cols2>
-    Matrix<T, rows, cols2> operator*(const Matrix<T, cols, cols2> &other) const
+    Matrix<T, ROWS, cols2> operator*(const Matrix<T, COLS, cols2> &other) const
     {
-        Matrix<T, rows, cols2> result;
-        for (int r = 0; r < rows; ++r)
+        Matrix<T, ROWS, cols2> result;
+        for (int r = 0; r < ROWS; ++r)
         {
             for (int c = 0; c < cols2; ++c)
             {
                 result(r, c) = T();
-                for (int k = 0; k < cols; ++k)
+                for (int k = 0; k < COLS; ++k)
                 {
-                    result(r, c) += data[r][k] * other(k, c);
+                    result(r, c) += _data[r][k] * other(k, c);
                 }
             }
         }
@@ -160,14 +160,14 @@ public:
     }
 
     template <typename U>
-    operator Matrix<U, rows, cols>() const
+    explicit operator Matrix<U, ROWS, COLS>() const
     {
-        Matrix<U, rows, cols> result;
-        for (int r = 0; r < rows; ++r)
+        Matrix<U, ROWS, COLS> result;
+        for (int r = 0; r < ROWS; ++r)
         {
-            for (int c = 0; c < cols; ++c)
+            for (int c = 0; c < COLS; ++c)
             {
-                result(r, c) = static_cast<U>(data[r][c]);
+                result(r, c) = static_cast<U>(_data[r][c]);
             }
         }
         return result;
@@ -175,7 +175,7 @@ public:
 
 private:
 
-    T data[rows][cols];
+    T _data[ROWS][COLS];
 };
 
 using Matrix3x3d = Matrix<double, 3, 3>;

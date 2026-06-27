@@ -11,14 +11,14 @@ void Rasterize::rasterize_filled_triangle(
 )
 {
     Box2d bounds {
-        Vec2d {
-            std::min({ triangle.v0.x, triangle.v1.x, triangle.v2.x }),
-            std::min({ triangle.v0.y, triangle.v1.y, triangle.v2.y })
-        }.round(),
-        Vec2d {
-            std::max({ triangle.v0.x, triangle.v1.x, triangle.v2.x }),
-            std::max({ triangle.v0.y, triangle.v1.y, triangle.v2.y })
-        }.round()
+        static_cast<Vec2d>(Vec2d {
+            std::min({ triangle._v0.x, triangle._v1.x, triangle._v2.x }),
+            std::min({ triangle._v0.y, triangle._v1.y, triangle._v2.y })
+        }.round_to_int()),
+        static_cast<Vec2d>(Vec2d {
+            std::max({ triangle._v0.x, triangle._v1.x, triangle._v2.x }),
+            std::max({ triangle._v0.y, triangle._v1.y, triangle._v2.y })
+        }.round_to_int())
     };
 
     if (clip_bounds.x > 0.0 && clip_bounds.y > 0.0)

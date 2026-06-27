@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <functional>
 
 namespace gfx
@@ -34,9 +33,9 @@ struct Color4
 
     Color4 operator+(const Color4 &other) const;
     Color4 operator-(const Color4 &other) const;
-    Color4 operator*(const double scalar) const;
+    Color4 operator*(double scalar) const;
     Color4 operator*(const Color4 &other) const;
-    Color4 operator/(const double scalar) const;
+    Color4 operator/(double scalar) const;
 
     bool operator==(const Color4 &other) const;
     void operator=(const Color4 &other);
@@ -49,6 +48,14 @@ struct Color4
     int32_t to_i32() const;
 
     static Color4 lerp(const Color4 &a, const Color4 &b, double t);
+    static Color4 bilinear_interp(
+        const Color4 &c00,
+        const Color4 &c10,
+        const Color4 &c01,
+        const Color4 &c11,
+        double sx,
+        double sy
+    );
     static Color4 trilinear_interp(
         const Color4 &c1,
         const Color4 &c2,
@@ -70,7 +77,7 @@ struct Color4
 template <>
 struct std::hash<gfx::Color4>
 {
-    size_t operator()(const gfx::Color4 &color) const
+    size_t operator()(const gfx::Color4 &color) const noexcept
     {
         return std::hash<uint8_t>()(color.r ^ std::hash<uint8_t>()(color.g) << 1) ^ std::hash<uint8_t>()(color.b) << 2;
     }

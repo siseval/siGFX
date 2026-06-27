@@ -8,13 +8,13 @@ const PolygonMesh &Plane3D::get_mesh() const
 {
     if (!is_mesh_dirty())
     {
-        return mesh_data;
+        return _mesh_data;
     }
 
-    mesh_data.clear();
+    _mesh_data.clear();
 
-    const double w { size.x * 0.5 };
-    const double d { size.y * 0.5 };
+    const double w { _size.x * 0.5 };
+    const double d { _size.y * 0.5 };
 
     const std::vector<Vec3d> vertices = {
         { -w, 0, d },
@@ -45,31 +45,31 @@ const PolygonMesh &Plane3D::get_mesh() const
         { 0, 3, 2 }
     };
 
-    mesh_data.set_vertices(std::move(vertices));
-    mesh_data.set_normals(std::move(normals));
-    mesh_data.set_uvs(std::move(uvs));
-    mesh_data.set_faces(std::move(faces));
-    mesh_data.set_colors(std::vector(4, get_color()));
+    _mesh_data.set_vertices(std::move(vertices));
+    _mesh_data.set_normals(std::move(normals));
+    _mesh_data.set_uvs(std::move(uvs));
+    _mesh_data.set_faces(std::move(faces));
+    _mesh_data.set_colors(std::vector(4, get_color()));
 
     set_mesh_dirty(false);
 
-    return mesh_data;
+    return _mesh_data;
 }
 
 
 void Plane3D::set_size(const Vec2d new_size)
 {
-    size = new_size;
+    _size = new_size;
 }
 
 void Plane3D::set_size(const double width, const double height)
 {
-    size = Vec2d { width, height };
+    _size = Vec2d { width, height };
 }
 
 Vec2d Plane3D::get_size() const
 {
-    return size;
+    return _size;
 }
 
 

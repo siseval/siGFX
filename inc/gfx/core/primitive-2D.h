@@ -74,33 +74,33 @@ protected:
     bool is_transform_dirty() const;
     bool is_obb_dirty() const;
 
-    UUID id;
-    std::shared_ptr<Shader2D> shader = std::make_shared<DefaultShader2D>();
+    UUID _id;
+    std::shared_ptr<Shader2D> _shader = std::make_shared<DefaultShader2D>();
 
-    Color4 color { Color4::white() };
+    Color4 _color { Color4::white() };
 
-    Vec2d position { 0.0, 0.0 };
-    Vec2d anchor { 0.0, 0.0 };
-    Vec2d scale { 1.0, 1.0 };
+    Vec2d _position { 0.0, 0.0 };
+    Vec2d _anchor { 0.0, 0.0 };
+    Vec2d _scale { 1.0, 1.0 };
 
-    bool fill = false;
-    bool visible = true;
-    double rotation = 0.0;
-    int depth = 0;
+    bool _fill = false;
+    bool _visible = true;
+    double _rotation = 0.0;
+    int _depth = 0;
 
-    mutable OBB2D cached_obb;
-    mutable bool obb_dirty = true;
+    mutable OBB2D _cached_obb;
+    mutable bool _obb_dirty = true;
 
-    mutable Matrix3x3d cached_transform;
-    mutable bool transform_dirty = true;
-    int64_t transform_version = 0;
+    mutable Matrix3x3d _cached_transform;
+    mutable bool _transform_dirty = true;
+    int64_t _transform_version = 0;
 };
 }
 
 template <>
 struct std::hash<gfx::Primitive2D>
 {
-    size_t operator()(const gfx::Primitive2D &item) const
+    size_t operator()(const gfx::Primitive2D &item) const noexcept
     {
         int64_t hash = std::hash<gfx::Vec2d>()(item.get_position());
         hash ^= std::hash<gfx::Vec2d>()(item.get_scale()) << 1;

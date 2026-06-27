@@ -12,8 +12,8 @@ class TextDemo : public GfxDemo
 
 public:
 
-    explicit TextDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer)
+    explicit TextDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer)
     {
         render2D = renderer->get_render_2D();
     }

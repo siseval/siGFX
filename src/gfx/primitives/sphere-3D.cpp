@@ -3,34 +3,33 @@
 namespace gfx
 {
 
-
 const PolygonMesh &Sphere3D::get_mesh() const
 {
     if (!is_mesh_dirty())
     {
-        return mesh_data;
+        return _mesh_data;
     }
 
-    mesh_data.clear();
+    _mesh_data.clear();
 
     std::vector<Vec3d> vertices;
     std::vector<Vec3d> normals;
     std::vector<Vec2d> uvs;
     std::vector<PolygonMesh::Face> faces;
 
-    for (int r = 0; r < lat_segments; ++r)
+    for (int r = 0; r < _lat_segments; ++r)
     {
-        for (int s = 0; s < lon_segments; ++s)
+        for (int s = 0; s < _lon_segments; ++s)
         {
-            const double phi0 = std::numbers::pi * r / lat_segments;
-            const double phi1 = std::numbers::pi * (r + 1) / lat_segments;
-            const double theta0 = 2.0 * std::numbers::pi * s / lon_segments;
-            const double theta1 = 2.0 * std::numbers::pi * (s + 1) / lon_segments;
+            const double phi0 = std::numbers::pi * r / _lat_segments;
+            const double phi1 = std::numbers::pi * (r + 1) / _lat_segments;
+            const double theta0 = 2.0 * std::numbers::pi * s / _lon_segments;
+            const double theta1 = 2.0 * std::numbers::pi * (s + 1) / _lon_segments;
 
             auto get_pos = [&](const double phi, const double theta) {
-                const double x = radius * std::sin(phi) * std::cos(theta);
-                const double y = radius * std::cos(phi);
-                const double z = radius * std::sin(phi) * std::sin(theta);
+                const double x = _radius * std::sin(phi) * std::cos(theta);
+                const double y = _radius * std::cos(phi);
+                const double z = _radius * std::sin(phi) * std::sin(theta);
 
                 Vec3d pos { x, y, z };
                 Vec3d normal = pos.normalize();
@@ -76,7 +75,7 @@ const PolygonMesh &Sphere3D::get_mesh() const
             {
                 emit(v0, v2, v3, uv0, uv2, uv3);
             }
-            else if (r == lat_segments - 1)
+            else if (r == _lat_segments - 1)
             {
                 emit(v0, v1, v2, uv0, uv1, uv2);
             }
@@ -88,52 +87,52 @@ const PolygonMesh &Sphere3D::get_mesh() const
         }
     }
 
-    mesh_data.set_vertices(std::move(vertices));
-    mesh_data.set_normals(std::move(normals));
-    mesh_data.set_uvs(std::move(uvs));
-    mesh_data.set_faces(std::move(faces));
-    mesh_data.set_colors(std::vector(mesh_data.num_vertices(), get_color()));
+    _mesh_data.set_vertices(std::move(vertices));
+    _mesh_data.set_normals(std::move(normals));
+    _mesh_data.set_uvs(std::move(uvs));
+    _mesh_data.set_faces(std::move(faces));
+    _mesh_data.set_colors(std::vector(_mesh_data.num_vertices(), get_color()));
 
     set_mesh_dirty(false);
 
-    return mesh_data;
+    return _mesh_data;
 }
 
 
 void Sphere3D::set_radius(const double r)
 {
-    radius = r;
+    _radius = r;
     set_mesh_dirty(true);
 }
 
 double Sphere3D::get_radius() const
 {
-    return radius;
+    return _radius;
 }
 
 void Sphere3D::set_num_lat_segments(const int segments)
 {
-    lat_segments = segments;
+    _lat_segments = segments;
     set_mesh_dirty(true);
 }
 
 void Sphere3D::set_num_lon_segments(const int segments)
 {
-    lon_segments = segments;
+    _lon_segments = segments;
     set_mesh_dirty(true);
 }
 
 void Sphere3D::set_num_segments(const int lat, const int lon)
 {
-    lat_segments = lat;
-    lon_segments = lon;
+    _lat_segments = lat;
+    _lon_segments = lon;
     set_mesh_dirty(true);
 }
 
 void Sphere3D::set_num_segments(const int segments)
 {
-    lat_segments = segments;
-    lon_segments = segments;
+    _lat_segments = segments;
+    _lon_segments = segments;
     set_mesh_dirty(true);
 }
 

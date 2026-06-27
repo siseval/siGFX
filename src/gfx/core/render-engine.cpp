@@ -3,72 +3,72 @@
 namespace gfx
 {
 RenderEngine::RenderEngine(std::shared_ptr<RenderSurface> surface)
-    : surface(surface)
+    : _surface(surface)
 {
-    render2D = std::make_shared<Render2D>(surface);
-    render3D = std::make_shared<Render3D>(surface);
+    _render2D = std::make_shared<Render2D>(surface);
+    _render3D = std::make_shared<Render3D>(surface);
 }
 
 void RenderEngine::render_frame() const
 {
-    render3D->draw_frame();
-    render2D->draw_frame();
+    _render3D->draw_frame();
+    _render2D->draw_frame();
 }
 
 void RenderEngine::present_frame() const
 {
-    surface->present();
+    _surface->present();
 }
 
 void RenderEngine::clear_frame() const
 {
-    surface->clear_frame_buffer();
+    _surface->clear_frame_buffer();
 }
 
 void RenderEngine::add_primitive(const std::shared_ptr<Primitive2D> primitive) const
 {
-    render2D->add_item(primitive);
+    _render2D->add_item(primitive);
 }
 
 void RenderEngine::add_primitive(const std::shared_ptr<Primitive3D> primitive) const
 {
-    render3D->add_item(primitive);
+    _render3D->add_item(primitive);
 }
 
 void RenderEngine::remove_primitive(const std::shared_ptr<Primitive2D> primitive) const
 {
-    render2D->remove_item(primitive);
+    _render2D->remove_item(primitive);
 }
 
 void RenderEngine::remove_primitive(const std::shared_ptr<Primitive3D> primitive) const
 {
-    render3D->remove_item(primitive);
+    _render3D->remove_item(primitive);
 }
 
 bool RenderEngine::contains_primitive(const std::shared_ptr<Primitive2D> primitive) const
 {
-    return render2D->contains_item(primitive);
+    return _render2D->contains_item(primitive);
 }
 
 bool RenderEngine::contains_primitive(const std::shared_ptr<Primitive3D> primitive) const
 {
-    return render3D->contains_item(primitive);
+    return _render3D->contains_item(primitive);
 }
 
 void RenderEngine::clear_scene() const
 {
-    render2D->clear_items();
-    render3D->clear_items();
+    _render2D->clear_items();
+    _render3D->clear_items();
 }
 
 void RenderEngine::clear_3D_scene() const
 {
-    render3D->clear_items();
+    _render3D->clear_items();
 }
 
 void RenderEngine::clear_2D_scene() const
 {
-    render2D->clear_items();
+    _render2D->clear_items();
 }
 
 int RenderEngine::num_primitives() const
@@ -78,124 +78,124 @@ int RenderEngine::num_primitives() const
 
 int RenderEngine::num_2D_primitives() const
 {
-    return render2D->num_items();
+    return _render2D->num_items();
 }
 
 int RenderEngine::num_3D_primitives() const
 {
-    return render3D->num_items();
+    return _render3D->num_items();
 }
 
 void RenderEngine::set_resolution(const Vec2i new_resolution) const
 {
-    surface->resize(new_resolution);
+    _surface->resize(new_resolution);
 }
 
 void RenderEngine::set_resolution(const int width, const int height) const
 {
-    surface->resize(Vec2i { width, height });
+    _surface->resize(Vec2i { width, height });
 }
 
 Vec2i RenderEngine::get_resolution() const
 {
-    return surface->get_resolution();
-}
-
-const Camera &RenderEngine::get_camera() const
-{
-    return render3D->get_camera();
-}
-
-Camera &RenderEngine::get_camera()
-{
-    return render3D->get_camera();
+    return _surface->get_resolution();
 }
 
 void RenderEngine::set_camera(const Camera &cam) const
 {
-    render3D->set_camera(cam);
+    _render3D->set_camera(cam);
 }
 
 void RenderEngine::set_light_direction(const Vec3d direction) const
 {
-    render3D->set_light_direction(direction);
+    _render3D->set_light_direction(direction);
 }
 
 void RenderEngine::set_light_direction(const double x, const double y, const double z) const
 {
-    render3D->set_light_direction(Vec3d { x, y, z });
+    _render3D->set_light_direction(Vec3d { x, y, z });
 }
 
 void RenderEngine::set_ambient_light(const double intensity) const
 {
-    render3D->set_ambient_light(intensity);
+    _render3D->set_ambient_light(intensity);
+}
+
+const Camera &RenderEngine::get_camera() const
+{
+    return _render3D->get_camera();
+}
+
+Camera &RenderEngine::get_camera()
+{
+    return _render3D->get_camera();
 }
 
 Vec3d RenderEngine::get_light_direction() const
 {
-    return render3D->get_light_direction();
+    return _render3D->get_light_direction();
 }
 
 double RenderEngine::get_ambient_light() const
 {
-    return render3D->get_ambient_light();
+    return _render3D->get_ambient_light();
 }
 
 void RenderEngine::set_font_directory(const std::filesystem::path &path) const
 {
-    render2D->set_font_directory(path);
+    _render2D->set_font_directory(path);
 }
 
 void RenderEngine::load_font_directory(const std::filesystem::path &path) const
 {
-    render2D->load_font_directory(path);
+    _render2D->load_font_directory(path);
 }
 
 std::filesystem::path RenderEngine::get_font_directory() const
 {
-    return render2D->get_font_directory();
+    return _render2D->get_font_directory();
 }
 
 std::shared_ptr<FontTTF> RenderEngine::get_font(const std::string &name) const
 {
-    return render2D->get_font(name);
+    return _render2D->get_font(name);
 }
 
 bool RenderEngine::is_font_loaded(const std::string &name) const
 {
-    return render2D->is_font_loaded(name);
+    return _render2D->is_font_loaded(name);
 }
 
 void RenderEngine::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
 {
-    surface = new_surface;
-    render2D->set_render_surface(new_surface);
-    render3D->set_render_surface(new_surface);
+    _surface = new_surface;
+    _render2D->set_render_surface(new_surface);
+    _render3D->set_render_surface(new_surface);
 }
 
 std::shared_ptr<RenderSurface> RenderEngine::get_render_surface() const
 {
-    return surface;
+    return _surface;
 }
 
 std::shared_ptr<Render2D> RenderEngine::get_render_2D() const
 {
-    return render2D;
+    return _render2D;
 }
 
 std::shared_ptr<Render3D> RenderEngine::get_render_3D() const
 {
-    return render3D;
+    return _render3D;
 }
 
 void RenderEngine::set_clear_color(const Color4 color) const
 {
-    surface->set_clear_color(color);
+    _surface->set_clear_color(color);
 }
 
 Color4 RenderEngine::get_clear_color() const
 {
-    return surface->get_clear_color();
+    return _surface->get_clear_color();
 }
 
 std::shared_ptr<Circle2D> RenderEngine::create_circle(
@@ -205,7 +205,7 @@ std::shared_ptr<Circle2D> RenderEngine::create_circle(
     const double line_thickness
 ) const
 {
-    return render2D->create_circle(position, radius, color, line_thickness);
+    return _render2D->create_circle(position, radius, color, line_thickness);
 }
 
 std::shared_ptr<Circle2D> RenderEngine::create_circle(
@@ -226,7 +226,7 @@ std::shared_ptr<Ellipse2D> RenderEngine::create_ellipse(
     const double line_thickness
 ) const
 {
-    return render2D->create_ellipse(position, radius, color, line_thickness);
+    return _render2D->create_ellipse(position, radius, color, line_thickness);
 }
 
 std::shared_ptr<Ellipse2D> RenderEngine::create_ellipse(
@@ -248,7 +248,7 @@ std::shared_ptr<Polyline2D> RenderEngine::create_polyline(
     const double line_thickness
 ) const
 {
-    return render2D->create_polyline(position, points, color, line_thickness);
+    return _render2D->create_polyline(position, points, color, line_thickness);
 }
 
 std::shared_ptr<Polyline2D> RenderEngine::create_polyline(
@@ -268,7 +268,7 @@ std::shared_ptr<Polygon2D> RenderEngine::create_polygon(
     const Color4 color
 ) const
 {
-    return render2D->create_polygon(position, points, color);
+    return _render2D->create_polygon(position, points, color);
 }
 
 std::shared_ptr<Polygon2D> RenderEngine::create_polygon(

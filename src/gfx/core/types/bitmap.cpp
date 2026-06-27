@@ -10,43 +10,43 @@ namespace gfx
 {
 
 Bitmap::Bitmap(const Vec2i resolution)
-    : resolution(resolution),
-      pixels(std::vector(resolution.x * resolution.y, Color4 { 0, 0, 0, 255 }))
+    : _resolution(resolution),
+      _pixels(std::vector(resolution.x * resolution.y, Color4 { 0, 0, 0, 255 }))
 {
     if (resolution.x <= 0 || resolution.y <= 0)
     {
-        this->resolution = { 1, 1 };
-        pixels.resize(1, Color4 { 0, 0, 0, 255 });
+        this->_resolution = { 1, 1 };
+        _pixels.resize(1, Color4 { 0, 0, 0, 255 });
     }
 }
 
 void Bitmap::resize(const Vec2i new_resolution)
 {
-    resolution = new_resolution;
-    pixels.resize(resolution.x * resolution.y, Color4 { 0, 0, 0, 255 });
+    _resolution = new_resolution;
+    _pixels.resize(_resolution.x * _resolution.y, Color4 { 0, 0, 0, 255 });
 }
 
 void Bitmap::set_pixel(const Vec2i pos, const Color4 color)
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
+    if (pos.x < 0 || pos.y < 0 || pos.x >= _resolution.x || pos.y >= _resolution.y)
     {
         return;
     }
-    pixels[pos.x + pos.y * resolution.x] = color;
+    _pixels[pos.x + pos.y * _resolution.x] = color;
 }
 
 Color4 Bitmap::get_pixel(const Vec2i pos) const
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= resolution.x || pos.y >= resolution.y)
+    if (pos.x < 0 || pos.y < 0 || pos.x >= _resolution.x || pos.y >= _resolution.y)
     {
         return Color4 { 0, 0, 0, 255 };
     }
-    return pixels[pos.x + pos.y * resolution.x];
+    return _pixels[pos.x + pos.y * _resolution.x];
 }
 
 void Bitmap::compress_colors(const std::vector<Color4> &palette)
 {
-    for (auto &pixel : pixels)
+    for (auto &pixel : _pixels)
     {
         auto it = std::ranges::min_element(
             palette,

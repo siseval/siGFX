@@ -7,11 +7,8 @@
 namespace gfx
 {
 template <typename T>
-class Vec3
+struct Vec3
 {
-
-public:
-
     T x;
     T y;
     T z;
@@ -55,9 +52,9 @@ public:
         };
     }
 
-    static Vec3 from_angles(double theta, double phi, double length = 1.0)
+    static Vec3 from_angles(const double theta, const double phi, const double length = 1.0)
     {
-        double sin_phi = std::sin(phi);
+        const double sin_phi = std::sin(phi);
         return {
             static_cast<T>(length * sin_phi * std::cos(theta)),
             static_cast<T>(length * sin_phi * std::sin(theta)),
@@ -65,7 +62,7 @@ public:
         };
     }
 
-    static Vec3 from_angles_degrees(double theta_deg, double phi_deg, double length = 1.0)
+    static Vec3 from_angles_degrees(const double theta_deg, const double phi_deg, const double length = 1.0)
     {
         return from_angles(
             theta_deg * std::numbers::pi / 180.0,
@@ -76,7 +73,7 @@ public:
 
     Vec3 limit(const double max_magnitude)
     {
-        double magnitude = length();
+        const double magnitude = length();
         if (magnitude > max_magnitude)
         {
             return normalize() * max_magnitude;
@@ -226,7 +223,7 @@ public:
     }
 
     template <typename U>
-    operator Vec3<U>() const
+    explicit operator Vec3<U>() const
     {
         return { static_cast<U>(x), static_cast<U>(y), static_cast<U>(z) };
     }

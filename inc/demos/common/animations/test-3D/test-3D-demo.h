@@ -1,11 +1,11 @@
 #pragma once
 
 #include "demos/common/core/gfx-demo.h"
+#include "gfx/primitives/cone-3D.h"
 #include "gfx/primitives/cuboid-3D.h"
 #include "gfx/primitives/plane-3D.h"
-#include "gfx/primitives/sphere-3D.h"
-#include "gfx/primitives/cone-3D.h"
 #include "gfx/primitives/polygon-3D.h"
+#include "gfx/primitives/sphere-3D.h"
 
 #include <map>
 
@@ -17,21 +17,43 @@ class Test3DDemo : public GfxDemo
 
 public:
 
-    Test3DDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer) {}
+    Test3DDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer) {}
 
     void init() override;
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_key(demos::KeyEvent event) override;
-    void report_mouse(demos::MouseEvent event) override;
+    void report_key(KeyEvent event) override;
+    void report_mouse(MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
         return {
         };
     }
+
+struct Ripple
+{
+    gfx::Vec2d center;
+    double start_time;
+};
+
+class WaterSurfaceShader : public gfx::FragmentShader
+{
+
+public:
+
+    gfx::Vec2d mouse_uv;
+    std::vector<std::shared_ptr<Ripple>> ripples;
+    double ripple_lifetime_sec = 5.0;
+    gfx::Color4 base_color = gfx::Color4(0.0, 0.3, 0.5);
+
+    mutable gfx::Color4 prev_color;
+
+    gfx::Color4 frag(const Input &input, const Uniforms &uniforms) const override;
+};
+
 
 private:
 
@@ -45,6 +67,17 @@ private:
     std::shared_ptr<gfx::Plane3D> plane;
     std::shared_ptr<gfx::Cone3D> cone;
     std::shared_ptr<gfx::Polygon3D> teapot;
+
+    void spawn_ripple(gfx::Vec2d position) const;
+    gfx::Vec2d get_random_position() const;
+    void update_ripples(double dt) const;
+
+    std::shared_ptr<WaterSurfaceShader> water_shader;
+    std::shared_ptr<gfx::Plane3D> quad;
+    bool random_spawn = true;
+    double random_spawn_interval_sec = 0.2;
+    double random_spawn_timer = 0.0;
+
 
     std::vector<std::shared_ptr<gfx::Primitive3D>> scene_items;
 

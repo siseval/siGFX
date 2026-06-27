@@ -29,10 +29,10 @@ public:
 
 private:
 
-    Vec2d radius;
-    double line_thickness { 1.0 };
-    bool filled { false };
+    Vec2d _radius;
+    double _line_thickness { 1.0 };
+    bool _filled { false };
 
-    double MIN_MULTITHREAD_PIXELS { 10000 * 10000 };
+    double _min_multithread_pixels { 10000 * 10000 };
 };
 }

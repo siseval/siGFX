@@ -7,131 +7,6 @@ namespace demos
 
 using namespace gfx;
 
-void Simulate::three_body_problem(SpaceDemo &demo)
-{
-    demo.set_camera_pos({ 0, 0 });
-    demo.set_camera_size(4.0e11);
-
-    demo.spawn_body(
-        "body 1",
-        { -1.0e11, 0.0 },
-        { 0.0, -1.2e4 },
-        1.0e10,
-        2.0e30,
-        true,
-        { 1.0, 0.5, 0.5, 1.0 }
-    );
-
-    demo.spawn_body(
-        "body 2",
-        { 1.0e11, 0.0 },
-        { 0.0, 1.2e4 },
-        1.0e10,
-        2.0e30,
-        true,
-        { 0.5, 1.0, 0.5, 1.0 }
-    );
-
-    demo.spawn_body(
-        "body 3",
-        { 0.0, 1.5e11 },
-        { -1.5e4, 0.0 },
-        1.0e10,
-        2.0e30,
-        true,
-        { 0.5, 0.5, 1.0, 1.0 }
-    );
-}
-
-void Simulate::binary_system(SpaceDemo &demo)
-{
-    demo.set_camera_pos({ 0, 0 });
-    demo.set_camera_size(10.0);
-
-    constexpr double mass1 = 1.0;
-    constexpr double mass2 = 0.8;
-    constexpr double separation = 1.0;
-
-    constexpr double r1 = mass2 / (mass1 + mass2) * separation;
-    double r2 = mass1 / (mass1 + mass2) * separation;
-
-    const double v_total = sqrt(units::G * (mass1 + mass2) / separation);
-
-    demo.spawn_body(
-        "star_a",
-        { -r1, 0.0 },
-        { 0.0, v_total * (mass2 / (mass1 + mass2)) },
-        0.00465,
-        mass1,
-        false,
-        { 1.0, 0.9, 0.6, 1.0 }
-    );
-
-    demo.spawn_body(
-        "star_b",
-        { r2, 0.0 },
-        { 0.0, -v_total * (mass1 / (mass1 + mass2)) },
-        0.0040,
-        mass2,
-        false,
-        { 0.8, 0.9, 1.0, 1.0 }
-    );
-
-    auto orbital_velocity = [](const double GM, const double radius_AU) {
-        return sqrt(GM / radius_AU);
-    };
-
-    constexpr double system_mass = mass1 + mass2;
-
-    struct Planet
-    {
-        std::string name;
-        double radius_AU;
-        double mass_solar;
-        double radius_AU_body;
-        Color4 color;
-    };
-
-    Planet planets[] = {
-        { "circumbinary_1", 2.5, 1e-5, 2.5e-5, { 0.6, 0.8, 1.0, 1.0 } },
-        { "circumbinary_2", 4.0, 2e-5, 3.0e-5, { 1.0, 0.6, 0.2, 1.0 } },
-        { "circumbinary_giant", 6.5, 9e-4, 4.0e-4, { 1.0, 0.7, 0.3, 1.0 } }
-    };
-
-    for (const auto &p : planets)
-    {
-        double v = orbital_velocity(units::G * system_mass, p.radius_AU);
-        demo.spawn_body(
-            p.name,
-            { p.radius_AU, 0.0 },
-            { 0.0, v },
-            p.radius_AU_body,
-            p.mass_solar,
-            false,
-            p.color
-        );
-    }
-
-    constexpr double star_b_orbit_radius = 0.2;
-    const double star_b_orbit_velocity = orbital_velocity(units::G * mass2, star_b_orbit_radius);
-
-    const Vec2d star_b_pos = { r2, 0.0 };
-    const Vec2d star_b_vel = { 0.0, -v_total * (mass1 / (mass1 + mass2)) };
-
-    const Vec2d moon_pos = { star_b_pos.x + star_b_orbit_radius, star_b_pos.y };
-    const Vec2d moon_vel = { star_b_vel.x, star_b_vel.y + star_b_orbit_velocity };
-
-    demo.spawn_body(
-        "captured_moon",
-        moon_pos,
-        moon_vel,
-        1.5e-5,
-        5e-7,
-        false,
-        { 0.7, 0.7, 0.7, 1.0 }
-    );
-}
-
 void Simulate::solar_system(SpaceDemo &demo)
 {
     demo.set_camera_pos({ 0, 0 });
@@ -211,13 +86,13 @@ void Simulate::solar_system(SpaceDemo &demo)
 
     for (const auto &m : moons)
     {
-        const auto &planet = planets[m.planet_index];
+        const auto &planet     = planets[m.planet_index];
         const double r_moon_AU = km_to_au(m.orbital_radius_km);
-        const double v_moon = orbital_velocity(units::G * planet.mass_solar, r_moon_AU);
+        const double v_moon    = orbital_velocity(units::G * planet.mass_solar, r_moon_AU);
 
-        const Vec2d pos = { planet.radius_AU + r_moon_AU, 0.0 };
+        const Vec2d pos       = { planet.radius_AU + r_moon_AU, 0.0 };
         const double v_planet = orbital_velocity(units::G, planet.radius_AU);
-        const Vec2d vel = { 0.0, v_planet + v_moon };
+        const Vec2d vel       = { 0.0, v_planet + v_moon };
 
         demo.spawn_body(
             m.name,
@@ -229,6 +104,42 @@ void Simulate::solar_system(SpaceDemo &demo)
             m.color
         );
     }
+}
+
+void Simulate::three_body_problem(SpaceDemo &demo)
+{
+    demo.set_camera_pos({ 0, 0 });
+    demo.set_camera_size(4.0e11);
+
+    demo.spawn_body(
+        "body 1",
+        { -1.0e11, 0.0 },
+        { 0.0, -1.2e4 },
+        1.0e10,
+        2.0e30,
+        true,
+        { 1.0, 0.5, 0.5, 1.0 }
+    );
+
+    demo.spawn_body(
+        "body 2",
+        { 1.0e11, 0.0 },
+        { 0.0, 1.2e4 },
+        1.0e10,
+        2.0e30,
+        true,
+        { 0.5, 1.0, 0.5, 1.0 }
+    );
+
+    demo.spawn_body(
+        "body 3",
+        { 0.0, 1.5e11 },
+        { -1.5e4, 0.0 },
+        1.0e10,
+        2.0e30,
+        true,
+        { 0.5, 0.5, 1.0, 1.0 }
+    );
 }
 
 void Simulate::chaos(SpaceDemo &demo)
@@ -263,6 +174,95 @@ void Simulate::chaos(SpaceDemo &demo)
     demo.spawn_body("frag_4", { -2.0e6, -3.0e6 }, { 1.2e4, -1.1e4 }, 3.0e5, 3.0e20, { 0.8, 0.4, 0.4, 1.0 });
 
     demo.spawn_body("flyby", { -1.0e8, -1.0e8 }, { 5.0e4, 6.0e4 }, 2.0e6, 1.0e22, { 0.9, 1.0, 0.9, 1.0 });
+}
+
+void Simulate::binary_system(SpaceDemo &demo)
+{
+    demo.set_camera_pos({ 0, 0 });
+    demo.set_camera_size(10.0);
+
+    constexpr double mass1      = 1.0;
+    constexpr double mass2      = 0.8;
+    constexpr double separation = 1.0;
+
+    constexpr double r1 = mass2 / (mass1 + mass2) * separation;
+    double r2           = mass1 / (mass1 + mass2) * separation;
+
+    const double v_total = sqrt(units::G * (mass1 + mass2) / separation);
+
+    demo.spawn_body(
+        "star_a",
+        { -r1, 0.0 },
+        { 0.0, v_total * (mass2 / (mass1 + mass2)) },
+        0.00465,
+        mass1,
+        false,
+        { 1.0, 0.9, 0.6, 1.0 }
+    );
+
+    demo.spawn_body(
+        "star_b",
+        { r2, 0.0 },
+        { 0.0, -v_total * (mass1 / (mass1 + mass2)) },
+        0.0040,
+        mass2,
+        false,
+        { 0.8, 0.9, 1.0, 1.0 }
+    );
+
+    auto orbital_velocity = [](const double GM, const double radius_AU) {
+        return sqrt(GM / radius_AU);
+    };
+
+    constexpr double system_mass = mass1 + mass2;
+
+    struct Planet
+    {
+        std::string name;
+        double radius_AU;
+        double mass_solar;
+        double radius_AU_body;
+        Color4 color;
+    };
+
+    Planet planets[] = {
+        { "circumbinary_1", 2.5, 1e-5, 2.5e-5, { 0.6, 0.8, 1.0, 1.0 } },
+        { "circumbinary_2", 4.0, 2e-5, 3.0e-5, { 1.0, 0.6, 0.2, 1.0 } },
+        { "circumbinary_giant", 6.5, 9e-4, 4.0e-4, { 1.0, 0.7, 0.3, 1.0 } }
+    };
+
+    for (const auto &p : planets)
+    {
+        double v = orbital_velocity(units::G * system_mass, p.radius_AU);
+        demo.spawn_body(
+            p.name,
+            { p.radius_AU, 0.0 },
+            { 0.0, v },
+            p.radius_AU_body,
+            p.mass_solar,
+            false,
+            p.color
+        );
+    }
+
+    constexpr double star_b_orbit_radius = 0.2;
+    const double star_b_orbit_velocity   = orbital_velocity(units::G * mass2, star_b_orbit_radius);
+
+    const Vec2d star_b_pos = { r2, 0.0 };
+    const Vec2d star_b_vel = { 0.0, -v_total * (mass1 / (mass1 + mass2)) };
+
+    const Vec2d moon_pos = { star_b_pos.x + star_b_orbit_radius, star_b_pos.y };
+    const Vec2d moon_vel = { star_b_vel.x, star_b_vel.y + star_b_orbit_velocity };
+
+    demo.spawn_body(
+        "captured_moon",
+        moon_pos,
+        moon_vel,
+        1.5e-5,
+        5e-7,
+        false,
+        { 0.7, 0.7, 0.7, 1.0 }
+    );
 }
 
 }

@@ -20,7 +20,7 @@ OBB3D::OBB3D(const OBB3D &other)
 
 Vec3d OBB3D::get_center() const
 {
-    return origin + (side_x * 0.5) + (side_y * 0.5) + (side_z * 0.5);
+    return origin + side_x * 0.5 + side_y * 0.5 + side_z * 0.5;
 }
 
 Vec3d OBB3D::get_extent() const
@@ -34,11 +34,11 @@ Vec3d OBB3D::get_extent() const
 
 Vec3d OBB3D::get_uvw(const Vec3d point) const
 {
-    Vec3d d { point - origin };
+    const Vec3d d { point - origin };
 
-    double u { Vec3d::dot(d, side_x) / Vec3d::dot(side_x, side_x) };
-    double v { Vec3d::dot(d, side_y) / Vec3d::dot(side_y, side_y) };
-    double w { Vec3d::dot(d, side_z) / Vec3d::dot(side_z, side_z) };
+    const double u { Vec3d::dot(d, side_x) / Vec3d::dot(side_x, side_x) };
+    const double v { Vec3d::dot(d, side_y) / Vec3d::dot(side_y, side_y) };
+    const double w { Vec3d::dot(d, side_z) / Vec3d::dot(side_z, side_z) };
 
     return Vec3d { u, v, w };
 }

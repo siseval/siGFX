@@ -4,7 +4,6 @@
 #include "gfx/core/scene-graph-2D.h"
 #include "gfx/core/types/color4.h"
 // #include "gfx/core/types/bitmap.h"
-#include "gfx/primitives/bitmap-2D.h"
 #include "gfx/primitives/circle-2D.h"
 #include "gfx/primitives/ellipse-2D.h"
 #include "gfx/primitives/polygon-2D.h"
@@ -142,16 +141,16 @@ private:
 
     std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> get_draw_queue() const;
 
-    std::shared_ptr<RenderSurface> surface;
-    std::shared_ptr<SceneGraph2D> scene_graph;
-    std::shared_ptr<FontManagerTTF> font_manager;
+    std::shared_ptr<RenderSurface> _surface;
+    std::shared_ptr<SceneGraph2D> _scene_graph;
+    std::shared_ptr<FontManagerTTF> _font_manager;
 
-    std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> draw_queue;
+    std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> _draw_queue;
 
-    RenderSurface::BlendMode blend_mode = RenderSurface::BlendMode::ALPHA;
+    RenderSurface::BlendMode _blend_mode = RenderSurface::BlendMode::ALPHA;
 
-    mutable double last_frame_time_us = 0.0;
+    mutable double _last_frame_time_us = 0.0;
 
-    Vec2d viewport_scaling;
+    Vec2d _viewport_scaling;
 };
 }

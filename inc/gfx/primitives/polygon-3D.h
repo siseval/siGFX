@@ -4,6 +4,7 @@
 
 namespace gfx
 {
+    
 class Polygon3D final : public Primitive3D
 {
 
@@ -11,10 +12,7 @@ public:
 
     const PolygonMesh &get_mesh() const override;
 
-    void set_mesh(const PolygonMesh &mesh);
-
-    void calculate_normals();
-
-    void clear_mesh();
+    void set_mesh(const PolygonMesh &mesh) const;
 };
+    
 }

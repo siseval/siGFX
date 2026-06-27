@@ -19,6 +19,6 @@ public:
 
 private:
 
-    Vec3d size;
+    Vec3d _size;
 };
 }

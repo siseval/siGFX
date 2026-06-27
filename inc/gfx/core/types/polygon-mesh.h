@@ -1,10 +1,10 @@
 #pragma once
 
+#include "gfx/core/types/bounding-sphere.h"
 #include "gfx/core/types/color4.h"
 #include "gfx/math/box3.h"
-#include "gfx/math/vec3.h"
 #include "gfx/math/vec2.h"
-#include "gfx/core/types/bounding-sphere.h"
+#include "gfx/math/vec3.h"
 
 #include <vector>
 
@@ -42,21 +42,22 @@ public:
     const std::vector<Face> &get_faces() const;
 
     size_t num_vertices() const;
-
+    
     void clear();
 
 private:
 
-    std::vector<Vec3d> vertices;
-    std::vector<Vec3d> normals;
-    std::vector<Vec2d> uv_coords;
-    std::vector<Color4> colors;
-    std::vector<Face> faces;
+    std::vector<Vec3d> _vertices;
+    std::vector<Vec3d> _normals;
+    std::vector<Vec2d> _uv_coords;
+    std::vector<Color4> _colors;
+    std::vector<Face> _faces;
 
-    mutable bool aabb_dirty;
-    mutable bool bounding_sphere_dirty;
-    mutable Box3d aabb;
-    mutable BoundingSphere bounding_sphere;
+    mutable bool _aabb_dirty;
+    mutable bool _bounding_sphere_dirty;
+    mutable Box3d _aabb;
+    mutable BoundingSphere _bounding_sphere;
 
 };
+
 }

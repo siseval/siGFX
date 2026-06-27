@@ -1,28 +1,28 @@
 #include <gfx/core/thread-pool.h>
 
-#include <vector>
 #include <atomic>
-#include <thread>
 #include <functional>
+#include <thread>
+#include <vector>
 
 namespace gfx
 {
 
-ThreadPool::ThreadPool(int num_threads)
-    : barrier(num_threads + 1),
-      running(true)
+ThreadPool::ThreadPool(const int num_threads)
+    : _barrier(num_threads + 1),
+      _running(true)
 {
     for (int i = 0; i < num_threads; ++i)
     {
-        workers.emplace_back([this] { worker_loop(); });
+        _workers.emplace_back([this] { worker_loop(); });
     }
 }
 
 ThreadPool::~ThreadPool()
 {
-    running = false;
-    barrier.arrive_and_drop();
-    for (auto &worker : workers)
+    _running = false;
+    _barrier.arrive_and_drop();
+    for (auto &worker : _workers)
     {
         if (worker.joinable())
         {
@@ -33,27 +33,27 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::worker_loop()
 {
-    while (running)
+    while (_running)
     {
-        barrier.arrive_and_wait();
+        _barrier.arrive_and_wait();
 
-        if (!running)
+        if (!_running)
         {
             return;
         }
 
         while (true)
         {
-            int i = next_index.fetch_add(1, std::memory_order_relaxed);
-            if (i >= total_work)
+            const int i = _next_index.fetch_add(1, std::memory_order_relaxed);
+            if (i >= _total_work)
             {
                 break;
             }
 
-            work_fn(i);
+            _work_fn(i);
         }
 
-        barrier.arrive_and_wait();
+        _barrier.arrive_and_wait();
     }
 }
 

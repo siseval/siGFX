@@ -14,7 +14,7 @@ struct Frustum
         double d;
 
         Plane();
-        Plane(const Vec3d normal, const double d);
+        Plane(Vec3d normal, double d);
 
         double signed_distance_to_point(const Vec3d &point) const;
     };
@@ -30,7 +30,7 @@ struct Frustum
     Plane far;
 
     bool point_in_frustum(const Vec3d &point) const;
-    bool sphere_in_frustum(const Vec3d &center, const double radius) const;
+    bool sphere_in_frustum(const Vec3d &center, double radius) const;
 };
 
 }

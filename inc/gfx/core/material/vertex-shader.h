@@ -1,7 +1,7 @@
 #pragma once 
 
-#include "gfx/math/vec3.h"
 #include "gfx/math/matrix.h"
+#include "gfx/math/vec3.h"
 
 namespace gfx
 {

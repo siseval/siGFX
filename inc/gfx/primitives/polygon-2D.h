@@ -48,7 +48,7 @@ private:
         std::vector<Vec2i> &pixels
     );
 
-    std::vector<Polygon::Component> components;
+    std::vector<Polygon::Component> _components;
     static constexpr int CORNER_SEGMENTS { 8 };
 };
 }

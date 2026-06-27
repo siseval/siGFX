@@ -8,11 +8,8 @@
 namespace gfx
 {
 template <typename T>
-class Vec2
+struct Vec2
 {
-
-public:
-
     T x;
     T y;
 
@@ -54,7 +51,7 @@ public:
     static Vec2 bezier(const Vec2 &p0, const Vec2 &p1, const Vec2 &p2, double t)
     {
         t = t < 0 ? 0 : t > 1 ? 1 : t;
-        double u = 1 - t;
+        const double u = 1 - t;
         return {
             static_cast<T>(u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x),
             static_cast<T>(u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y)
@@ -69,7 +66,7 @@ public:
 
     Vec2 limit(const double max_magnitude)
     {
-        double magnitude = length();
+        const double magnitude = length();
         if (magnitude > max_magnitude)
         {
             return normalize() * max_magnitude;
@@ -79,8 +76,8 @@ public:
 
     Vec2 rotate_towards(Vec2 &target, const double max_angle) const
     {
-        double current_angle { angle() };
-        double target_angle { target.angle() };
+        const double current_angle { angle() };
+        const double target_angle { target.angle() };
         double angle_diff { target_angle - current_angle };
 
         if (angle_diff > std::numbers::pi)
@@ -96,11 +93,8 @@ public:
         {
             return target;
         }
-        else
-        {
-            double new_angle { current_angle + (angle_diff > 0 ? max_angle : -max_angle) };
-            return from_angle(new_angle, length());
-        }
+        const double new_angle { current_angle + (angle_diff > 0 ? max_angle : -max_angle) };
+        return from_angle(new_angle, length());
     }
 
     Vec2 rotate_towards_degrees(Vec2 &target, const double max_angle) const
@@ -149,7 +143,7 @@ public:
         return std::sqrt(x * x + y * y);
     }
 
-    Vec2<int> round() const
+    Vec2<int> round_to_int() const
     {
         return { static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) };
     }
@@ -275,7 +269,7 @@ public:
     }
 
     template <typename U>
-    operator Vec2<U>() const
+    explicit operator Vec2<U>() const
     {
         return { static_cast<U>(x), static_cast<U>(y) };
     }

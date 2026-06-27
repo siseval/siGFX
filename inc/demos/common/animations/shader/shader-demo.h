@@ -29,13 +29,13 @@ public:
 };
 
 
-class ShaderDemo : public demos::GfxDemo
+class ShaderDemo : public GfxDemo
 {
 
 public:
 
-    ShaderDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer)
+    ShaderDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer)
     {
         render2D = renderer->get_render_2D();
     }
@@ -44,12 +44,12 @@ public:
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_mouse(demos::MouseEvent event) override;
+    void report_mouse(MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
-        gfx::Vec2d mouse_uv { quad->get_uv(mouse_position) };
-        WaterSurfaceShader* water_shader = static_cast<WaterSurfaceShader*>(shader.get());
+        const gfx::Vec2d mouse_uv { quad->get_uv(mouse_position) };
+        const WaterSurfaceShader* water_shader = shader.get();
         return {
             "uv: (" + std::to_string(mouse_uv.x) + ", " + std::to_string(mouse_uv.y) + ")"
             "\nnum_ripples: " + std::to_string(water_shader->ripples.size()) +

@@ -2,7 +2,6 @@
 
 #include <filesystem>
 
-#include "gfx/text/font-manager.h"
 #include "gfx/text/font-ttf.h"
 
 namespace gfx
@@ -48,7 +47,7 @@ private:
         uint16_t glyph_index
     );
 
-    std::unordered_map<std::string, std::shared_ptr<FontTTF>> loaded_fonts;
-    std::filesystem::path font_directory_path;
+    std::unordered_map<std::string, std::shared_ptr<FontTTF>> _loaded_fonts;
+    std::filesystem::path _font_directory_path;
 };
 }

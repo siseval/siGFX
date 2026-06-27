@@ -5,12 +5,12 @@ namespace gfx
 
 const PolygonMesh &Polygon3D::get_mesh() const
 {
-    return mesh_data;
+    return _mesh_data;
 }
 
-void Polygon3D::set_mesh(const PolygonMesh &mesh)
+void Polygon3D::set_mesh(const PolygonMesh &mesh) const
 {
-    mesh_data = mesh;
+    _mesh_data = mesh;
 }
 
 

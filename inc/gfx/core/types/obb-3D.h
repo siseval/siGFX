@@ -7,9 +7,6 @@ namespace gfx
 
 struct OBB3D
 {
-
-public:
-
     Vec3d origin;
     Vec3d side_x;
     Vec3d side_y;

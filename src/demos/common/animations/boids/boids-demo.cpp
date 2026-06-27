@@ -11,12 +11,11 @@ void BoidsDemo::init()
     const Vec2i resolution { render2D->get_resolution() };
 
     render2D->clear_items();
-    render2D->get_render_surface()->clear_palette();
     boids.clear();
 
-    perception_radius = resolution.x * 0.05;
-    max_speed = resolution.x * 0.25;
-    max_force = max_speed * 0.2;
+    perception_radius  = resolution.x * 0.05;
+    max_speed          = resolution.x * 0.25;
+    max_force          = max_speed * 0.2;
     desired_separation = perception_radius * 0.5;
 
     mouse_influence_radius = perception_radius * 2.0;
@@ -33,62 +32,34 @@ void BoidsDemo::init()
     }
 }
 
-void BoidsDemo::spawn_boid(const Vec2d position, const Vec2d velocity)
+void BoidsDemo::render_frame(const double dt)
 {
-    const std::vector<Vec2d> boid_shape {
-        { 0, -5 },
-        { 10, 0 },
-        { 0, 5 },
-        { 2, 0 },
-    };
-    const auto boid_primitive { render2D->create_polyline(position, boid_shape, Color4(1.0, 1.0, 1.0, 1.0), 1.0) };
-    const auto boid { std::make_shared<Boid>() };
-    boid->velocity = velocity;
-    boid->position = position;
-    boid->shape = boid_primitive;
-    boid->shape->set_anchor({ 0.2, 0.5 });
-    boid->shape->set_fill(true);
-    boid->shape->set_scale(render2D->get_resolution().x * 0.001 * boid_scale);
-    render2D->add_item(boid_primitive);
-    boids.push_back(boid);
+    process_boids(dt);
+    render_boids();
+
+    render2D->clear_frame();
+    render2D->draw_frame();
+    render2D->present_frame();
 }
 
-void BoidsDemo::spawn_boid()
-{
-    const Vec2d resolution { get_resolution() };
-    const Vec2d position {
-        random_double(0.0, resolution.x),
-        random_double(0.0, resolution.y)
-    };
-    const Vec2d velocity {
-        random_double(-50.0, 50.0),
-        random_double(-50.0, 50.0)
-    };
-    spawn_boid(position, velocity);
-}
+void BoidsDemo::end() {}
 
-void BoidsDemo::remove_boid(const std::shared_ptr<Boid> boid)
-{
-    render2D->remove_item(boid->shape);
-    std::erase(boids, boid);
-}
+void BoidsDemo::handle_char(const int input) {}
 
-std::vector<std::shared_ptr<Boid>> BoidsDemo::get_neighbors(const std::shared_ptr<Boid> boid) const
+void BoidsDemo::report_mouse(const MouseEvent event)
 {
-    std::vector<std::shared_ptr<Boid>> neighbors;
-    for (auto &other_boid : boids)
+    if (event.type == MouseEventType::MOVE)
     {
-        if (other_boid == boid)
-        {
-            continue;
-        }
-        const double distance { Vec2d::distance(boid->position, other_boid->position) };
-        if (distance < perception_radius)
-        {
-            neighbors.push_back(other_boid);
-        }
+        const Vec2i resolution { render2D->get_resolution() };
+        mouse_position = Vec2d {
+            event.position.x * static_cast<double>(resolution.x),
+            event.position.y * static_cast<double>(resolution.y)
+        };
     }
-    return neighbors;
+    else if (event.type == MouseEventType::LEFT_DOWN)
+    {
+        mouse_active = !mouse_active;
+    }
 }
 
 Vec2d BoidsDemo::alignment(
@@ -153,7 +124,7 @@ Vec2d BoidsDemo::separation(
         if (distance < desired_separation && distance > 0)
         {
             Vec2d diff { boid->position - neighbor->position };
-            diff = diff.normalize() / distance;
+            diff     = diff.normalize() / distance;
             steering += diff;
             total++;
         }
@@ -165,29 +136,6 @@ Vec2d BoidsDemo::separation(
         return steering.limit(max_force);
     }
     return Vec2d::zero();
-}
-
-void BoidsDemo::wrap_position(const std::shared_ptr<Boid> boid) const
-{
-    const Vec2d resolution { get_resolution() };
-
-    if (boid->position.x < 0)
-    {
-        boid->position.x += resolution.x;
-    }
-    else if (boid->position.x > resolution.x)
-    {
-        boid->position.x -= resolution.x;
-    }
-
-    if (boid->position.y < 0)
-    {
-        boid->position.y += resolution.y;
-    }
-    else if (boid->position.y > resolution.y)
-    {
-        boid->position.y -= resolution.y;
-    }
 }
 
 Vec2d BoidsDemo::centering(const std::shared_ptr<Boid> boid) const
@@ -230,14 +178,55 @@ void BoidsDemo::apply_behaviors(
 ) const
 {
     const Vec2d separate = separation(boid, neighbors) * separation_weight;
-    const Vec2d align = alignment(boid, neighbors) * alignment_weight;
-    const Vec2d cohere = cohesion(boid, neighbors) * cohesion_weight;
-    const Vec2d center = centering(boid) * centering_weight;
+    const Vec2d align    = alignment(boid, neighbors) * alignment_weight;
+    const Vec2d cohere   = cohesion(boid, neighbors) * cohesion_weight;
+    const Vec2d center   = centering(boid) * centering_weight;
     const Vec2d mouse_avoid { mouse_active ? mouse_avoidance(boid) * mouse_avoid_weigth : Vec2d::zero() };
 
     boid->velocity += (align + cohere + separate + center + mouse_avoid) * dt;
 
     // wrap_position(boid);
+}
+
+void BoidsDemo::wrap_position(const std::shared_ptr<Boid> boid) const
+{
+    const Vec2d resolution { get_resolution() };
+
+    if (boid->position.x < 0)
+    {
+        boid->position.x += resolution.x;
+    }
+    else if (boid->position.x > resolution.x)
+    {
+        boid->position.x -= resolution.x;
+    }
+
+    if (boid->position.y < 0)
+    {
+        boid->position.y += resolution.y;
+    }
+    else if (boid->position.y > resolution.y)
+    {
+        boid->position.y -= resolution.y;
+    }
+}
+
+std::vector<std::shared_ptr<Boid>> BoidsDemo::get_neighbors(const std::shared_ptr<Boid> boid) const
+{
+    std::vector<std::shared_ptr<Boid>> neighbors;
+    for (auto &other_boid : boids)
+    {
+        if (other_boid == boid)
+        {
+            continue;
+        }
+        const double distance { Vec2d::distance(boid->position, other_boid->position) };
+        if (distance < perception_radius)
+        {
+            neighbors.push_back(other_boid);
+        }
+    }
+    return neighbors;
 }
 
 void BoidsDemo::process_boid(const std::shared_ptr<Boid> boid, const double dt)
@@ -267,34 +256,44 @@ void BoidsDemo::render_boids() const
     }
 }
 
-void BoidsDemo::render_frame(const double dt)
+void BoidsDemo::spawn_boid(const Vec2d position, const Vec2d velocity)
 {
-    process_boids(dt);
-    render_boids();
-
-    render2D->clear_frame();
-    render2D->draw_frame();
-    render2D->present_frame();
+    const std::vector<Vec2d> boid_shape {
+        { 0, -5 },
+        { 10, 0 },
+        { 0, 5 },
+        { 2, 0 },
+    };
+    const auto boid_primitive { render2D->create_polyline(position, boid_shape, Color4(1.0, 1.0, 1.0, 1.0), 1.0) };
+    const auto boid { std::make_shared<Boid>() };
+    boid->velocity = velocity;
+    boid->position = position;
+    boid->shape    = boid_primitive;
+    boid->shape->set_anchor({ 0.2, 0.5 });
+    boid->shape->set_fill(true);
+    boid->shape->set_scale(render2D->get_resolution().x * 0.001 * boid_scale);
+    render2D->add_item(boid_primitive);
+    boids.push_back(boid);
 }
 
-void BoidsDemo::report_mouse(const MouseEvent event)
+void BoidsDemo::spawn_boid()
 {
-    if (event.type == MouseEventType::MOVE)
-    {
-        const Vec2i resolution { render2D->get_resolution() };
-        mouse_position = Vec2d {
-            event.position.x * static_cast<double>(resolution.x),
-            event.position.y * static_cast<double>(resolution.y)
-        };
-    }
-    else if (event.type == MouseEventType::LEFT_DOWN)
-    {
-        mouse_active = !mouse_active;
-    }
+    const Vec2d resolution { get_resolution() };
+    const Vec2d position {
+        random_double(0.0, resolution.x),
+        random_double(0.0, resolution.y)
+    };
+    const Vec2d velocity {
+        random_double(-50.0, 50.0),
+        random_double(-50.0, 50.0)
+    };
+    spawn_boid(position, velocity);
 }
 
-void BoidsDemo::handle_char(const int input) {}
-
-void BoidsDemo::end() {}
+void BoidsDemo::remove_boid(const std::shared_ptr<Boid> boid)
+{
+    render2D->remove_item(boid->shape);
+    std::erase(boids, boid);
+}
 
 }

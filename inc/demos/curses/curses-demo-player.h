@@ -9,32 +9,33 @@
 namespace demos
 {
 
-class CursesDemoPlayer : public demos::DemoPlayer
+class CursesDemoPlayer : public DemoPlayer
 {
 
 public:
 
     CursesDemoPlayer()
-        : demos::DemoPlayer()
+        : DemoPlayer()
     {
         auto surface { std::make_shared<gfx::CursesRenderSurface>(demos::get_screen_size() * 2) };
+        surface->init();
         renderer = std::make_shared<gfx::RenderEngine>(surface);
     }
 
     gfx::Vec2i get_screen_size() override
     {
-        return demos::get_screen_size() * 2;
+        return demos::get_screen_size();
     }
 
     int get_input() override
     {
-        int input { demos::get_input() };
+        const int input { demos::get_input() };
         if (input == KEY_MOUSE)
         {
             MEVENT e;
             if (getmouse(&e) == OK)
             {
-                demos::MouseEvent event { curses_to_mouse_event(e) };
+                const MouseEvent event { curses_to_mouse_event(e) };
                 demos[current_demo]->report_mouse(event);
             }
             refresh();
@@ -45,9 +46,9 @@ public:
 
     void draw_info() override
     {
-        demos::set_bold(true);
-        demos::set_color(demos::default_color::WHITE);
-        std::vector<std::string> info = get_info();
+        set_bold(true);
+        set_color(default_color::WHITE);
+        const std::vector<std::string> info = get_info();
         for (int i = 0; i < info.size(); ++i)
         {
             add_str({ 0, i }, info[i]);
@@ -56,35 +57,35 @@ public:
 
 private:
 
-    demos::MouseEvent curses_to_mouse_event(const MEVENT e)
+    MouseEvent curses_to_mouse_event(const MEVENT e) const
     {
-        demos::MouseEvent event;
+        MouseEvent event;
         switch (e.bstate)
         {
         case BUTTON1_PRESSED:
-            event.type = demos::MouseEventType::LEFT_DOWN;
+            event.type = MouseEventType::LEFT_DOWN;
             break;
 
         case BUTTON3_PRESSED:
-            event.type = demos::MouseEventType::RIGHT_DOWN;
+            event.type = MouseEventType::RIGHT_DOWN;
             break;
 
         case BUTTON4_PRESSED:
-            event.type = demos::MouseEventType::SCROLL_UP;
+            event.type = MouseEventType::SCROLL_UP;
             break;
 
         case BUTTON5_PRESSED:
-            event.type = demos::MouseEventType::SCROLL_DOWN;
+            event.type = MouseEventType::SCROLL_DOWN;
             break;
 
         case REPORT_MOUSE_POSITION:
-            event.type = demos::MouseEventType::MOVE;
+            event.type = MouseEventType::MOVE;
             break;
 
         default:
             break;
         }
-        gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_render_2D()->get_viewport_scaling();
+        const gfx::Vec2d position = gfx::Vec2i { e.x, e.y } * 2 / renderer->get_render_2D()->get_viewport_scaling();
         event.position = position / renderer->get_resolution();
         return event;
     }

@@ -9,7 +9,7 @@ static constexpr double G = 4 * std::numbers::pi * std::numbers::pi;
 
 inline double metres_to_pixels(const double metres, const double view_metres, const double resolution_pixels)
 {
-    return (metres / view_metres) * resolution_pixels;
+    return metres / view_metres * resolution_pixels;
 }
 
 inline gfx::Vec2d metres_to_pixels(
@@ -26,7 +26,7 @@ inline gfx::Vec2d metres_to_pixels(
 
 inline double pixels_to_metres(const double pixels, const double view_metres, const double resolution_pixels)
 {
-    return (pixels / resolution_pixels) * view_metres;
+    return pixels / resolution_pixels * view_metres;
 }
 
 inline gfx::Vec2d pixels_to_metres(

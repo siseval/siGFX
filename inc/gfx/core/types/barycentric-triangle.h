@@ -14,9 +14,9 @@ public:
     BarycentricTriangle(const Vec2d &v0, const Vec2d &v1, const Vec2d &v2);
     BarycentricTriangle();
 
-    const Vec2d v0;
-    const Vec2d v1;
-    const Vec2d v2;
+    const Vec2d _v0;
+    const Vec2d _v1;
+    const Vec2d _v2;
 
     int corners_inside(const Box2d &box) const;
     bool point_inside(const Vec2d &point) const;
@@ -40,9 +40,9 @@ public:
 
 private:
 
-    double inv_area_2x;
-    double a, b, c, d, e, f, g, h, i;
-    double area;
+    double _inv_area_2_x;
+    double _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    double _area;
 
     void precompute();
 };

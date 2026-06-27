@@ -28,10 +28,9 @@ public:
     double get_depth(Vec2i pos) const;
 
     virtual void present() = 0;
-    virtual void clear() const = 0;
+    virtual void clear_screen() const = 0;
 
-    virtual void clear_frame_buffer() = 0;
-    virtual void clear_palette() = 0;
+    void clear_frame_buffer();
 
     virtual void resize(Vec2i new_resolution) = 0;
 
@@ -44,9 +43,9 @@ public:
 
 protected:
 
-    Vec2i resolution;
-    Color4 clear_color { 0.2, 0.2, 0.2, 1.0 };
-    std::vector<int32_t> frame_buffer;
-    std::vector<double> depth_buffer;
+    Vec2i _resolution;
+    Color4 _clear_color { 0.2, 0.2, 0.2, 1.0 };
+    std::vector<int32_t> _frame_buffer;
+    std::vector<double> _depth_buffer;
 };
 }

@@ -1,115 +1,136 @@
-#include <locale.h>
-
 #include "gfx/surfaces/curses/curses-render-surface.h"
+
+#include <algorithm>
+#include <locale.h>
+#include <ncurses.h>
+#include <string>
+#include <unistd.h>
 
 namespace gfx
 {
-
-int CursesRenderSurface::init()
-{
-    setlocale(LC_ALL, "");
-
-    initscr();
-    timeout(0);
-    cbreak();
-    noecho();
-    curs_set(0);
-
-    clear_color = { 0, 0, 0, 0 };
-
-    return 0;
-}
-
-
-void CursesRenderSurface::present()
-{
-    const Vec2i frame_buffer_dimensions { resolution / 2 };
-    for (int y = 0; y < frame_buffer_dimensions.y; y++)
+    int CursesRenderSurface::init()
     {
-        for (int x = 0; x < frame_buffer_dimensions.x; x++)
+        setlocale(LC_ALL, "");
+
+        initscr();
+        timeout(0);
+        cbreak();
+        noecho();
+        curs_set(0);
+        start_color();
+        use_default_colors();
+
+        init_curses_color_palette();
+
+        _clear_color = { 0, 0, 0, 0 };
+
+        return 0;
+    }
+
+
+    static void append_ansi_color(std::string& out, const int r, const int g, const int b)
+    {
+        out += "\x1b[38;2;";
+        out += std::to_string(r);
+        out += ";";
+        out += std::to_string(g);
+        out += ";";
+        out += std::to_string(b);
+        out += "m";
+    }
+
+    void CursesRenderSurface::present()
+    {
+        std::string out;
+        out.reserve(_resolution.x * _resolution.y * 12);
+
+        out += "\x1b[H";
+
+        for (int y = 0; y < _resolution.y; ++y)
         {
-            const int frame_buffer_index { y * resolution.x + x };
-            if (frame_buffer_index < 0 || frame_buffer_index >= frame_buffer->size())
+            int last_r = -1, last_g = -1, last_b = -1;
+
+            for (int x = 0; x < _resolution.x; ++x)
             {
-                continue;
-            }
-            const int64_t pixel_value { frame_buffer->at(frame_buffer_index) };
-            if ((pixel_value & 0x00000000000000FF) == 0)
-            {
-                continue;
+                Color4 c = read_pixel({ x, y });
+
+                const int r = static_cast<int>(c.r_double() * 255.0);
+                const int g = static_cast<int>(c.g_double() * 255.0);
+                const int b = static_cast<int>(c.b_double() * 255.0);
+
+                if (r != last_r || g != last_g || b != last_b)
+                {
+                    append_ansi_color(out, r, g, b);
+                    last_r = r;
+                    last_g = g;
+                    last_b = b;
+                }
+
+                out += "██";
             }
 
-            std::string_view pixel {
-                pixel_tree[(pixel_value & 0b1000) >> 3]
-                [(pixel_value & 0b0100) >> 2]
-                [(pixel_value & 0b0010) >> 1]
-                [(pixel_value & 0b0001)]
-            };
+            out += "\x1b[0m\n\r";
+        }
 
-            const Color4 color { Color4::from_i32(pixel_value >> 32) };
-            if (color.a == 0)
-            {
-                continue;
-            }
-            set_color(color);
-            mvaddstr(y, x, pixel.data());
+        out += "\x1b[0m";
+
+        write(STDOUT_FILENO, out.data(), out.size());
+    }
+
+    // void CursesRenderSurface::present()
+    // {
+    //     for (int y = 0; y < resolution.y; ++y)
+    //     {
+    //         for (int x = 0; x < resolution.x; ++x)
+    //         {
+    //             set_color(read_pixel({ x, y }));
+    //             mvaddstr(y, x * 2, "█");
+    //             mvaddstr(y, x * 2 + 1, "█");
+    //         }
+    //     }
+    // }
+
+    void CursesRenderSurface::clear_screen() const
+    {
+        erase();
+    }
+
+    void CursesRenderSurface::resize(const Vec2i new_resolution)
+    {
+        _resolution = new_resolution;
+        _frame_buffer.resize(_resolution.x * _resolution.y, 0);
+        _depth_buffer.resize(_resolution.x * _resolution.y, std::numeric_limits<float>::infinity());
+    }
+
+    void CursesRenderSurface::set_color(const Color4 color)
+    {
+        attron(COLOR_PAIR(color_to_curses_color_index(color)));
+    }
+
+    int CursesRenderSurface::color_to_curses_color_index(const Color4 color)
+    {
+        const double brightness {
+            0.2126 * color.r_double() +
+            0.7152 * color.g_double() +
+            0.0722 * color.b_double()
+        };
+
+        const int index = std::clamp(
+            static_cast<int>(brightness * (MAX_COLORS - 1) + 0.5),
+            0,
+            MAX_COLORS - 1
+        );
+
+        return PALETTE_START_INDEX + index;
+    }
+
+    void CursesRenderSurface::init_curses_color_palette()
+    {
+        for (int i = 0; i < MAX_COLORS; ++i)
+        {
+            const int brightness = static_cast<int>(i / static_cast<double>(MAX_COLORS) * 1000);
+            init_color(PALETTE_START_INDEX + i, brightness, brightness, brightness);
+            init_pair(PALETTE_START_INDEX + i, PALETTE_START_INDEX + i, -1);
         }
     }
-}
-
-void CursesRenderSurface::clear() const
-{
-    erase();
-}
-
-void CursesRenderSurface::clear_frame_buffer()
-{
-    for (int64_t &pixel : *frame_buffer)
-    {
-        pixel = 0;
-    }
-}
-
-void CursesRenderSurface::resize(const Vec2i new_resolution)
-{
-    resolution = new_resolution;
-    frame_buffer->resize(resolution.x * resolution.y / 2, 0);
-}
-
-void CursesRenderSurface::clear_palette()
-{
-    palette->clear();
-    color_index = 0;
-}
-
-void CursesRenderSurface::set_color(const Color4 color)
-{
-    const auto iterator { palette->find(color) };
-    uint8_t index = 0;
-
-    if (iterator != palette->end())
-    {
-        index = iterator->second;
-    }
-    else
-    {
-        index = add_color(color);
-    }
-    attron(COLOR_PAIR(index));
-}
-
-uint8_t CursesRenderSurface::add_color(const Color4 color)
-{
-    if (color_index + DEDICATED_CURSES_COLOR_START_INDEX >= 255)
-    {
-        color_index = 0;
-    }
-    uint8_t index { static_cast<uint8_t>(color_index + DEDICATED_CURSES_COLOR_START_INDEX) };
-    palette->emplace(color, index);
-    color_index += 1;
-    init_color(index, color.r_double() * 1000, color.g_double() * 1000, color.b_double() * 1000);
-    init_pair(index, index, -1);
-    return index;
-}
-
 }

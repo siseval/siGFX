@@ -9,18 +9,18 @@ using namespace gfx;
 void FireworksDemo::init()
 {
     const Vec2i resolution { get_resolution() };
-    spawn_margins = resolution * 0.1;
+    spawn_margins  = static_cast<Vec2<double>>(resolution * 0.1);
     firework_speed = std::sqrt(9.81 * resolution.y);
 
     options.size = { resolution.x * 0.005, resolution.x * 0.0005 };
 
-    options.max_particles = 70;
-    options.particle_size = resolution.x * 0.001;
+    options.max_particles        = 70;
+    options.particle_size        = resolution.x * 0.001;
     options.particle_lifespan_ms = 2000.0;
-    options.particle_speed = firework_speed * 0.6;
+    options.particle_speed       = firework_speed * 0.6;
 
-    options.smoke_size = resolution.x * 0.001;
-    options.smoke_speed = firework_speed * 0.4;
+    options.smoke_size              = resolution.x * 0.001;
+    options.smoke_speed             = firework_speed * 0.4;
     options.smoke_trail_interval_ms = 25;
 }
 
@@ -56,20 +56,10 @@ void FireworksDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
-void FireworksDemo::spawn_firework()
+void FireworksDemo::end()
 {
-    Vec2d position {
-        static_cast<double>(random_int(spawn_margins.x, get_resolution().x - spawn_margins.x)),
-        static_cast<double>(get_resolution().y)
-    };
-
-    const double angle { random_double(-angle_variation, angle_variation) - 90 };
-    Vec2d velocity {
-        Vec2d::from_angle_degrees(angle, random_double(firework_speed * 0.75, firework_speed * 1.25))
-    };
-
-    std::vector colors { color_combinations[rand() % color_combinations.size()] };
-    fireworks.emplace_back(render2D, position, velocity, options, colors);
+    fireworks.clear();
+    render2D->clear_items();
 }
 
 void FireworksDemo::handle_char(const int input)
@@ -94,10 +84,20 @@ void FireworksDemo::handle_char(const int input)
 }
 
 
-void FireworksDemo::end()
+void FireworksDemo::spawn_firework()
 {
-    fireworks.clear();
-    render2D->clear_items();
+    Vec2d position {
+        static_cast<double>(random_int(spawn_margins.x, get_resolution().x - spawn_margins.x)),
+        static_cast<double>(get_resolution().y)
+    };
+
+    const double angle { random_double(-angle_variation, angle_variation) - 90 };
+    Vec2d velocity {
+        Vec2d::from_angle_degrees(angle, random_double(firework_speed * 0.75, firework_speed * 1.25))
+    };
+
+    std::vector colors { color_combinations[rand() % color_combinations.size()] };
+    fireworks.emplace_back(render2D, position, velocity, options, colors);
 }
 
 }

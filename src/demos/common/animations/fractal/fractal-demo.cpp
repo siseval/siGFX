@@ -13,7 +13,6 @@
 // void FractalDemo::init()
 // {
 //     render2D->clear_items();
-//     render2D->get_render_surface()->clear_palette();
 //
 //     cursor_pos = render2D->center();
 //     view = { { -2.0, -2.0 }, { 2.0, 2.0 } };

@@ -55,7 +55,7 @@ public:
 
 private:
 
-    std::shared_ptr<SceneNode2D> root;
-    std::unordered_map<UUID, std::shared_ptr<SceneNode2D>> nodes;
+    std::shared_ptr<SceneNode2D> _root;
+    std::unordered_map<UUID, std::shared_ptr<SceneNode2D>> _nodes;
 };
 }

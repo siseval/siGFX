@@ -19,7 +19,6 @@ private:
 
     static bool is_convex(const BarycentricTriangle &triangle, bool clockwise);
     static bool is_ear(
-        int index,
         const std::vector<int> &indices,
         const std::vector<Vec2d> &vertices,
         const BarycentricTriangle &triangle,

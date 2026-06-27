@@ -11,11 +11,11 @@ std::vector<Color4> WaterSurfaceShader::frag(const ShaderInput2D &input) const
 {
     std::vector<Color4> out;
 
-    constexpr double wave_freq = 20.0;
-    constexpr double wave_speed = 3.0;
-    constexpr double dist_falloff = 4.0;
-    constexpr double amp_scale = 0.3;
-    constexpr double fade_decay = 7.0;
+    constexpr double wave_freq       = 20.0;
+    constexpr double wave_speed      = 3.0;
+    constexpr double dist_falloff    = 4.0;
+    constexpr double amp_scale       = 0.3;
+    constexpr double fade_decay      = 7.0;
     constexpr double base_brightness = 2.0;
 
     for (const auto &uv : input.uv)
@@ -73,27 +73,6 @@ void ShaderDemo::init()
     render2D->add_item(quad);
 }
 
-void ShaderDemo::update_ripples(const double dt)
-{
-    spawn_timer += dt;
-    std::vector<std::shared_ptr<Ripple>> to_remove;
-    for (auto &ripple_center : shader->ripples)
-    {
-        if (time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
-        {
-            to_remove.push_back(ripple_center);
-        }
-    }
-    for (const auto &ripple : to_remove)
-    {
-        auto it = std::ranges::find(shader->ripples, ripple);
-        if (it != shader->ripples.end())
-        {
-            shader->ripples.erase(it);
-        }
-    }
-}
-
 void ShaderDemo::render_frame(const double dt)
 {
     const double t0 { time_us() };
@@ -122,20 +101,9 @@ void ShaderDemo::render_frame(const double dt)
     render2D->present_frame();
 }
 
-Vec2d ShaderDemo::get_random_position() const
+void ShaderDemo::end()
 {
-    const Vec2d resolution { get_resolution() };
-    const double x = random_double(0.0, resolution.x);
-    const double y = random_double(0.0, resolution.y);
-    return Vec2d { x, y };
-}
-
-void ShaderDemo::spawn_ripple(const Vec2d position) const
-{
-    const auto ripple = std::make_shared<Ripple>();
-    ripple->center = quad->get_uv(position);
-    ripple->start_time = time_ms();
-    shader->ripples.push_back(ripple);
+    render2D->clear_items();
 }
 
 void ShaderDemo::handle_char(const int input)
@@ -180,9 +148,41 @@ void ShaderDemo::report_mouse(const MouseEvent event)
     }
 }
 
-void ShaderDemo::end()
+void ShaderDemo::spawn_ripple(const Vec2d position) const
 {
-    render2D->clear_items();
+    const auto ripple  = std::make_shared<Ripple>();
+    ripple->center     = quad->get_uv(position);
+    ripple->start_time = time_ms();
+    shader->ripples.push_back(ripple);
+}
+
+void ShaderDemo::update_ripples(const double dt)
+{
+    spawn_timer += dt;
+    std::vector<std::shared_ptr<Ripple>> to_remove;
+    for (auto &ripple_center : shader->ripples)
+    {
+        if (time_ms() - ripple_center->start_time > shader->ripple_lifetime_sec * 1000.0)
+        {
+            to_remove.push_back(ripple_center);
+        }
+    }
+    for (const auto &ripple : to_remove)
+    {
+        auto it = std::ranges::find(shader->ripples, ripple);
+        if (it != shader->ripples.end())
+        {
+            shader->ripples.erase(it);
+        }
+    }
+}
+
+Vec2d ShaderDemo::get_random_position() const
+{
+    const Vec2d resolution { get_resolution() };
+    const double x = random_double(0.0, resolution.x);
+    const double y = random_double(0.0, resolution.y);
+    return Vec2d { x, y };
 }
 
 }

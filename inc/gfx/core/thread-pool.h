@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <atomic>
-#include <thread>
-#include <functional>
 #include <barrier>
+#include <functional>
+#include <thread>
+#include <vector>
 
 namespace gfx
 {
@@ -18,29 +18,30 @@ public:
 
     ~ThreadPool();
 
-    template<typename Fn>
-    void run(const int count, Fn&& fn)
+    template<typename FN>
+    void run(const int count, FN&& fn)
     {
-        work_fn = std::forward<Fn>(fn);
-        total_work = count;
-        next_index.store(0, std::memory_order_relaxed);
+        _work_fn = std::forward<FN>(fn);
+        _total_work = count;
+        _next_index.store(0, std::memory_order_relaxed);
 
-        barrier.arrive_and_wait();
+        _barrier.arrive_and_wait();
 
-        barrier.arrive_and_wait();
+        _barrier.arrive_and_wait();
     }
 
 private:
 
     void worker_loop();
 
-    std::vector<std::thread> workers;
-    std::barrier<> barrier;
+    std::vector<std::thread> _workers;
+    std::barrier<> _barrier;
 
-    std::atomic<bool> running;
-    std::atomic<int> next_index { 0 };
-    int total_work { 0 };
+    std::atomic<bool> _running;
+    std::atomic<int> _next_index { 0 };
+    int _total_work { 0 };
 
-    std::function<void(int)> work_fn;};
+    std::function<void(int)> _work_fn;
+};
 
 }

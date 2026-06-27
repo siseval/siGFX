@@ -7,7 +7,7 @@
 namespace demos
 {
 
-class InteractiveDemo : public demos::GfxDemo
+class InteractiveDemo : public GfxDemo
 {
 
 public:

@@ -13,9 +13,9 @@ public:
 
     const PolygonMesh &get_mesh() const override;
 
-    void set_radius(const double new_radius);
-    void set_height(const double new_height);
-    void set_segments(const int new_segments);
+    void set_radius(double new_radius);
+    void set_height(double new_height);
+    void set_segments(int new_segments);
 
     double get_radius() const;
     double get_height() const;
@@ -23,8 +23,8 @@ public:
 
 private:
 
-    double radius;
-    double height;
-    int segments;
+    double _radius;
+    double _height;
+    int _segments;
 };
 }

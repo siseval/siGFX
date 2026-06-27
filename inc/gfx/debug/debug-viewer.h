@@ -48,6 +48,8 @@ public:
     void set_show_num_items(bool show);
     void set_text_position(Vec2d position);
 
+    void add_debug_line(const std::string &line, int line_number = -1);
+
     bool get_enabled() const;
     std::shared_ptr<FontTTF> get_font() const;
     double get_font_size() const;
@@ -65,20 +67,21 @@ private:
     void update_text(std::shared_ptr<RenderEngine> render_engine, const RendererInfo &info);
     int num_debug_items() const;
 
-    bool enabled { false };
+    bool _enabled { false };
 
-    bool show_fps { true };
-    bool show_num_items { true };
+    bool _show_fps { true };
+    bool _show_num_items { true };
 
-    std::shared_ptr<FontTTF> font;
-    double font_size { 8.0 };
-    Color4 text_color { Color4::white() };
-    Vec2d text_position { 4.0, 4.0 };
+    std::shared_ptr<FontTTF> _font;
+    double _font_size { 8.0 };
+    Color4 _text_color { Color4::white() };
+    Vec2d _text_position { 4.0, 4.0 };
 
-    std::shared_ptr<Text2D> text;
+    std::shared_ptr<Text2D> _text;
+    std::vector<std::string> _debug_lines;
 
-    std::deque<double> fps_history;
-    int fps_history_max_size { 20 };
-    double last_frame_timestamp_ms { 0.0 };
+    std::deque<double> _fps_history;
+    int _fps_history_max_size { 20 };
+    double _last_frame_timestamp_ms { 0.0 };
 };
 }

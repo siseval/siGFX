@@ -3,14 +3,14 @@
 #include <unordered_map>
 #include <gfx/core/render-2D.h>
 
-#include "demos/common/core/gfx-demo.h"
 #include "demos/common/animations/space/body.h"
 #include "demos/common/animations/space/camera.h"
+#include "demos/common/core/gfx-demo.h"
 
 namespace demos
 {
 
-class SpaceDemo : public demos::GfxDemo
+class SpaceDemo : public GfxDemo
 {
     struct RenderBody
     {
@@ -29,10 +29,10 @@ class SpaceDemo : public demos::GfxDemo
 
 public:
 
-    SpaceDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer),
-          body_items(std::unordered_map<std::shared_ptr<Body>, RenderBody>()),
-          body_trails(std::unordered_map<std::shared_ptr<Body>, std::vector<gfx::Vec2d>>())
+    SpaceDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer),
+          body_trails(std::unordered_map<std::shared_ptr<Body>, std::vector<gfx::Vec2d>>()),
+          body_items(std::unordered_map<std::shared_ptr<Body>, RenderBody>())
     {
         render2D = renderer->get_render_2D();
     }
@@ -42,14 +42,14 @@ public:
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_mouse(demos::MouseEvent event) override;
+    void report_mouse(MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
-        std::string state_str = (camera.state == Camera::State::Free ?
-                                     "Free" :
-                                     (camera.state == Camera::State::Tracking ? "Tracking" : "Transitioning"));
-        gfx::Vec2d mouse_world_pos = get_world_pos(mouse_pos);
+        const std::string state_str = camera.state == Camera::State::Free ?
+                                          "Free" :
+                                          camera.state == Camera::State::Tracking ? "Tracking" : "Transitioning";
+        const gfx::Vec2d mouse_world_pos = get_world_pos(mouse_pos);
         return {
             "tracked body: " + (get_tracked_body() ? get_tracked_body()->get_name() : "none"),
             "world pos:" + std::to_string(get_anchor_world_pos().x) + ", " + std::to_string(
@@ -117,12 +117,12 @@ public:
         return view_bounds;
     }
 
-    gfx::Vec2d get_anchor_world_pos()
+    gfx::Vec2d get_anchor_world_pos() const
     {
         return view_bounds.min + view_bounds.size() * view_anchor;
     }
 
-    gfx::Vec2d get_anchor_screen_pos()
+    gfx::Vec2d get_anchor_screen_pos() const
     {
         return view_bounds.size() * view_anchor;
     }

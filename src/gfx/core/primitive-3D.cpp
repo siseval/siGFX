@@ -5,53 +5,53 @@
 namespace gfx
 {
 
-Primitive3D::Primitive3D() : id(UUID::generate()) {}
+Primitive3D::Primitive3D() : _id(UUID::generate()) {}
 
 void Primitive3D::set_position(const Vec3d &pos)
 {
-    position = pos;
+    _position = pos;
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_position(const double x, const double y, const double z)
 {
-    position = Vec3d { x, y, z };
+    _position = Vec3d { x, y, z };
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_scale(const Vec3d &s)
 {
-    scale = s;
+    _scale = s;
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_scale(const double x, const double y, const double z)
 {
-    scale = Vec3d { x, y, z };
+    _scale = Vec3d { x, y, z };
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_rotation(const Vec3d &rot)
 {
-    rotation = rot;
+    _rotation = rot;
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_rotation(const double x, const double y, const double z)
 {
-    rotation = Vec3d { x, y, z };
+    _rotation = Vec3d { x, y, z };
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_rotation_degrees(const Vec3d &rot)
 {
-    rotation = Vec3d {
+    _rotation = Vec3d {
         rot.x * std::numbers::pi / 180,
         rot.y * std::numbers::pi / 180,
         rot.z * std::numbers::pi / 180
@@ -62,102 +62,112 @@ void Primitive3D::set_rotation_degrees(const Vec3d &rot)
 
 void Primitive3D::set_rotation_degrees(const double x, const double y, const double z)
 {
-    rotation = Vec3d { x * std::numbers::pi / 180, y * std::numbers::pi / 180, z * std::numbers::pi / 180 };
+    _rotation = Vec3d { x * std::numbers::pi / 180, y * std::numbers::pi / 180, z * std::numbers::pi / 180 };
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_color(const Color4 &col)
 {
-    color = col;
+    _color = col;
 }
 
 void Primitive3D::set_color(const double r, const double g, const double b, const double a)
 {
-    color = Color4(r, g, b, a);
+    _color = Color4(r, g, b, a);
 }
 
 void Primitive3D::set_anchor(const Vec3d &a)
 {
-    anchor = a;
+    _anchor = a;
     set_transform_dirty(true);
     increment_transform_version();
 }
 
 void Primitive3D::set_material(const std::shared_ptr<Material> &mat, const size_t slot)
 {
-    materials.resize(std::max(static_cast<size_t>(slot + 1), materials.size()));
-    materials[slot] = mat;
+    _materials.resize(std::max(slot + 1, _materials.size()));
+    _materials[slot] = mat;
+}
+
+void Primitive3D::set_vertex_shader(const std::shared_ptr<VertexShader> &shader)
+{
+    _vertex_shader = shader;
 }
 
 Vec3d Primitive3D::get_position() const
 {
-    return position;
+    return _position;
 }
 
 Vec3d Primitive3D::get_scale() const
 {
-    return scale;
+    return _scale;
 }
 
 Vec3d Primitive3D::get_rotation() const
 {
-    return rotation;
+    return _rotation;
 }
 
 Vec3d Primitive3D::get_rotation_degrees() const
 {
     return Vec3d {
-        rotation.x * 180 / std::numbers::pi,
-        rotation.y * 180 / std::numbers::pi,
-        rotation.z * 180 / std::numbers::pi
+        _rotation.x * 180 / std::numbers::pi,
+        _rotation.y * 180 / std::numbers::pi,
+        _rotation.z * 180 / std::numbers::pi
     };
 }
 
 Color4 Primitive3D::get_color() const
 {
-    return color;
+    return _color;
 }
 
 Vec3d Primitive3D::get_anchor() const
 {
-    return anchor;
+    return _anchor;
 }
 
 std::shared_ptr<Material> Primitive3D::get_material(const size_t slot) const
 {
-    if (slot < 0 || slot >= materials.size())
+    if (slot >= _materials.size())
     {
         return nullptr;
     }
-    return materials[slot];
+    return _materials[slot];
 }
 
 std::vector<std::shared_ptr<Material>> Primitive3D::get_materials() const
 {
-    return materials;
+    return _materials;
+}
+
+std::shared_ptr<VertexShader> Primitive3D::get_vertex_shader() const
+{
+    return _vertex_shader;
 }
 
 Box3d Primitive3D::get_aabb() const
 {
-    return mesh_data.get_aabb();
+    return _mesh_data.get_aabb();
 }
 
 BoundingSphere Primitive3D::get_bounding_sphere() const
 {
-    return mesh_data.get_bounding_sphere();
+    return _mesh_data.get_bounding_sphere();
 }
 
 UUID Primitive3D::get_id() const
 {
-    return id;
+    return _id;
 }
 
 Matrix4x4d Primitive3D::get_transform() const
 {
-    if (!transform_dirty)
+    if (!_transform_dirty)
     {
-        return cached_transform;
+        return _cached_transform;
     }
 
     const Vec3d anchor_offset { get_anchor() * get_aabb().size() };
@@ -165,49 +175,49 @@ Matrix4x4d Primitive3D::get_transform() const
     const Matrix4x4d anchor_translation = Transform3D::translate(
         { -anchor_offset.x, -anchor_offset.y, -anchor_offset.z }
     );
-    const Matrix4x4d translation = Transform3D::translate({ position.x, position.y, position.z });
+    const Matrix4x4d translation = Transform3D::translate({ _position.x, _position.y, _position.z });
 
-    const Matrix4x4d rotation_x = Transform3D::rotate_x(rotation.x);
-    const Matrix4x4d rotation_y = Transform3D::rotate_y(rotation.y);
-    const Matrix4x4d rotation_z = Transform3D::rotate_z(rotation.z);
+    const Matrix4x4d rotation_x = Transform3D::rotate_x(_rotation.x);
+    const Matrix4x4d rotation_y = Transform3D::rotate_y(_rotation.y);
+    const Matrix4x4d rotation_z = Transform3D::rotate_z(_rotation.z);
     const Matrix4x4d rotation = rotation_z * rotation_y * rotation_x;
 
-    const Matrix4x4d scaling = Transform3D::scale({ scale.x, scale.y, scale.z });
+    const Matrix4x4d scaling = Transform3D::scale({ _scale.x, _scale.y, _scale.z });
 
-    cached_transform = translation * rotation * scaling * anchor_translation;
-    transform_dirty = false;
+    _cached_transform = translation * rotation * scaling * anchor_translation;
+    _transform_dirty = false;
 
-    return cached_transform;
+    return _cached_transform;
 }
 
 int64_t Primitive3D::get_transform_version() const
 {
-    return transform_version;
+    return _transform_version;
 }
 
 void Primitive3D::set_mesh_dirty(const bool dirty) const
 {
-    mesh_dirty = dirty;
+    _mesh_dirty = dirty;
 }
 
 void Primitive3D::set_transform_dirty(const bool dirty) const
 {
-    transform_dirty = dirty;
+    _transform_dirty = dirty;
 }
 
 bool Primitive3D::is_mesh_dirty() const
 {
-    return mesh_dirty;
+    return _mesh_dirty;
 }
 
 bool Primitive3D::is_transform_dirty() const
 {
-    return transform_dirty;
+    return _transform_dirty;
 }
 
 void Primitive3D::increment_transform_version()
 {
-    transform_version++;
+    _transform_version++;
 }
 
 

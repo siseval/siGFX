@@ -4,16 +4,69 @@
 namespace gfx
 {
 
+std::vector<BarycentricTriangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
+{
+    Polygon::Contour merged;
+    auto &merged_contour =
+        component.holes.size() > 0 ?
+            (merged = { merge_holes(component.contour, component.holes) }, merged) :
+            component.contour;
+
+    const std::vector<Vec2d> &vertices { merged_contour.vertices };
+    const bool clockwise { merged_contour.clockwise };
+
+    std::vector<BarycentricTriangle> triangles;
+    if (vertices.size() < 3)
+    {
+        return triangles;
+    }
+
+    std::vector<int> indices;
+    indices.reserve(vertices.size());
+    for (int i = 0; i < vertices.size(); ++i)
+    {
+        indices.push_back(i);
+    }
+
+    while (indices.size() > 3)
+    {
+        bool ear_found = false;
+        for (int i = 0; i < indices.size(); ++i)
+        {
+            const int prev_index { indices[i == 0 ? indices.size() - 1 : i - 1] };
+            const int cur_index { indices[i] };
+            const int next_index { indices[i + 1 >= indices.size() ? 0 : i + 1] };
+
+            BarycentricTriangle candidate { vertices[prev_index], vertices[cur_index], vertices[next_index] };
+
+            if (is_ear(indices, vertices, candidate, prev_index, cur_index, next_index, clockwise))
+            {
+                triangles.push_back(candidate);
+                indices.erase(indices.begin() + i);
+                ear_found = true;
+                break;
+            }
+        }
+        if (!ear_found)
+        {
+            triangles.clear();
+            return triangles;
+        }
+    }
+    triangles.emplace_back(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]]);
+
+    return triangles;
+}
+
 bool Triangulate::is_convex(const BarycentricTriangle &triangle, const bool clockwise)
 {
-    const Vec2d ab { triangle.v1 - triangle.v0 };
-    const Vec2d ac { triangle.v2 - triangle.v0 };
+    const Vec2d ab { triangle._v1 - triangle._v0 };
+    const Vec2d ac { triangle._v2 - triangle._v0 };
     const double cross { ab.x * ac.y - ab.y * ac.x };
     return clockwise ? cross > 0 : cross < 0;
 }
 
 bool Triangulate::is_ear(
-    const int index,
     const std::vector<int> &indices,
     const std::vector<Vec2d> &vertices,
     const BarycentricTriangle &triangle,
@@ -35,8 +88,8 @@ bool Triangulate::is_ear(
             continue;
         }
 
-        Box2d bounds { triangle.v0, triangle.v0 };
-        for (auto v : { triangle.v1, triangle.v2 })
+        Box2d bounds { triangle._v0, triangle._v0 };
+        for (auto v : { triangle._v1, triangle._v2 })
         {
             bounds.expand(v);
         }
@@ -47,7 +100,7 @@ bool Triangulate::is_ear(
             continue;
         }
 
-        if (point == triangle.v0 || point == triangle.v1 || point == triangle.v2)
+        if (point == triangle._v0 || point == triangle._v1 || point == triangle._v2)
         {
             continue;
         }
@@ -106,8 +159,8 @@ Polygon::Contour Triangulate::merge_holes(
                 double x = a.x + (b.x - a.x) * (bridge_start.y - a.y) / (b.y - a.y);
                 if (x > bridge_start.x && x < best_x)
                 {
-                    best_x = x;
-                    best_edge = i;
+                    best_x     = x;
+                    best_edge  = i;
                     best_point = { x, bridge_start.y };
                 }
             }
@@ -135,60 +188,6 @@ Polygon::Contour Triangulate::merge_holes(
     }
 
     return Polygon::Contour { merged, contour.clockwise };
-}
-
-std::vector<BarycentricTriangle> Triangulate::triangulate_polygon(const Polygon::Component &component)
-{
-    Polygon::Contour merged;
-    auto &merged_contour =
-        component.holes.size() > 0 ?
-            (merged = { merge_holes(component.contour, component.holes) }, merged) :
-            component.contour;
-
-    const std::vector<Vec2d> &vertices { merged_contour.vertices };
-    const bool clockwise { merged_contour.clockwise };
-
-    std::vector<BarycentricTriangle> triangles;
-    if (vertices.size() < 3)
-    {
-        return triangles;
-    }
-
-    std::vector<int> indices;
-    indices.reserve(vertices.size());
-    for (int i = 0; i < vertices.size(); ++i)
-    {
-        indices.push_back(i);
-    }
-
-    while (indices.size() > 3)
-    {
-        bool ear_found = false;
-        for (int i = 0; i < indices.size(); ++i)
-        {
-            const int prev_index { indices[i == 0 ? indices.size() - 1 : i - 1] };
-            const int cur_index { indices[i] };
-            const int next_index { indices[i + 1 >= indices.size() ? 0 : i + 1] };
-
-            BarycentricTriangle candidate { vertices[prev_index], vertices[cur_index], vertices[next_index] };
-
-            if (is_ear(i, indices, vertices, candidate, prev_index, cur_index, next_index, clockwise))
-            {
-                triangles.push_back(candidate);
-                indices.erase(indices.begin() + i);
-                ear_found = true;
-                break;
-            }
-        }
-        if (!ear_found)
-        {
-            triangles.clear();
-            return triangles;
-        }
-    }
-    triangles.emplace_back(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]]);
-
-    return triangles;
 }
 
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/math/vec3.h"
-#include "gfx/math/vec2.h"
 #include "gfx/core/types/color4.h"
+#include "gfx/math/vec2.h"
+#include "gfx/math/vec3.h"
 
 namespace gfx
 {

@@ -26,8 +26,9 @@ public:
 
 private:
 
-    double radius { 0.0 };
-    bool filled { false };
-    double line_thickness { 1.0 };
+    double _radius { 0.0 };
+    bool _filled { false };
+    double _line_thickness { 1.0 };
 };
-};
+    
+}

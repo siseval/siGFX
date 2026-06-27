@@ -96,18 +96,6 @@ void TextDemo::init()
     // renderer->add_item(bottom_item);
 }
 
-bool TextDemo::is_clockwise(std::vector<Vec2d> vertices)
-{
-    double sum = 0.0;
-    for (int i = 0; i < vertices.size(); ++i)
-    {
-        const Vec2d p0 { vertices[i] };
-        const Vec2d p1 { vertices[(i + 1) % vertices.size()] };
-        sum += (p1.x - p0.x) * (p1.y + p0.y);
-    }
-    return sum < 0.0;
-}
-
 void TextDemo::render_frame(const double dt)
 {
     const double t0 { time_us() };
@@ -134,11 +122,23 @@ void TextDemo::render_frame(const double dt)
     last_frame_us = time_us() - t0;
 }
 
-void TextDemo::handle_char(const int input) {}
-
 void TextDemo::end()
 {
     render2D->clear_items();
+}
+
+void TextDemo::handle_char(const int input) {}
+
+bool TextDemo::is_clockwise(std::vector<Vec2d> vertices)
+{
+    double sum = 0.0;
+    for (int i = 0; i < vertices.size(); ++i)
+    {
+        const Vec2d p0 { vertices[i] };
+        const Vec2d p1 { vertices[(i + 1) % vertices.size()] };
+        sum += (p1.x - p0.x) * (p1.y + p0.y);
+    }
+    return sum < 0.0;
 }
 
 }

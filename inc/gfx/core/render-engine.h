@@ -139,9 +139,9 @@ public:
 
 private:
 
-    std::shared_ptr<RenderSurface> surface;
+    std::shared_ptr<RenderSurface> _surface;
 
-    std::shared_ptr<Render2D> render2D;
-    std::shared_ptr<Render3D> render3D;
+    std::shared_ptr<Render2D> _render2D;
+    std::shared_ptr<Render3D> _render3D;
 };
 }

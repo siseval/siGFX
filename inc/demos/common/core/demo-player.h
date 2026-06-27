@@ -13,7 +13,9 @@ class DemoPlayer
 
 public:
 
-    DemoPlayer() : renderer(std::shared_ptr<gfx::RenderEngine>()) {}
+    DemoPlayer() : 
+        renderer(std::shared_ptr<gfx::RenderEngine>()),
+        debug_viewer(std::make_shared<gfx::DebugViewer>()){}
 
     void init();
     void run();
@@ -40,7 +42,7 @@ protected:
     std::vector<std::shared_ptr<GfxDemo>> demos;
     int current_demo = 0;
 
-    gfx::DebugViewer debug_viewer;
+    std::shared_ptr<gfx::DebugViewer> debug_viewer;
 
     bool show_info = true;
     bool show_debug = true;

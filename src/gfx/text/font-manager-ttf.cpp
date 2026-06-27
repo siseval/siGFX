@@ -14,7 +14,7 @@ static int16_t read_s16(const std::uint8_t* data)
     return static_cast<int16_t>(data[0]) << 8 | static_cast<int16_t>(data[1]);
 }
 
-static int32_t read_s32(const std::uint8_t* data)
+[[maybe_unused]] static int32_t read_s32(const std::uint8_t* data)
 {
     return static_cast<int32_t>(data[0]) << 24 |
         static_cast<int32_t>(data[1]) << 16 |
@@ -33,75 +33,6 @@ static uint32_t read_u32(const std::uint8_t* data)
         static_cast<uint32_t>(data[1]) << 16 |
         static_cast<uint32_t>(data[2]) << 8 |
         static_cast<uint32_t>(data[3]);
-}
-
-std::unordered_map<std::string, std::shared_ptr<FontTTF>> FontManagerTTF::get_loaded_fonts() const
-{
-    return loaded_fonts;
-}
-
-std::shared_ptr<FontTTF> FontManagerTTF::get_font(const std::string &name)
-{
-    const auto it = loaded_fonts.find(name);
-    return it != loaded_fonts.end() ? it->second : nullptr;
-}
-
-bool FontManagerTTF::is_font_loaded(const std::string &name) const
-{
-    return loaded_fonts.contains(name);
-}
-
-void FontManagerTTF::add_font(const std::string &name, const std::shared_ptr<FontTTF> font)
-{
-    loaded_fonts[name] = font;
-}
-
-void FontManagerTTF::unload_font(const std::string &name)
-{
-    loaded_fonts.erase(name);
-}
-
-void FontManagerTTF::unload_all_fonts()
-{
-    loaded_fonts.clear();
-}
-
-void FontManagerTTF::set_font_directory_path(const std::filesystem::path &path)
-{
-    font_directory_path = path;
-}
-
-std::filesystem::path FontManagerTTF::get_font_directory_path() const
-{
-    return font_directory_path;
-}
-
-void FontManagerTTF::load_font_directory(const std::filesystem::path &path)
-{
-    std::filesystem::path dir_path = path;
-
-    if (dir_path.empty())
-    {
-        dir_path = font_directory_path;
-    }
-
-    if (!exists(dir_path) || !is_directory(dir_path))
-    {
-        std::cerr << "Font directory does not exist: " + dir_path.string();
-        return;
-    }
-
-    for (const auto &entry : std::filesystem::directory_iterator(dir_path))
-    {
-        if (entry.is_regular_file())
-        {
-            std::string extension { entry.path().extension().string() };
-            if (extension == ".ttf" || extension == ".TTF")
-            {
-                load_from_file(entry.path().string(), entry.path().stem().string());
-            }
-        }
-    }
 }
 
 std::shared_ptr<FontTTF> FontManagerTTF::load_from_file(const std::string &path, const std::string &name)
@@ -124,6 +55,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_file(const std::string &path,
     if (!file.read(reinterpret_cast<char*>(buffer), size))
     {
         std::cerr << "Failed to read file: " + path;
+        delete[] buffer;
         return nullptr;
     }
 
@@ -146,18 +78,12 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
 
     const uint8_t* ptr { data };
 
-    uint32_t scalerType { read_u32(ptr) };
+    uint32_t scaler_type { read_u32(ptr) };
     ptr += 4;
-    uint16_t numTables { read_u16(ptr) };
-    ptr += 2;
-    uint16_t searchRange { read_u16(ptr) };
-    ptr += 2;
-    uint16_t entrySelector { read_u16(ptr) };
-    ptr += 2;
-    uint16_t rangeShift { read_u16(ptr) };
-    ptr += 2;
+    uint16_t num_tables { read_u16(ptr) };
+    ptr += 8;
 
-    if (scalerType != 0x00010000 && scalerType != 0x74727565)
+    if (scaler_type != 0x00010000 && scaler_type != 0x74727565)
     {
         std::cerr << "Unsupported TTF scaler type.";
         return nullptr;
@@ -171,7 +97,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
 
     std::map<std::string, TableEntry> tables;
 
-    for (uint16_t i = 0; i < numTables; ++i)
+    for (uint16_t i = 0; i < num_tables; ++i)
     {
         if (ptr + 16 > data + size)
         {
@@ -188,7 +114,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
         tables[tag] = { offset, length };
     }
 
-    const std::string required_tables[5] { "head", "maxp", "loca", "glyf", "cmap" };
+    constexpr std::string required_tables[5] { "head", "maxp", "loca", "glyf", "cmap" };
     for (const auto &tag : required_tables)
     {
         if (!tables.contains(tag))
@@ -231,7 +157,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
     }
 
     const std::uint8_t* cmap_table { data + it_cmap->second.offset };
-    uint16_t cmap_version { read_u16(cmap_table) };
+    read_u16(cmap_table);
     uint16_t num_subtables { read_u16(cmap_table + 2) };
 
     const std::uint8_t* cmap_format_4 { nullptr };
@@ -398,7 +324,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
 
     for (uint16_t i = 0; i < number_of_h_metrics; ++i)
     {
-        glyph_metrics[i].advance_width = read_u16(hmtx_table + i * 4);
+        glyph_metrics[i].advance_width     = read_u16(hmtx_table + i * 4);
         glyph_metrics[i].left_side_bearing = read_s16(hmtx_table + i * 4 + 2);
     }
 
@@ -408,7 +334,7 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
         const uint8_t* lsb_ptr { hmtx_table + number_of_h_metrics * 4 };
         for (uint16_t i = number_of_h_metrics; i < num_glyphs; ++i)
         {
-            glyph_metrics[i].advance_width = last_advance;
+            glyph_metrics[i].advance_width     = last_advance;
             glyph_metrics[i].left_side_bearing = read_s16(lsb_ptr + (i - number_of_h_metrics) * 2);
         }
     }
@@ -422,9 +348,78 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(
     }
 
     font->set_name(name);
-    loaded_fonts[name] = font;
+    _loaded_fonts[name] = font;
 
     return font;
+}
+
+void FontManagerTTF::load_font_directory(const std::filesystem::path &path)
+{
+    std::filesystem::path dir_path = path;
+
+    if (dir_path.empty())
+    {
+        dir_path = _font_directory_path;
+    }
+
+    if (!exists(dir_path) || !is_directory(dir_path))
+    {
+        std::cerr << "Font directory does not exist: " + dir_path.string();
+        return;
+    }
+
+    for (const auto &entry : std::filesystem::directory_iterator(dir_path))
+    {
+        if (entry.is_regular_file())
+        {
+            std::string extension { entry.path().extension().string() };
+            if (extension == ".ttf" || extension == ".TTF")
+            {
+                load_from_file(entry.path().string(), entry.path().stem().string());
+            }
+        }
+    }
+}
+
+std::unordered_map<std::string, std::shared_ptr<FontTTF>> FontManagerTTF::get_loaded_fonts() const
+{
+    return _loaded_fonts;
+}
+
+std::shared_ptr<FontTTF> FontManagerTTF::get_font(const std::string &name)
+{
+    const auto it = _loaded_fonts.find(name);
+    return it != _loaded_fonts.end() ? it->second : nullptr;
+}
+
+bool FontManagerTTF::is_font_loaded(const std::string &name) const
+{
+    return _loaded_fonts.contains(name);
+}
+
+void FontManagerTTF::add_font(const std::string &name, const std::shared_ptr<FontTTF> font)
+{
+    _loaded_fonts[name] = font;
+}
+
+void FontManagerTTF::unload_font(const std::string &name)
+{
+    _loaded_fonts.erase(name);
+}
+
+void FontManagerTTF::unload_all_fonts()
+{
+    _loaded_fonts.clear();
+}
+
+void FontManagerTTF::set_font_directory_path(const std::filesystem::path &path)
+{
+    _font_directory_path = path;
+}
+
+std::filesystem::path FontManagerTTF::get_font_directory_path() const
+{
+    return _font_directory_path;
 }
 
 std::unordered_map<uint32_t, uint16_t> FontManagerTTF::parse_cmap_format_4(
@@ -434,8 +429,8 @@ std::unordered_map<uint32_t, uint16_t> FontManagerTTF::parse_cmap_format_4(
 {
     std::unordered_map<uint32_t, uint16_t> char_to_glyph;
 
-    const uint16_t seg_count_X2 { read_u16(cmap_table + 6) };
-    const uint16_t seg_count { static_cast<uint16_t>(seg_count_X2 / 2) };
+    const uint16_t seg_count_x2 { read_u16(cmap_table + 6) };
+    const uint16_t seg_count { static_cast<uint16_t>(seg_count_x2 / 2) };
 
     const std::uint8_t* end_code_ptr { cmap_table + 14 };
     const std::uint8_t* start_code_ptr { end_code_ptr + 2 + seg_count * 2 };
@@ -587,7 +582,7 @@ std::shared_ptr<FontTTF::GlyphTTF> FontManagerTTF::parse_glyph(
         {
             const int16_t dx { read_s16(ptr) };
             ptr += 2;
-            x += dx;
+            x   += dx;
         }
         x_coords[i] = x;
     }
@@ -605,7 +600,7 @@ std::shared_ptr<FontTTF::GlyphTTF> FontManagerTTF::parse_glyph(
         {
             const int16_t dy { read_s16(ptr) };
             ptr += 2;
-            y += dy;
+            y   += dy;
         }
         y_coords[i] = y;
     }

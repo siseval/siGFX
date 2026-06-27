@@ -15,13 +15,13 @@ struct Boid
     std::shared_ptr<gfx::Polyline2D> shape;
 };
 
-class BoidsDemo : public demos::GfxDemo
+class BoidsDemo : public GfxDemo
 {
 
 public:
 
-    BoidsDemo(const std::shared_ptr<gfx::RenderEngine> renderer)
-        : GfxDemo(renderer)
+    BoidsDemo(const std::shared_ptr<gfx::RenderEngine> renderer, const std::shared_ptr<gfx::DebugViewer> debug_viewer = nullptr)
+        : GfxDemo(renderer, debug_viewer)
     {
         render2D = renderer->get_render_2D();
     }
@@ -30,7 +30,7 @@ public:
     void render_frame(double dt) override;
     void end() override;
     void handle_char(int input) override;
-    void report_mouse(demos::MouseEvent event) override;
+    void report_mouse(MouseEvent event) override;
 
     std::vector<std::string> debug_text() override
     {
@@ -69,7 +69,7 @@ private:
 
     std::vector<std::shared_ptr<Boid>> get_neighbors(std::shared_ptr<Boid> boid) const;
 
-    void process_boid(std::shared_ptr<Boid> boid, double dt);
+    static void process_boid(std::shared_ptr<Boid> boid, double dt);
     void process_boids(double dt);
     void render_boids() const;
 

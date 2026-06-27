@@ -9,21 +9,14 @@
 namespace demos
 {
 
-class GLFWDemoPlayer : public demos::DemoPlayer
+class GLFWDemoPlayer : public DemoPlayer
 {
-
-    const gfx::Vec2i res360 { 640, 360 };
-    const gfx::Vec2i res480 { 854, 480 };
-    const gfx::Vec2i res720 { 1280, 720 };
-    const gfx::Vec2i res1080 { 1920, 1080 };
 
 public:
 
     GLFWDemoPlayer()
-        : demos::DemoPlayer()
     {
-        const gfx::Vec2d resolution = res480;
-        const gfx::Vec2d viewport_scaling { 1, 1 };
+        const gfx::Vec2i resolution = { 1280, 720 };
 
         auto surface = std::make_shared<gfx::GLFWRenderSurface>(resolution);
         renderer = std::make_shared<gfx::RenderEngine>(surface);
@@ -85,24 +78,24 @@ public:
 
 private:
 
-    static void mouse_callback(GLFWwindow* win, int button, int action, int mods)
+    static void mouse_callback(GLFWwindow* win, const int button, const int action, int mods)
     {
-        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        const auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self)
         {
             return;
         }
 
-        demos::MouseEvent event;
+        MouseEvent event;
         if (button == GLFW_MOUSE_BUTTON_LEFT)
         {
-            event.type = (action == GLFW_PRESS) ? demos::MouseEventType::LEFT_DOWN : demos::MouseEventType::LEFT_UP;
+            event.type = action == GLFW_PRESS ? MouseEventType::LEFT_DOWN : MouseEventType::LEFT_UP;
         }
         else if (button == GLFW_MOUSE_BUTTON_RIGHT)
         {
-            event.type = (action == GLFW_PRESS) ?
-                             demos::MouseEventType::RIGHT_DOWN :
-                             demos::MouseEventType::RIGHT_UP;
+            event.type = action == GLFW_PRESS ?
+                             MouseEventType::RIGHT_DOWN :
+                             MouseEventType::RIGHT_UP;
         }
 
         double x, y;
@@ -111,7 +104,7 @@ private:
         int width, height;
         glfwGetWindowSize(win, &width, &height);
 
-        gfx::Vec2d pos {
+        const gfx::Vec2d pos {
             gfx::Vec2d { x, y } /
             gfx::Vec2d { static_cast<double>(width), static_cast<double>(height) }
         };
@@ -120,37 +113,37 @@ private:
         self->demos[self->current_demo]->report_mouse(event);
     }
 
-    static void scroll_callback(GLFWwindow* win, double x_offset, double y_offset)
+    static void scroll_callback(GLFWwindow* win, double x_offset, const double y_offset)
     {
-        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        const auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self)
             return;
 
-        demos::MouseEvent event;
-        event.type = (y_offset > 0) ? demos::MouseEventType::SCROLL_UP : demos::MouseEventType::SCROLL_DOWN;
+        MouseEvent event;
+        event.type = y_offset > 0 ? MouseEventType::SCROLL_UP : MouseEventType::SCROLL_DOWN;
 
         double x, y;
         glfwGetCursorPos(win, &x, &y);
-        event.position = gfx::Vec2i { (int)x, (int)y } / self->renderer->get_render_2D()->get_viewport_scaling();
+        event.position = static_cast<gfx::Vec2<double>>(gfx::Vec2i { static_cast<int>(x), static_cast<int>(y) } / self->renderer->get_render_2D()->get_viewport_scaling());
 
         self->demos[self->current_demo]->report_mouse(event);
     }
 
-    static void cursor_callback(GLFWwindow* win, double xpos, double ypos)
+    static void cursor_callback(GLFWwindow* win, const double xpos, const double ypos)
     {
-        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        const auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self)
             return;
 
-        demos::MouseEvent event;
-        event.type = demos::MouseEventType::MOVE;
+        MouseEvent event;
+        event.type = MouseEventType::MOVE;
 
         int width, height;
         glfwGetWindowSize(win, &width, &height);
-        gfx::Vec2i window_size { width, height };
+        const gfx::Vec2i window_size { width, height };
 
         // gfx::Vec2d position { gfx::Vec2d { xpos, ypos } / self->renderer->get_viewport_scaling() };
-        gfx::Vec2d position { gfx::Vec2d { xpos, ypos } / window_size };
+        const gfx::Vec2d position { gfx::Vec2d { xpos, ypos } / window_size };
         // gfx::Vec2d pos {
         //     2.0 * (position.x / static_cast<double>(width)) - 1.0,
         //     1.0 - 2.0 * (position.y / static_cast<double>(height))
@@ -160,7 +153,7 @@ private:
         self->demos[self->current_demo]->report_mouse(event);
     }
 
-    static void char_callback(GLFWwindow* win, unsigned int key)
+    static void char_callback(GLFWwindow* win, const unsigned int key)
     {
         auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self)
@@ -171,7 +164,7 @@ private:
         self->demos[self->current_demo]->handle_char(key);
     }
 
-    static Key glfw_key_to_key(int glfw_key)
+    static Key glfw_key_to_key(const int glfw_key)
     {
         switch (glfw_key)
         {
@@ -208,14 +201,14 @@ private:
         }
     }
 
-    static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
+    static void key_callback(GLFWwindow* win, const int key, int scancode, const int action, int mods)
     {
-        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        const auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         if (!self)
         {
             return;
         }
-        KeyEvent event {
+        const KeyEvent event {
             .type = [&]() {
                 switch (action)
                 {
@@ -234,14 +227,14 @@ private:
         self->demos[self->current_demo]->report_key(event);
     }
 
-    GLFWwindow* get_window()
+    GLFWwindow* get_window() const
     {
         return std::static_pointer_cast<gfx::GLFWRenderSurface>(renderer->get_render_surface())->get_window();
     }
 
-    gfx::Vec2d get_scaling(GLFWwindow* win)
+    static gfx::Vec2d get_scaling(GLFWwindow* win)
     {
-        auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
+        const auto* self = static_cast<GLFWDemoPlayer*>(glfwGetWindowUserPointer(win));
         int width, height;
         glfwGetWindowSize(self->get_window(), &width, &height);
 

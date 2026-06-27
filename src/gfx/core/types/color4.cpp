@@ -1,6 +1,7 @@
 #include "gfx/core/types/color4.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace gfx
 {
@@ -163,6 +164,20 @@ Color4 Color4::lerp(const Color4 &a, const Color4 &b, double t)
         static_cast<uint8_t>(a.b + (b.b - a.b) * t),
         static_cast<uint8_t>(a.a + (b.a - a.a) * t)
     );
+}
+
+Color4 Color4::bilinear_interp(
+    const Color4 &c00,
+    const Color4 &c10,
+    const Color4 &c01,
+    const Color4 &c11,
+    const double sx,
+    const double sy
+)
+{
+    const Color4 c0 = lerp(c00, c10, sx);
+    const Color4 c1 = lerp(c01, c11, sx);
+    return lerp(c0, c1, sy);
 }
 
 Color4 Color4::trilinear_interp(

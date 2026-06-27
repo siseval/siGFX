@@ -4,10 +4,10 @@
 namespace gfx
 {
 Render2D::Render2D(std::shared_ptr<RenderSurface> surface, Vec2d viewport_scaling)
-    : surface(surface),
-      scene_graph(std::make_shared<SceneGraph2D>()),
-      font_manager(std::make_shared<FontManagerTTF>()),
-      viewport_scaling(viewport_scaling) {}
+    : _surface(surface),
+      _scene_graph(std::make_shared<SceneGraph2D>()),
+      _font_manager(std::make_shared<FontManagerTTF>()),
+      _viewport_scaling(viewport_scaling) {}
 
 void Render2D::draw_frame() const
 {
@@ -17,7 +17,7 @@ void Render2D::draw_frame() const
         ).count()
     };
 
-    last_frame_time_us = t;
+    _last_frame_time_us = t;
 
     std::vector draw_queue {
         get_draw_queue()
@@ -33,14 +33,14 @@ void Render2D::draw_frame() const
         Primitive2D::RasterizeOutput output { primitive->rasterize(transform) };
 
         ShaderInput2D input {
-            .uv = std::vector<Vec2d>(),
-            .t = t / 1000000.0,
+            .uv    = std::vector<Vec2d>(),
+            .t     = t / 1000000.0,
             .color = primitive->get_color()
         };
 
         for (const auto &pixel_pos : output.pixels)
         {
-            input.uv.push_back(primitive->get_uv(pixel_pos));
+            input.uv.push_back(primitive->get_uv(static_cast<Vec2d>(pixel_pos)));
         }
 
         std::vector colors { primitive->get_shader()->frag(input) };
@@ -59,7 +59,7 @@ void Render2D::draw_frame() const
 
         for (size_t i = 0; i < output.pixels.size(); ++i)
         {
-            surface->write_pixel(
+            _surface->write_pixel(
                 output.pixels[i],
                 colors[i],
                 primitive->get_depth(),
@@ -71,103 +71,109 @@ void Render2D::draw_frame() const
 
 void Render2D::clear_frame() const
 {
-    surface->clear_frame_buffer();
-    surface->clear();
+    _surface->clear_frame_buffer();
+    _surface->clear_screen();
 }
 
 void Render2D::present_frame() const
 {
-    surface->present();
+    _surface->present();
 }
 
 void Render2D::add_item(const std::shared_ptr<Primitive2D> item) const
 {
-    scene_graph->add_item(item);
+    _scene_graph->add_item(item);
 }
 
 void Render2D::add_item(const std::shared_ptr<Primitive2D> item, const std::shared_ptr<Primitive2D> parent) const
 {
-    scene_graph->add_item(item, parent);
+    _scene_graph->add_item(item, parent);
 }
 
 void Render2D::remove_item(const std::shared_ptr<Primitive2D> item) const
 {
-    scene_graph->remove_item(item);
+    _scene_graph->remove_item(item);
 }
 
 void Render2D::clear_items() const
 {
-    scene_graph->clear();
+    _scene_graph->clear();
 }
 
 int Render2D::num_items() const
 {
-    return scene_graph->num_items();
+    return _scene_graph->num_items();
 }
 
 bool Render2D::contains_item(const std::shared_ptr<Primitive2D> item) const
 {
-    return scene_graph->contains_item(item);
+    return _scene_graph->contains_item(item);
 }
 
 void Render2D::set_resolution(const Vec2i new_resolution) const
 {
-    surface->resize(new_resolution);
+    _surface->resize(new_resolution);
 }
 
 void Render2D::set_resolution(const int width, const int height) const
 {
-    surface->resize(Vec2i { width, height });
+    _surface->resize(Vec2i { width, height });
 }
 
 void Render2D::set_viewport_scaling(const Vec2d scaling)
 {
-    viewport_scaling = scaling;
+    _viewport_scaling = scaling;
 }
 
 void Render2D::set_viewport_scaling(const double x, const double y)
 {
-    viewport_scaling = Vec2d { x, y };
+    _viewport_scaling = Vec2d { x, y };
 }
 
 void Render2D::set_clear_color(const Color4 color) const
 {
-    surface->set_clear_color(color);
+    _surface->set_clear_color(color);
 }
 
 Color4 Render2D::get_clear_color() const
 {
-    return surface->get_clear_color();
+    return _surface->get_clear_color();
 }
 
 void Render2D::set_blend_mode(const RenderSurface::BlendMode mode)
 {
-    blend_mode = mode;
+    _blend_mode = mode;
+}
+
+Matrix3x3d Render2D::get_global_transform() const
+{
+    const Matrix3x3d scale { Transform2D::scale(_viewport_scaling) };
+    return scale;
 }
 
 void Render2D::set_font_directory(const std::filesystem::path &path) const
 {
-    font_manager->set_font_directory_path(path);
+    _font_manager->set_font_directory_path(path);
 }
 
 void Render2D::load_font_directory(const std::filesystem::path &path) const
 {
-    font_manager->load_font_directory(path);
+    _font_manager->load_font_directory(path);
 }
 
 void Render2D::set_render_surface(const std::shared_ptr<RenderSurface> new_surface)
 {
-    surface = new_surface;
+    _surface = new_surface;
 }
 
 Vec2i Render2D::get_resolution() const
 {
-    return surface->get_resolution() / get_viewport_scaling();
+    return _surface->get_resolution() / get_viewport_scaling();
 }
 
 Vec2d Render2D::center() const
 {
-    return get_resolution() / 2;
+    return static_cast<Vec2d>(get_resolution() / 2);
 }
 
 Vec2d Render2D::get_aspect_ratio() const
@@ -177,63 +183,48 @@ Vec2d Render2D::get_aspect_ratio() const
 
 Vec2d Render2D::get_viewport_scaling() const
 {
-    return viewport_scaling;
+    return _viewport_scaling;
 }
 
 RenderSurface::BlendMode Render2D::get_blend_mode() const
 {
-    return blend_mode;
+    return _blend_mode;
 }
 
 std::filesystem::path Render2D::get_font_directory() const
 {
-    return font_manager->get_font_directory_path();
+    return _font_manager->get_font_directory_path();
 }
 
 bool Render2D::is_font_loaded(const std::string &name) const
 {
-    return font_manager->is_font_loaded(name);
+    return _font_manager->is_font_loaded(name);
 }
 
 bool Render2D::fonts_empty() const
 {
-    return font_manager->get_loaded_fonts().empty();
+    return _font_manager->get_loaded_fonts().empty();
 }
 
 std::shared_ptr<FontTTF> Render2D::get_font(const std::string &name) const
 {
-    return font_manager->get_font(name);
+    return _font_manager->get_font(name);
 }
 
 std::shared_ptr<SceneGraph2D> Render2D::get_scene_graph() const
 {
-    return scene_graph;
+    return _scene_graph;
 }
 
 std::shared_ptr<RenderSurface> Render2D::get_render_surface() const
 {
-    return surface;
+    return _surface;
 }
 
 std::shared_ptr<FontManagerTTF> Render2D::get_font_manager() const
 {
-    return font_manager;
+    return _font_manager;
 }
-
-std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_draw_queue() const
-{
-    scene_graph->set_root_transform(get_global_transform());
-    auto queue { scene_graph->get_draw_queue() };
-
-    return queue;
-}
-
-Matrix3x3d Render2D::get_global_transform() const
-{
-    const Matrix3x3d scale { Transform2D::scale(viewport_scaling) };
-    return scale;
-}
-
 
 std::shared_ptr<Circle2D> Render2D::create_circle(
     const Vec2d position,
@@ -252,6 +243,7 @@ std::shared_ptr<Circle2D> Render2D::create_circle(
     return circle;
 }
 
+
 std::shared_ptr<Circle2D> Render2D::create_circle(
     const double x,
     const double y,
@@ -262,7 +254,6 @@ std::shared_ptr<Circle2D> Render2D::create_circle(
 {
     return create_circle(Vec2d { x, y }, radius, color, line_thickness);
 }
-
 
 std::shared_ptr<Ellipse2D> Render2D::create_ellipse(
     const Vec2d position,
@@ -280,6 +271,7 @@ std::shared_ptr<Ellipse2D> Render2D::create_ellipse(
 
     return ellipse;
 }
+
 
 std::shared_ptr<Ellipse2D> Render2D::create_ellipse(
     const double x,
@@ -344,6 +336,14 @@ std::shared_ptr<Polygon2D> Render2D::create_polygon(
 )
 {
     return create_polygon(Vec2d { x, y }, points, fill_color);
+}
+
+std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> Render2D::get_draw_queue() const
+{
+    _scene_graph->set_root_transform(get_global_transform());
+    auto queue { _scene_graph->get_draw_queue() };
+
+    return queue;
 }
 
 
